@@ -94,8 +94,14 @@ void WindowChatWidgetContainerHandler::removeChat(Chat chat)
     if (!chat || !m_chatWindowRepository)
         return;
 
+    // windowForChat() returns null once the window is gone from the repository,
+    // which is exactly the case when this is reached from ~ChatWindow: the
+    // destructor emits windowDestroyed() and the repository drops the window
+    // before ~QWidget deletes the children, so the chat widget's own removal
+    // arrives here afterwards. The sibling methods below already check.
     auto chatWindow = m_chatWindowRepository.data()->windowForChat(chat);
-    chatWindow->deleteLater();
+    if (chatWindow)
+        chatWindow->deleteLater();
 }
 
 bool WindowChatWidgetContainerHandler::isChatWidgetActive(ChatWidget *chatWidget)
