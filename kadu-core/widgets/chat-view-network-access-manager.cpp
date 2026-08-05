@@ -31,6 +31,9 @@
 ChatViewNetworkAccessManager::ChatViewNetworkAccessManager(QNetworkAccessManager *manager, QObject *parent)
         : QNetworkAccessManager(parent)
 {
+    if (!manager)
+        return;
+
     setCache(manager->cache());
     setCookieJar(manager->cookieJar());
     setProxy(manager->proxy());

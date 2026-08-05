@@ -103,8 +103,12 @@ QWebPage *QWebFrame::page() const
 }
 
 QWebPage::QWebPage(QObject *parent)
-        : QObject{parent}, m_frame{new QWebFrame{this}}, m_networkAccessManager{nullptr}
+        : QObject{parent}, m_frame{new QWebFrame{this}},
+          m_networkAccessManager{new QNetworkAccessManager{this}}
 {
+    // The real QWebPage always owned a network access manager. Callers take it,
+    // copy its cache/cookie jar/proxy onto their own and hand that back through
+    // setNetworkAccessManager(), so handing them a null pointer crashes them.
 }
 
 QWebPage::~QWebPage()

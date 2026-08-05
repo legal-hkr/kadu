@@ -27,11 +27,11 @@
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
+#include <QtNetwork/QNetworkAccessManager>
 #include <QtGui/QPainter>
 #include <QtGui/QPalette>
 #include <QtWidgets/QWidget>
 
-class QNetworkAccessManager;
 class QNetworkRequest;
 class QWebFrame;
 class QWebPage;
