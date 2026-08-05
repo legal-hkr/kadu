@@ -127,10 +127,11 @@ void ConfigSpinBox::onValueChanged(int i)
     if (Suffix.contains("%n"))
     {
         suffix =
-            QCoreApplication::translate("@default", Suffix.toUtf8().constData(), 0, QCoreApplication::CodecForTr, i);
+            // Qt6 dropped the codec argument from QCoreApplication::translate().
+            QCoreApplication::translate("@default", Suffix.toUtf8().constData(), nullptr, i);
         QRegExp rx(QString("^.*%1").arg(i));
         rx.setMinimal(true);
-        suffix.remove(rx);
+        suffix = rx.removeIn(suffix);
     }
     setSuffix(suffix);
 }

@@ -198,7 +198,7 @@ target_link_libraries (libkadu LINK_PRIVATE ${ADDITIONAL_LIBKADU_LIBRARIES})
 
 add_executable (kadu WIN32 ${main_SRCS})
 kadu_set_flags (kadu)
-target_link_libraries (kadu LINK_PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
+target_link_libraries (kadu LINK_PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
 target_link_libraries (kadu LINK_PRIVATE libkadu ${ADDITIONAL_LIBRARIES})
 
 if (NOT IS_ABSOLUTE "${KADU_INSTALL_LIB_DIR}")
@@ -225,7 +225,7 @@ endif ()
 if (WIN32)
 	add_executable (kadu_c ${main_SRCS})
 	kadu_set_flags (kadu_c)
-	target_link_libraries (kadu_c LINK_PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
+	target_link_libraries (kadu_c LINK_PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
 	target_link_libraries (kadu_c LINK_PRIVATE libkadu ${ADDITIONAL_LIBRARIES})
 
 	# Do not link against qtmain on Windows

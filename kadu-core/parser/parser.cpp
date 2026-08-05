@@ -231,7 +231,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
     Buddy buddy = m_talkableConverter->toBuddy(talkable);
     Contact contact = m_talkableConverter->toContact(talkable);
 
-    switch (s.at(idx).toAscii())
+    switch (s.at(idx).toLatin1())
     {
     // 'o' does not work so we should just ignore it
     // see bug #2199

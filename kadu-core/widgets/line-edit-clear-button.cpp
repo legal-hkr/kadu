@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QEasingCurve>
 #include <QtCore/QEvent>
 #include <QtCore/QTimeLine>
 #include <QtGui/QPainter>
@@ -42,7 +43,8 @@ void LineEditClearButton::setUpTimeLine()
 {
     Timeline = new QTimeLine(200, this);
     Timeline->setFrameRange(0, ANIMATION_FRAMES_COUNT);
-    Timeline->setCurveShape(QTimeLine::EaseInOutCurve);
+    // QTimeLine::setCurveShape() was removed in Qt6; set the easing curve directly.
+    Timeline->setEasingCurve(QEasingCurve::InOutSine);
     Timeline->setDirection(QTimeLine::Backward);
     connect(Timeline, SIGNAL(finished()), this, SLOT(animationFinished()));
     connect(Timeline, SIGNAL(frameChanged(int)), this, SLOT(update()));

@@ -41,6 +41,7 @@
  *
  */
 
+#include <QtCore/QIODevice>
 #include <QtCore/QVariant>
 #include <QtGui/QWindow>
 #include <QtWidgets/QApplication>

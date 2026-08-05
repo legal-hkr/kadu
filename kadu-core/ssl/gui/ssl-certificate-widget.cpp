@@ -55,7 +55,10 @@ void SslCertificateWidget::createGui()
 
 void SslCertificateWidget::fillGui(QSslCertificate certificate)
 {
-    addItem(tr("Valid"), certificate.isValid(), certificate.isValid());
+    auto const now = QDateTime::currentDateTimeUtc();
+    auto const valid = !certificate.isNull() && !certificate.isBlacklisted() &&
+                       certificate.effectiveDate() <= now && now <= certificate.expiryDate();
+    addItem(tr("Valid"), valid, valid);
     addItem(tr("Blacklisted"), certificate.isBlacklisted(), !certificate.isBlacklisted());
     addItem(
         tr("Valid from"), certificate.effectiveDate().toString(),
@@ -115,8 +118,8 @@ void SslCertificateWidget::addItem(const QString &name, const QString &value, bo
     auto item = new QTreeWidgetItem{m_dataWidget, {name, value}};
     if (!valid)
     {
-        item->setTextColor(0, Qt::red);
-        item->setTextColor(1, Qt::red);
+        item->setForeground(0, QBrush{Qt::red});
+        item->setForeground(1, QBrush{Qt::red});
     }
 
     m_dataWidget->addTopLevelItem(item);

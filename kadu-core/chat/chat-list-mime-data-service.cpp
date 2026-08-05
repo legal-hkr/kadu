@@ -69,7 +69,7 @@ QList<Chat> ChatListMimeDataService::fromMimeData(const QMimeData *mimeData)
     auto chatListStrings = chatListString.split(':');
     for (auto const &chatListString : chatListStrings)
     {
-        auto chat = m_chatManager->byUuid(chatListString);
+        auto chat = m_chatManager->byUuid(QUuid{chatListString});
         if (!chat.isNull())
             result << chat;
     }

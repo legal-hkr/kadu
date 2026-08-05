@@ -52,7 +52,8 @@
 #include <QtQuick/QQuickItem>
 #include <QtQuickWidgets/QQuickWidget>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QGraphicsObject>
 #include <QtWidgets/QLabel>
@@ -114,7 +115,8 @@ void OpenChatWith::init()
     setWindowTitle(tr("Open chat with..."));
     setAttribute(Qt::WA_DeleteOnClose);
 
-    QRect availableGeometry = qApp->desktop()->availableGeometry(this);
+    auto const targetScreen = screen() ? screen() : QGuiApplication::primaryScreen();
+    QRect availableGeometry = targetScreen->availableGeometry();
     int width = static_cast<int>(0.25f * availableGeometry.width());
     int height = static_cast<int>(0.6f * availableGeometry.height());
     setGeometry(availableGeometry.center().x() - width / 2, availableGeometry.center().y() - height / 2, width, height);

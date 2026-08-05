@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "exports.h"
 #include "formatted-string/formatted-string.h"
 

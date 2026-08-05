@@ -73,6 +73,6 @@ void OpenDescriptionLinkAction::actionTriggered(QAction *sender, bool)
 void OpenDescriptionLinkAction::updateActionState(Action *action)
 {
     action->setEnabled(
-        action->context()->contacts().toContact().currentStatus().description().indexOf(
-            m_urlHandlerManager->urlRegExp()) >= 0);
+        m_urlHandlerManager->urlRegExp().indexIn(
+            action->context()->contacts().toContact().currentStatus().description()) >= 0);
 }

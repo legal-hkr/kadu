@@ -27,7 +27,7 @@
 class Configuration;
 enum class PluginState;
 
-class QStringList;
+#include <QtCore/QStringList>
 
 /**
  * @addtogroup Plugin

@@ -20,30 +20,21 @@
  */
 
 #include <QtCore/QSysInfo>
-#include <QtNetwork/QNetworkConfigurationManager>
+#include <QtNetwork/QNetworkInformation>
 
 #include "network-manager-qt.h"
 #include "network-manager-qt.moc"
 
 NetworkManagerQt::NetworkManagerQt(QObject *parent) : NetworkManager{parent}
 {
-#ifdef Q_OS_WIN
-    // Kadu bug #2591
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_VISTA)
-    {
-        ConfigurationManager = 0;
-        HasValidCapabilities = false;
-    }
-    else
-#endif
-    {
-        ConfigurationManager = new QNetworkConfigurationManager(this);
-        HasValidCapabilities =
-            ConfigurationManager->capabilities() & QNetworkConfigurationManager::CanStartAndStopInterfaces;
+    HasReachabilityBackend = QNetworkInformation::loadDefaultBackend() && QNetworkInformation::instance();
 
-        if (HasValidCapabilities)
-            connect(ConfigurationManager, SIGNAL(onlineStateChanged(bool)), this, SLOT(onlineStateChanged(bool)));
-    }
+    if (HasReachabilityBackend)
+        connect(
+            QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this,
+            [this](QNetworkInformation::Reachability reachability) {
+                onlineStateChanged(reachability == QNetworkInformation::Reachability::Online);
+            });
 }
 
 NetworkManagerQt::~NetworkManagerQt()
@@ -52,7 +43,9 @@ NetworkManagerQt::~NetworkManagerQt()
 
 bool NetworkManagerQt::isOnline()
 {
-    return HasValidCapabilities ? ConfigurationManager->isOnline() : true;
+    if (!HasReachabilityBackend)
+        return true;
+    return QNetworkInformation::instance()->reachability() == QNetworkInformation::Reachability::Online;
 }
 
 void NetworkManagerQt::forceOnline()

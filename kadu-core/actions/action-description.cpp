@@ -28,6 +28,7 @@
 #include "gui/hot-key.h"
 #include "windows/main-window.h"
 
+#include <QtWidgets/QMenu>
 #include <QtCore/QLatin1String>
 #include <QtCore/QMetaMethod>
 

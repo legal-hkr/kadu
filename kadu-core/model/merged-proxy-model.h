@@ -196,6 +196,10 @@ public:
     explicit MergedProxyModel(QObject *parent = nullptr);
     virtual ~MergedProxyModel();
 
+    // Qt6 removed setSupportedDragActions(); the value is reported by
+    // overriding supportedDragActions() instead.
+    virtual Qt::DropActions supportedDragActions() const override;
+
     /**
      * @short Sets list of models to merge.
      * @param models list of models to merge

@@ -197,8 +197,10 @@ bool PluginListWidgetDelegateEventListener::eventFilter(QObject *watched, QEvent
         {
             QWheelEvent *wheelEvent = static_cast<QWheelEvent *>(event);
             QWheelEvent evt(
-                viewport->mapFromGlobal(wheelEvent->globalPos()), wheelEvent->delta(), wheelEvent->buttons(),
-                wheelEvent->modifiers(), wheelEvent->orientation());
+                QPointF{viewport->mapFromGlobal(wheelEvent->globalPosition().toPoint())},
+                wheelEvent->globalPosition(), wheelEvent->pixelDelta(), wheelEvent->angleDelta(),
+                wheelEvent->buttons(), wheelEvent->modifiers(), wheelEvent->phase(),
+                wheelEvent->inverted());
             QApplication::sendEvent(viewport, &evt);
         }
 
@@ -215,11 +217,14 @@ bool PluginListWidgetDelegateEventListener::eventFilter(QObject *watched, QEvent
         case QEvent::TabletLeaveProximity:
         {
             QTabletEvent *tabletEvent = static_cast<QTabletEvent *>(event);
+            // Qt6 reordered the arguments, takes a QPointingDevice, and carries the
+            // buttons instead of the pointer type and unique id.
             QTabletEvent evt(
-                event->type(), QPointF(viewport->mapFromGlobal(tabletEvent->globalPos())), tabletEvent->globalPosF(),
-                tabletEvent->device(), tabletEvent->pointerType(), tabletEvent->pressure(), tabletEvent->xTilt(),
-                tabletEvent->yTilt(), tabletEvent->tangentialPressure(), tabletEvent->rotation(), tabletEvent->z(),
-                tabletEvent->modifiers(), tabletEvent->uniqueId());
+                event->type(), static_cast<const QPointingDevice *>(tabletEvent->device()),
+                QPointF(viewport->mapFromGlobal(tabletEvent->globalPosition().toPoint())),
+                tabletEvent->globalPosition(), tabletEvent->pressure(), tabletEvent->xTilt(), tabletEvent->yTilt(),
+                tabletEvent->tangentialPressure(), tabletEvent->rotation(), tabletEvent->z(),
+                tabletEvent->modifiers(), tabletEvent->button(), tabletEvent->buttons());
             QApplication::sendEvent(viewport, &evt);
         }
 

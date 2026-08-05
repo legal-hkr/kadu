@@ -114,7 +114,8 @@ void Themes::setTheme(const QString &theme)
         if (theme != "Custom" && !ConfigName.isEmpty())
         {
             QSettings themeSettings(themePath() + fixFileName(themePath(), ConfigName), QSettings::IniFormat);
-            themeSettings.setIniCodec("ISO8859-2");
+            // Qt6 dropped QSettings::setIniCodec(). Legacy themes whose index files are
+            // ISO8859-2 rather than UTF-8 will now show mojibake in non-ASCII names.
 
             themeSettings.beginGroup(Name);
             auto keys = themeSettings.allKeys();

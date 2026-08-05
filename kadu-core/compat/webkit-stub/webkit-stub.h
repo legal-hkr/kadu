@@ -26,6 +26,8 @@
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
+#include <QtGui/QPainter>
+#include <QtGui/QPalette>
 #include <QtWidgets/QWidget>
 
 class QNetworkAccessManager;
@@ -37,6 +39,9 @@ class QWebHistory
 {
 public:
     void clear()
+    {
+    }
+    void setMaximumItemCount(int)
     {
     }
     bool canGoBack() const
@@ -193,6 +198,7 @@ public:
 
     void addToJavaScriptWindowObject(const QString &name, QObject *object);
 
+    void setScrollBarPolicy(Qt::Orientation orientation, Qt::ScrollBarPolicy policy);
     void scrollToAnchor(const QString &anchor);
     QPoint scrollPosition() const;
     void setScrollPosition(const QPoint &position);
@@ -201,6 +207,7 @@ public:
     void setScrollBarValue(Qt::Orientation orientation, int value);
 
     QWebHitTestResult hitTestContent(const QPoint &position) const;
+    QSize contentsSize() const;
 
     QWebPage *page() const;
 
@@ -264,6 +271,8 @@ public:
 
     QString selectedText() const;
 
+    void setPalette(const QPalette &palette);
+
     bool findText(const QString &subString, FindFlags options = FindFlags());
 
 Q_SIGNALS:
@@ -288,6 +297,8 @@ public:
 
     QWebPage *page() const;
     void setPage(QWebPage *page);
+
+    void setRenderHints(QPainter::RenderHints hints);
 
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl{});
     void setUrl(const QUrl &url);

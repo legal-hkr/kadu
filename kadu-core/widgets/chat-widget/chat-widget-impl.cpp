@@ -68,7 +68,7 @@
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
-#include <QtWidgets/QShortcut>
+#include <QtGui/QShortcut>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QVBoxLayout>
 

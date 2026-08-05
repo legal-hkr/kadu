@@ -39,6 +39,7 @@
 #include "widgets/webkit-messages-view/webkit-messages-view-handler-factory.h"
 #include "widgets/webkit-messages-view/webkit-messages-view-handler.h"
 
+#include <QtCore/QFile>
 #include <QtGui/QKeyEvent>
 #include <QtWebKitWidgets/QWebFrame>
 

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "configuration/configuration-aware-object.h"
 #include "exports.h"
 #include "themes/theme.h"

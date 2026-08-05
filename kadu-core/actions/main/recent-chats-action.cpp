@@ -54,7 +54,9 @@ void RecentChatsAction::actionInstanceCreated(Action *action)
     connect(recentChatsMenu, SIGNAL(triggered(QAction *)), this, SLOT(openRecentChats(QAction *)));
 
     action->setEnabled(false);
-    action->setMenu(recentChatsMenu);
+    // Qt6 QAction::setMenu() is a by-value template; hand it the raw pointer so the
+    // owning smart pointer is not copied.
+    action->setMenu(recentChatsMenu.get());
     connect(recentChatsMenu, SIGNAL(chatsListAvailable(bool)), action, SLOT(setEnabled(bool)));
     recentChatsMenu->invalidate();
 }

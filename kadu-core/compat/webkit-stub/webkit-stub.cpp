@@ -47,6 +47,12 @@ void QWebFrame::addToJavaScriptWindowObject(const QString &name, QObject *object
     Q_UNUSED(object)
 }
 
+void QWebFrame::setScrollBarPolicy(Qt::Orientation orientation, Qt::ScrollBarPolicy policy)
+{
+    Q_UNUSED(orientation)
+    Q_UNUSED(policy)
+}
+
 void QWebFrame::scrollToAnchor(const QString &anchor)
 {
     Q_UNUSED(anchor)
@@ -84,6 +90,11 @@ QWebHitTestResult QWebFrame::hitTestContent(const QPoint &position) const
 {
     Q_UNUSED(position)
     return QWebHitTestResult{};
+}
+
+QSize QWebFrame::contentsSize() const
+{
+    return QSize{};
 }
 
 QWebPage *QWebFrame::page() const
@@ -162,6 +173,11 @@ QString QWebPage::selectedText() const
     return QString{};
 }
 
+void QWebPage::setPalette(const QPalette &palette)
+{
+    Q_UNUSED(palette)
+}
+
 bool QWebPage::findText(const QString &subString, FindFlags options)
 {
     Q_UNUSED(subString)
@@ -185,6 +201,11 @@ QWebPage *QWebView::page() const
 void QWebView::setPage(QWebPage *page)
 {
     m_page = page;
+}
+
+void QWebView::setRenderHints(QPainter::RenderHints hints)
+{
+    Q_UNUSED(hints)
 }
 
 void QWebView::setHtml(const QString &html, const QUrl &baseUrl)

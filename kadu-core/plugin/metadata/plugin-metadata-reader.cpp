@@ -55,7 +55,7 @@ PluginMetadataReader::readPluginMetadata(const QString &pluginName, const QStrin
 
     auto const lang = m_configuration->deprecatedApi()->readEntry("General", "Language");
     QSettings file{filePath, QSettings::IniFormat};
-    file.setIniCodec("UTF-8");
+    // Qt6 dropped QSettings::setIniCodec(); INI files are read as UTF-8 by default.
 
     auto result = PluginMetadata{};
     result.name = pluginName;

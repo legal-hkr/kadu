@@ -115,7 +115,8 @@ bool CategorizedListViewPrivate::isCategorized() const
 
 QStyleOptionViewItem CategorizedListViewPrivate::blockRect(const QModelIndex &representative)
 {
-    QStyleOptionViewItem option(q->viewOptions());
+    QStyleOptionViewItem option;
+    q->initViewItemOption(&option);
     const int height = categoryDrawer->categoryHeight(representative, option);
     const QString categoryDisplay =
         representative.data(CategorizedSortFilterProxyModel::CategoryDisplayRole).toString();
@@ -218,7 +219,9 @@ QPoint CategorizedListViewPrivate::blockPosition(const QString &category)
             continue;
         }
 
-        res.ry() += categoryDrawer->categoryHeight(categoryIndex, q->viewOptions()) + categorySpacing;
+        QStyleOptionViewItem categoryOption;
+        q->initViewItemOption(&categoryOption);
+        res.ry() += categoryDrawer->categoryHeight(categoryIndex, categoryOption) + categorySpacing;
 
         if (index.row() == categoryIndex.row())
         {
@@ -982,7 +985,8 @@ void CategorizedListView::paintEvent(QPaintEvent *event)
         const CategorizedListViewPrivate::Block &block = *it;
         const QModelIndex categoryIndex =
             d->proxyModel->index(block.firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        QStyleOptionViewItem option(viewOptions());
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
         option.features |= d->alternatingBlockColors && block.alternate ? QStyleOptionViewItem::Alternate
                                                                         : QStyleOptionViewItem::None;
         option.state |= !d->collapsibleBlocks || !block.collapsed ? QStyle::State_Open : QStyle::State_None;
@@ -1043,7 +1047,8 @@ void CategorizedListView::paintEvent(QPaintEvent *event)
 
             const Qt::ItemFlags flags = d->proxyModel->flags(index);
 
-            QStyleOptionViewItem option(viewOptions());
+            QStyleOptionViewItem option;
+        initViewItemOption(&option);
 
             option.rect = visualRect(index);
 
@@ -1191,7 +1196,8 @@ void CategorizedListView::mouseMoveEvent(QMouseEvent *event)
         const CategorizedListViewPrivate::Block &block = *it;
         const QModelIndex categoryIndex =
             d->proxyModel->index(block.firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        QStyleOptionViewItem option(viewOptions());
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
         const int height = d->categoryDrawer->categoryHeight(categoryIndex, option);
         QPoint pos = d->blockPosition(it.key());
         pos.ry() -= height;

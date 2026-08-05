@@ -289,7 +289,11 @@ QTextDocument *TalkablePainter::createDescriptionDocument(const QString &text, i
     doc->setDefaultTextOption(opt);
 
     QTextFrameFormat frameFormat = doc->rootFrame()->frameFormat();
-    frameFormat.setContentsMargins(0, 0, 0, 0);
+    // QTextFrameFormat has no setContentsMargins(); set the four margins.
+    frameFormat.setLeftMargin(0);
+    frameFormat.setTopMargin(0);
+    frameFormat.setRightMargin(0);
+    frameFormat.setBottomMargin(0);
     doc->rootFrame()->setFrameFormat(frameFormat);
 
     doc->setTextWidth(width);

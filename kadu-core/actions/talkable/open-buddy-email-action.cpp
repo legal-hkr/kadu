@@ -74,7 +74,7 @@ void OpenBuddyEmailAction::actionTriggered(QAction *sender, bool)
 void OpenBuddyEmailAction::updateActionState(Action *action)
 {
     auto const &buddy = action->context()->buddies().toBuddy();
-    auto hasMail = !buddy.email().isEmpty() && buddy.email().indexOf(m_urlHandlerManager->mailRegExp()) == 0;
+    auto hasMail = !buddy.email().isEmpty() && m_urlHandlerManager->mailRegExp().indexIn(buddy.email()) == 0;
 
     action->setEnabled(hasMail);
 }

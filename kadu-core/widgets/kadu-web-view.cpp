@@ -72,11 +72,11 @@ KaduWebView::KaduWebView(QWidget *parent)
     QWebSettings::setMaximumPagesInCache(0);
     QWebSettings::setObjectCacheCapacities(0, 0, 0);
 
-    setAttribute(Qt::WA_NoBackground);
+    setAttribute(Qt::WA_OpaquePaintEvent);
     setAcceptDrops(false);
-    setRenderHints(
-        QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform |
-        QPainter::HighQualityAntialiasing);
+    // QPainter::HighQualityAntialiasing was removed in Qt6; it had already been
+    // a no-op alias for Antialiasing.
+    setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 
     page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 
@@ -211,7 +211,7 @@ void KaduWebView::mousePressEvent(QMouseEvent *e)
         return;
 
     QWebView::mousePressEvent(e);
-    if ((e->buttons() & Qt::LeftButton) && page()->mainFrame()->hitTestContent(e->pos()).isContentSelected())
+    if ((e->buttons() & Qt::LeftButton) && page()->mainFrame()->hitTestContent(e->pos()).isNull())
     {
         QSize cs = page()->mainFrame()->contentsSize();
         QSize vs = page()->viewportSize();

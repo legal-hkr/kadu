@@ -98,7 +98,7 @@ void BuddyListModel::init()
     roles[Qt::DisplayRole] = "display";
     roles[AvatarPathRole] = "avatar";
     roles[StatusIconPath] = "statusIcon";
-    setRoleNames(roles);
+    m_roleNames = roles;
 
     triggerAllAccountsAdded(m_accountManager);
 
@@ -554,7 +554,7 @@ QModelIndexList BuddyListModel::indexListForValue(const QVariant &value) const
     {
         const int i = List.indexOf(buddy);
         if (-1 != i)
-            result.append(index(i, 0).child(contactIndexInBuddy, 0));
+            result.append(index(contactIndexInBuddy, 0, index(i, 0)));
     }
 
     return result;
@@ -589,4 +589,9 @@ void BuddyListModel::accountAdded(Account account)
 void BuddyListModel::accountRemoved(Account account)
 {
     disconnect(account, 0, this, 0);
+}
+
+QHash<int, QByteArray> BuddyListModel::roleNames() const
+{
+    return m_roleNames;
 }

@@ -40,6 +40,7 @@
 #include "roster/roster-entry.h"
 #include "storage/storage-point.h"
 
+#include <algorithm>
 #include <QtCore/QVariant>
 #include <QtXml/QDomNamedNodeMap>
 
@@ -88,7 +89,7 @@ void BuddyShared::collectGarbage()
 
     // 1 is for current Buddy
     const int numberOfReferences = 1 + Contacts.length();
-    if (numberOfReferences != ref.load())
+    if (numberOfReferences != ref.loadRelaxed())
     {
         CollectingGarbage = false;
         return;
@@ -100,7 +101,7 @@ void BuddyShared::collectGarbage()
 
         // 1 is for current BuddyShared
         const int contactNumberOfReferences = 1;
-        if (contactNumberOfReferences != contact.data()->ref.load())
+        if (contactNumberOfReferences != contact.data()->ref.loadRelaxed())
         {
             CollectingGarbage = false;
             return;
@@ -324,7 +325,7 @@ static bool contactPriorityLessThan(const Contact &c1, const Contact &c2)
 
 void BuddyShared::sortContacts()
 {
-    qStableSort(Contacts.begin(), Contacts.end(), contactPriorityLessThan);
+    std::stable_sort(Contacts.begin(), Contacts.end(), contactPriorityLessThan);
 }
 
 void BuddyShared::normalizePriorities()

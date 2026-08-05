@@ -181,7 +181,8 @@ QVariant ChatListModel::data(const QModelIndex &index, int role) const
     if (!parentIndex.parent().isValid())
     {
         const Chat &chat = chatAt(parentIndex);
-        const QList<Contact> &contacts = chat.contacts().toList();
+        auto const contactSet = chat.contacts();
+        const QList<Contact> contacts(contactSet.cbegin(), contactSet.cend());
 
         if (index.row() >= contacts.size())
             return QVariant();
@@ -338,11 +339,12 @@ QModelIndexList ChatListModel::indexListForValue(const QVariant &value) const
         for (int i = 0; i < count; i++)
         {
             const Chat &chat = List.at(i);
-            const QList<Contact> &contacts = chat.contacts().toList();
+            auto const contactSet = chat.contacts();
+        const QList<Contact> contacts(contactSet.cbegin(), contactSet.cend());
             const int contactIndex = contacts.indexOf(contact);
 
             if (-1 != contactIndex)
-                result.append(index(i, 0).child(contactIndex, 0));
+                result.append(index(contactIndex, 0, index(i, 0)));
         }
 
         return result;

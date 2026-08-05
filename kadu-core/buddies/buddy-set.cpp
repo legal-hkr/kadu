@@ -56,7 +56,8 @@ bool BuddySet::isAnyTemporary() const
 
 BuddyList BuddySet::toBuddyList() const
 {
-    return toList();
+    // QSet::toList() was removed in Qt6.
+    return QList<Buddy>(cbegin(), cend());
 }
 
 Buddy BuddySet::toBuddy() const

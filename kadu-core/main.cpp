@@ -116,20 +116,25 @@ static void printBacktrace(const QString &header)
     fflush(stderr);
 }
 
-static void kaduQtMessageHandler(QtMsgType type, const char *msg)
+// qInstallMessageHandler() hands the handler a QMessageLogContext and a QString
+// rather than the plain char* the Qt4-era signature took.
+static void kaduQtMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
+    Q_UNUSED(context)
+
+    auto const messageData = message.toLocal8Bit();
+    auto const msg = messageData.constData();
+
     switch (type)
     {
     case QtDebugMsg:
         fprintf(stderr, "Debug: %s\n", msg);
         fflush(stderr);
         break;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     case QtInfoMsg:
         fprintf(stderr, "Info: %s\n", msg);
         fflush(stderr);
         break;
-#endif
     case QtWarningMsg:
         fprintf(stderr, "\033[34mWarning: %s\033[0m\n", msg);
         fflush(stderr);
@@ -243,7 +248,7 @@ int main(int argc, char *argv[]) try
 
 #ifndef Q_OS_WIN
         // Qt version is better on win32
-        qInstallMsgHandler(kaduQtMessageHandler);
+        qInstallMessageHandler(kaduQtMessageHandler);
 #endif
 
         Core core{std::move(injector)};
