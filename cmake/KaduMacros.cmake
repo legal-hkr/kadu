@@ -22,10 +22,9 @@ endif ()
 
 # libraries
 # TODO: support cmake parameters for this
-# QtWebKit does not exist in Qt6 -- the HTML-based chat layer is excluded from
-# the build for now.
-# Core5Compat provides QRegExp/QTextCodec/QStringRef for the duration of the
-# port; to be dropped in favour of QRegularExpression/QStringConverter.
+# Core5Compat provides QRegExp and QTextCodec, still used across the tree.
+# Dropping it means migrating to QRegularExpression and QStringConverter, which
+# is a separate piece of work.
 find_package (Qt6 6.2 REQUIRED COMPONENTS
 	Core
 	Core5Compat
