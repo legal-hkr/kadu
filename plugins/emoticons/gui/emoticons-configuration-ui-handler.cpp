@@ -70,7 +70,8 @@ void EmoticonsConfigurationUiHandler::init()
 
 void EmoticonsConfigurationUiHandler::updateEmoticonThemes()
 {
-    if (!ThemesList)
+    // ThemeManager is created in init(), which injeqt may run after whatever reaches this.
+    if (!ThemesList || !ThemeManager)
         return;
 
     ThemeManager->loadThemes();
