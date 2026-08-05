@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include <QtCore/QSignalTransition>
-#include <QtCore/QStateMachine>
+#include <QtStateMachine/QSignalTransition>
+#include <QtStateMachine/QStateMachine>
 #include <QtCore/QTimer>
 
 class Protocol;

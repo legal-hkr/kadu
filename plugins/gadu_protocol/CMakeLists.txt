@@ -117,5 +117,6 @@ kadu_plugin (gadu_protocol
 	PLUGIN_SOURCES ${SOURCES}
 	PLUGIN_CONFIGURATION_FILES ${CONFIGURATION_FILES}
 	PLUGIN_LIBRARIES ${LIBRARIES}
-	PLUGIN_ADDITIONAL_QT_MODULES XmlPatterns
+	# QtXmlPatterns does not exist in Qt6 and was never actually used here.
+	PLUGIN_ADDITIONAL_QT_MODULES StateMachine
 )

@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QDebug>
 #include "plugin-activation-error-handler.h"
 #include "plugin-activation-error-handler.moc"
 
@@ -57,6 +58,10 @@ void PluginActivationErrorHandler::handleActivationError(const QString &pluginNa
 {
     if (pluginName.isEmpty())
         return;
+
+    // The dialog is easy to miss and invisible on headless runs; make the reason
+    // reachable from the console too.
+    qWarning("plugin activation failed: %s: %s", qPrintable(pluginName), qPrintable(errorMessage));
 
     auto state = m_pluginStateService ? m_pluginStateService->pluginState(pluginName) : PluginState::Disabled;
     auto offerLoadInFutureChoice = PluginState::Enabled == state;

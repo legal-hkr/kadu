@@ -24,7 +24,7 @@
 
 #include "protocols/protocol.h"
 
-#include <QtCore/QHistoryState>
+#include <QtStateMachine/QHistoryState>
 #include <QtCore/QStringList>
 
 GaduRosterStateMachine::GaduRosterStateMachine(GaduRosterService *service, Protocol *protocol) : QStateMachine{service}

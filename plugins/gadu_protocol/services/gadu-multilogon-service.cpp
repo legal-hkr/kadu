@@ -122,7 +122,7 @@ void GaduMultilogonService::addNewSessions(const gg_event_multilogon_info &multi
             remoteAddress.setAddress(ntohl(multilogonInfo.sessions[i].remote_addr));
 
             auto logonTime = QDateTime{};
-            logonTime.setTime_t(multilogonInfo.sessions[i].logon_time);
+            logonTime.setSecsSinceEpoch(multilogonInfo.sessions[i].logon_time);
 
             auto session = MultilogonSession{account(), toByteArray(multilogonInfo.sessions[i].id),
                                              multilogonInfo.sessions[i].name, remoteAddress, logonTime};

@@ -215,7 +215,10 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 		target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE Qt6::DBus)
 	endif ()
 	if (KADU_PLUGIN_ADDITIONAL_QT_MODULES)
-		target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE ${KADU_PLUGIN_ADDITIONAL_QT_MODULES})
+		# Plugins name bare modules (e.g. "StateMachine"); map them onto Qt6:: targets.
+		foreach (_qt_module ${KADU_PLUGIN_ADDITIONAL_QT_MODULES})
+			target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE Qt6::${_qt_module})
+		endforeach ()
 	endif ()
 
 	target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE ${INJEQT_LIBRARIES})
