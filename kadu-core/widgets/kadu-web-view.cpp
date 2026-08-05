@@ -21,38 +21,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * Copyright for copying and drag'n'drop code from Psi+:
- *
- * Copyright (C) 2010 senu, Rion
- */
-
-#include <QtCore/QEvent>
 #include <QtCore/QFile>
 #include <QtCore/QMimeData>
-#include <QtCore/QPoint>
 #include <QtCore/QPointer>
 #include <QtCore/QString>
-#include <QtCore/QTimer>
 #include <QtCore/QUrl>
+#include <QtGui/QAction>
 #include <QtGui/QClipboard>
 #include <QtGui/QContextMenuEvent>
-#include <QtGui/QDrag>
 #include <QtGui/QImage>
-#include <QtGui/QMouseEvent>
 #include <QtGui/QTextDocument>
-#include <QtWebKit/QWebHistory>
-#include <QtWebKitWidgets/QWebHitTestResult>
-#include <QtWebKitWidgets/QWebPage>
-#include <QtGui/QAction>
+#include <QtWebEngineCore/QWebEngineContextMenuRequest>
+#include <QtWebEngineCore/QWebEngineScript>
+#include <QtWebEngineCore/QWebEngineScriptCollection>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QStyle>
 
 #ifdef DEBUG_ENABLED
-#include <QtWebKitWidgets/QWebInspector>
+#include <QtWebEngineWidgets/QWebEngineView>
 #endif
+
+#include "web/kadu-web-engine-page.h"
+#include "web/kadu-web-engine-profile.h"
 
 #include "configuration/configuration.h"
 #include "configuration/deprecated-configuration-api.h"
@@ -66,33 +57,39 @@
 #include "kadu-web-view.h"
 #include "kadu-web-view.moc"
 
-KaduWebView::KaduWebView(QWidget *parent)
-        : QWebView(parent), DraggingPossible(false), IsLoading(false), RefreshTimer(new QTimer(this))
+KaduWebView::KaduWebView(QWidget *parent) : QWebEngineView{parent}, m_page{nullptr}, IsLoading{false}, m_copyInProgress{false}
 {
-    QWebSettings::setMaximumPagesInCache(0);
-    QWebSettings::setObjectCacheCapacities(0, 0, 0);
-
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAcceptDrops(false);
-    // QPainter::HighQualityAntialiasing was removed in Qt6; it had already been
-    // a no-op alias for Antialiasing.
-    setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 
-    page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
-
-    page()->history()->setMaximumItemCount(0);
-
-    connect(page(), SIGNAL(linkClicked(const QUrl &)), this, SLOT(hyperlinkClicked(const QUrl &)));
-    connect(page(), SIGNAL(loadStarted()), this, SLOT(loadStarted()));
-    connect(page(), SIGNAL(loadFinished(bool)), this, SLOT(loadFinishedSlot(bool)));
-    connect(pageAction(QWebPage::Copy), SIGNAL(triggered()), this, SLOT(textCopied()));
-    connect(pageAction(QWebPage::DownloadImageToDisk), SIGNAL(triggered()), this, SLOT(saveImage()));
-
-    connect(RefreshTimer, SIGNAL(timeout()), this, SLOT(reload()));
+    // QtWebEngine copies in the render process, so the clipboard is filled asynchronously and the
+    // transformation cannot run right after triggering the action. Watch the clipboard instead.
+    connect(QApplication::clipboard(), &QClipboard::changed, this, &KaduWebView::clipboardChanged);
 }
 
 KaduWebView::~KaduWebView()
 {
+}
+
+void KaduWebView::setWebEngineProfile(KaduWebEngineProfile *webEngineProfile)
+{
+    // The page cannot be built in the constructor: it needs the shared profile, and injeqt only
+    // supplies that afterwards.
+    m_page = new KaduWebEnginePage{webEngineProfile->profile(), this};
+    setPage(m_page);
+
+    connect(m_page, &KaduWebEnginePage::linkClicked, this, &KaduWebView::hyperlinkClicked);
+    connect(m_page, &QWebEnginePage::loadStarted, this, &KaduWebView::loadStartedSlot);
+    connect(m_page, &QWebEnginePage::loadFinished, this, &KaduWebView::loadFinishedSlot);
+    connect(m_page, &QWebEnginePage::selectionChanged, this, &KaduWebView::selectionChangedSlot);
+    connect(m_page->action(QWebEnginePage::Copy), &QAction::triggered, this, &KaduWebView::copyRequested);
+
+    applyUserStyleSheet();
+}
+
+KaduWebEnginePage *KaduWebView::kaduPage() const
+{
+    return m_page;
 }
 
 void KaduWebView::setClipboardHtmlTransformerService(ClipboardHtmlTransformerService *clipboardHtmlTransformerService)
@@ -135,105 +132,46 @@ void KaduWebView::contextMenuEvent(QContextMenuEvent *e)
     if (IsLoading)
         return;
 
-    ContextMenuPos = e->pos();
-    const QWebHitTestResult &hitTestContent = page()->currentFrame()->hitTestContent(ContextMenuPos);
-    bool isImage = hitTestContent.imageUrl().isValid();
-    bool isLink = hitTestContent.linkUrl().isValid();
+    // QWebHitTestResult is gone; QtWebEngine fills in a request object before delivering the event.
+    auto const *request = lastContextMenuRequest();
+    if (!request)
+        return;
 
-    QAction *copy = pageAction(QWebPage::Copy);
+    auto const isImage = request->mediaType() == QWebEngineContextMenuRequest::MediaTypeImage;
+    auto const isLink = request->linkUrl().isValid();
+
+    QAction *copy = page()->action(QWebEnginePage::Copy);
     copy->setText(tr("Copy"));
-    QAction *copyLink = pageAction(QWebPage::CopyLinkToClipboard);
+    QAction *copyLink = page()->action(QWebEnginePage::CopyLinkToClipboard);
     copyLink->setText(tr("Copy Link Address"));
     copyLink->setEnabled(isLink);
-    QAction *copyImage = pageAction(QWebPage::CopyImageToClipboard);
+    QAction *copyImage = page()->action(QWebEnginePage::CopyImageToClipboard);
     copyImage->setText(tr("Copy Image"));
     copyImage->setEnabled(isImage);
-    QAction *saveImage = pageAction(QWebPage::DownloadImageToDisk);
-    saveImage->setText(tr("Save Image"));
-    saveImage->setEnabled(isImage);
 
-    QMenu popupMenu(this);
+    // Kadu saves images itself, through ImageStorageService, so this is a plain action rather than
+    // QWebEnginePage::DownloadImageToDisk.
+    QAction saveImageAction{tr("Save Image"), nullptr};
+    saveImageAction.setEnabled(isImage);
+    connect(&saveImageAction, &QAction::triggered, this, &KaduWebView::saveImage);
+
+    QMenu popupMenu{this};
 
     popupMenu.addAction(copy);
-    // 	popupmenu.addSeparator();
     popupMenu.addAction(copyLink);
-    // 	popupmenu.addAction(pageAction(QWebPage::DownloadLinkToDisk));
     popupMenu.addSeparator();
     popupMenu.addAction(copyImage);
-    popupMenu.addAction(saveImage);
+    popupMenu.addAction(&saveImageAction);
 
 #ifdef DEBUG_ENABLED
-    QAction *runInspector = new QAction(&popupMenu);
-    runInspector->setText(tr("Run Inspector"));
-    connect(runInspector, SIGNAL(triggered(bool)), this, SLOT(runInspector(bool)));
+    QAction runInspectorAction{tr("Run Inspector"), nullptr};
+    connect(&runInspectorAction, &QAction::triggered, this, &KaduWebView::runInspector);
 
     popupMenu.addSeparator();
-    popupMenu.addAction(runInspector);
+    popupMenu.addAction(&runInspectorAction);
 #endif
 
     popupMenu.exec(e->globalPos());
-}
-
-// taken from Psi+'s webkit patch, SVN rev. 2638, and slightly modified
-void KaduWebView::mouseMoveEvent(QMouseEvent *e)
-{
-    if (!DraggingPossible || !(e->buttons() & Qt::LeftButton))
-    {
-        QWebView::mouseMoveEvent(e);
-        return;
-    }
-
-    if ((e->pos() - DragStartPosition).manhattanLength() < QApplication::startDragDistance())
-        return;
-
-    QDrag *drag = new QDrag(this);
-    QMimeData *mimeData = new QMimeData();
-
-    QClipboard *clipboard = QApplication::clipboard();
-    QMimeData *originalData = new QMimeData();
-    for (auto const &format : clipboard->mimeData(QClipboard::Clipboard)->formats())
-        originalData->setData(format, clipboard->mimeData(QClipboard::Clipboard)->data(format));
-    // Do not use triggerPageAction(), see bug #2345.
-    pageAction(QWebPage::Copy)->trigger();
-
-    mimeData->setText(clipboard->mimeData()->text());
-    mimeData->setHtml(clipboard->mimeData()->html());
-    clipboard->setMimeData(originalData);
-    drag->setMimeData(mimeData);
-
-    drag->exec(Qt::CopyAction);
-}
-
-// taken from Psi+'s webkit patch, SVN rev. 2638, and slightly modified
-void KaduWebView::mousePressEvent(QMouseEvent *e)
-{
-    if (IsLoading)
-        return;
-
-    QWebView::mousePressEvent(e);
-    if ((e->buttons() & Qt::LeftButton) && page()->mainFrame()->hitTestContent(e->pos()).isNull())
-    {
-        QSize cs = page()->mainFrame()->contentsSize();
-        QSize vs = page()->viewportSize();
-        QSize scrollBarsSize = QSize(cs.height() > vs.height() ? 1 : 0, cs.width() > vs.width() ? 1 : 0) *
-                               style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-        QRect visibleContentsRect = QRect(QPoint(0, 0), vs - scrollBarsSize);
-        DraggingPossible = visibleContentsRect.contains(e->pos());
-        DragStartPosition = e->pos();
-    }
-    else
-        DraggingPossible = false;
-}
-
-void KaduWebView::mouseReleaseEvent(QMouseEvent *e)
-{
-    QWebView::mouseReleaseEvent(e);
-    DraggingPossible = false;
-
-#if defined(Q_OS_UNIX)
-    if (!page()->selectedText().isEmpty())
-        convertClipboardHtml(QClipboard::Selection);
-#endif
 }
 
 void KaduWebView::hyperlinkClicked(const QUrl &anchor) const
@@ -241,7 +179,7 @@ void KaduWebView::hyperlinkClicked(const QUrl &anchor) const
     m_urlHandlerManager->openUrl(anchor.toEncoded());
 }
 
-void KaduWebView::loadStarted()
+void KaduWebView::loadStartedSlot()
 {
     IsLoading = true;
 }
@@ -251,17 +189,19 @@ void KaduWebView::loadFinishedSlot(bool success)
     Q_UNUSED(success)
 
     IsLoading = false;
-}
 
-void KaduWebView::refreshLater()
-{
-    RefreshTimer->setSingleShot(true);
-    RefreshTimer->start(10);
+    // The injected script covers documents loaded from now on; a document that was already loading
+    // when setUserFont() ran still needs the style applied by hand.
+    applyUserStyleSheet();
 }
 
 void KaduWebView::saveImage()
 {
-    QUrl imageUrl = page()->currentFrame()->hitTestContent(ContextMenuPos).imageUrl();
+    auto const *request = lastContextMenuRequest();
+    if (!request)
+        return;
+
+    QUrl imageUrl = request->mediaUrl();
     if (m_imageStorageService)
         imageUrl = m_imageStorageService->toFileUrl(imageUrl);
 
@@ -361,18 +301,46 @@ void KaduWebView::runInspector(bool toggled)
 {
     Q_UNUSED(toggled)
 
-    page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    if (!m_page)
+        return;
 
-    QWebInspector *inspector = new QWebInspector();
-    inspector->setPage(page());
+    // QWebInspector is gone. QtWebEngine drives developer tools through a second page, which any
+    // view can display -- here a standalone window that closes with itself.
+    auto *inspectorView = new QWebEngineView{};
+    inspectorView->setAttribute(Qt::WA_DeleteOnClose);
+    inspectorView->setWindowTitle(tr("Kadu Inspector"));
+    inspectorView->resize(900, 600);
 
-    inspector->show();
+    m_page->setDevToolsPage(inspectorView->page());
+    inspectorView->show();
 }
 #endif
 
-void KaduWebView::textCopied() const
+void KaduWebView::copyRequested()
 {
+    // Only arm the transformation. QtWebEngine has not written the clipboard yet at this point.
+    m_copyInProgress = true;
+}
+
+void KaduWebView::clipboardChanged(QClipboard::Mode mode)
+{
+    if (mode != QClipboard::Clipboard || !m_copyInProgress)
+        return;
+
+    // Cleared before transforming: convertClipboardHtml() writes the clipboard again and would
+    // otherwise re-enter here forever.
+    m_copyInProgress = false;
     convertClipboardHtml(QClipboard::Clipboard);
+}
+
+void KaduWebView::selectionChangedSlot()
+{
+#if defined(Q_OS_UNIX)
+    // Under QtWebKit this hung off mouseReleaseEvent(). QtWebEngine renders into a native child
+    // widget, so the view never sees those events and the selection signal takes their place.
+    if (!selectedText().isEmpty())
+        convertClipboardHtml(QClipboard::Selection);
+#endif
 }
 
 // taken from Psi+'s webkit patch, SVN rev. 2638, and slightly modified
@@ -390,6 +358,46 @@ void KaduWebView::convertClipboardHtml(QClipboard::Mode mode) const
     // see http://www.kadu.im/redmine/issues/2490
     data->setText(document.toPlainText().remove(QChar(0xfffc)));
     QApplication::clipboard()->setMimeData(data, mode);
+}
+
+namespace
+{
+const auto UserStyleSheetScriptName = QStringLiteral("kadu-user-stylesheet");
+
+/**
+ * @short Wrap text in a single-quoted JavaScript string literal.
+ *
+ * The style sheet contains quotes -- font-family:"Noto Sans" -- so it cannot simply be pasted into
+ * generated script.
+ */
+QString toJsStringLiteral(const QString &text)
+{
+    auto escaped = text;
+    escaped.replace('\\', QStringLiteral("\\\\"));
+    escaped.replace('\'', QStringLiteral("\\'"));
+    escaped.replace('\n', QStringLiteral("\\n"));
+    escaped.replace('\r', QStringLiteral("\\r"));
+    return '\'' + escaped + '\'';
+}
+
+/**
+ * @short Script that puts the given CSS into a style element, replacing any previous one.
+ */
+QString userStyleSheetScript(const QString &css)
+{
+    return QStringLiteral(
+               "(function() {"
+               "  var id = 'kadu-user-stylesheet';"
+               "  var element = document.getElementById(id);"
+               "  if (!element) {"
+               "    element = document.createElement('style');"
+               "    element.id = id;"
+               "    (document.head || document.documentElement).appendChild(element);"
+               "  }"
+               "  element.textContent = %1;"
+               "})();")
+        .arg(toJsStringLiteral(css));
+}
 }
 
 void KaduWebView::setUserFont(const QString &fontString, bool force)
@@ -411,8 +419,33 @@ void KaduWebView::setUserFont(const QString &fontString, bool force)
 		img.scalable.unscaled { max-width: none; }\
 	");
 
-    QString url = QString("data:text/css;charset=utf-8;base64,%1").arg(QString(style.toUtf8().toBase64()));
-    settings()->setUserStyleSheetUrl(url);
+    m_userStyleSheet = style;
+    applyUserStyleSheet();
+}
+
+void KaduWebView::applyUserStyleSheet()
+{
+    if (!m_page || m_userStyleSheet.isEmpty())
+        return;
+
+    // QWebEngineSettings has no setUserStyleSheetUrl(); the style is injected as a script that runs
+    // on every document this page loads.
+    auto const script = userStyleSheetScript(m_userStyleSheet);
+
+    auto &scripts = m_page->scripts();
+    for (auto const &existing : scripts.find(UserStyleSheetScriptName))
+        scripts.remove(existing);
+
+    QWebEngineScript styleSheetScript;
+    styleSheetScript.setName(UserStyleSheetScriptName);
+    styleSheetScript.setInjectionPoint(QWebEngineScript::DocumentReady);
+    styleSheetScript.setWorldId(QWebEngineScript::ApplicationWorld);
+    styleSheetScript.setRunsOnSubFrames(true);
+    styleSheetScript.setSourceCode(script);
+    scripts.insert(styleSheetScript);
+
+    // Covers the document that is already loaded; the script above only fires on the next one.
+    m_page->runJavaScript(script, QWebEngineScript::ApplicationWorld);
 }
 
 QString KaduWebView::userFontStyle(const QFont &font, bool force)

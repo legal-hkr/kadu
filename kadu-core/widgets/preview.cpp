@@ -30,9 +30,11 @@
 
 #include <QtWidgets/QHBoxLayout>
 
+#include "core/injected-factory.h"
+
 #define PREVIEW_DEFAULT_HEIGHT 250
 
-Preview::Preview(QWidget *parent) : QFrame(parent)
+Preview::Preview(QWidget *parent) : QFrame(parent), m_webView{nullptr}, m_layout{nullptr}
 {
     setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     setFixedHeight(PREVIEW_DEFAULT_HEIGHT);
@@ -41,12 +43,23 @@ Preview::Preview(QWidget *parent) : QFrame(parent)
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    m_webView = new KaduWebView(this);
-    layout->addWidget(m_webView);
+    m_layout = layout;
+}
 
-    QPalette p = palette();
-    p.setBrush(QPalette::Base, Qt::transparent);
-    m_webView->page()->setPalette(p);
+void Preview::setInjectedFactory(InjectedFactory *injectedFactory)
+{
+    m_injectedFactory = injectedFactory;
+}
+
+void Preview::init()
+{
+    // The view has to come from the injected factory: KaduWebView is given the shared QtWebEngine
+    // profile through injection, and a plain new would leave it without one.
+    m_webView = m_injectedFactory->makeInjected<KaduWebView>(this);
+    m_layout->addWidget(m_webView);
+
+    // QWebEnginePage has no palette; the transparent page background replaces QPalette::Base.
+    m_webView->page()->setBackgroundColor(Qt::transparent);
     m_webView->setAttribute(Qt::WA_OpaquePaintEvent, false);
 }
 

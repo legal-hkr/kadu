@@ -25,22 +25,22 @@
 
 #include <QtCore/QPointer>
 #include <QtGui/QClipboard>
-#include <QtWebKitWidgets/QWebView>
+#include <QtWebEngineWidgets/QWebEngineView>
 #include <injeqt/injeqt.h>
 
 #include "exports.h"
 
-class QPoint;
-class QTimer;
 class QUrl;
 
 class ClipboardHtmlTransformerService;
 class Configuration;
 class IconsManager;
 class ImageStorageService;
+class KaduWebEnginePage;
+class KaduWebEngineProfile;
 class UrlHandlerManager;
 
-class KADUAPI KaduWebView : public QWebView
+class KADUAPI KaduWebView : public QWebEngineView
 {
     Q_OBJECT
 
@@ -50,13 +50,25 @@ class KADUAPI KaduWebView : public QWebView
     QPointer<ImageStorageService> m_imageStorageService;
     QPointer<UrlHandlerManager> m_urlHandlerManager;
 
-    bool DraggingPossible;
+    KaduWebEnginePage *m_page;
     bool IsLoading;
-    QPoint ContextMenuPos;
-    QPoint DragStartPosition;
-    QTimer *RefreshTimer;
+
+    /**
+     * @short Set while a copy is in flight, so the resulting clipboard change can be transformed.
+     *
+     * QtWebEngine performs the copy in the render process, so the clipboard is not yet populated
+     * when the action returns. The transformation has to wait for the clipboard to actually change
+     * instead of running straight after the action, as it did under QtWebKit.
+     */
+    bool m_copyInProgress;
+
+    /**
+     * @short CSS most recently passed to setUserFont(), kept so it can be reapplied after a load.
+     */
+    QString m_userStyleSheet;
 
     void convertClipboardHtml(QClipboard::Mode mode) const;
+    void applyUserStyleSheet();
 
 private slots:
     INJEQT_SET void
@@ -65,13 +77,15 @@ private slots:
     INJEQT_SET void setIconsManager(IconsManager *iconsManager);
     INJEQT_SET void setImageStorageService(ImageStorageService *imageStorageService);
     INJEQT_SET void setUrlHandlerManager(UrlHandlerManager *urlHandlerManager);
+    INJEQT_SET void setWebEngineProfile(KaduWebEngineProfile *webEngineProfile);
 
     void hyperlinkClicked(const QUrl &anchor) const;
-    void loadStarted();
+    void loadStartedSlot();
     void loadFinishedSlot(bool success);
-    void refreshLater();
     void saveImage();
-    void textCopied() const;
+    void copyRequested();
+    void clipboardChanged(QClipboard::Mode mode);
+    void selectionChangedSlot();
 
 #ifdef DEBUG_ENABLED
     void runInspector(bool toggled);
@@ -80,10 +94,14 @@ private slots:
 protected:
     Configuration *configuration();
 
-    virtual void contextMenuEvent(QContextMenuEvent *e);
-    virtual void mouseMoveEvent(QMouseEvent *e);
-    virtual void mousePressEvent(QMouseEvent *e);
-    virtual void mouseReleaseEvent(QMouseEvent *e);
+    /**
+     * @return Page of this view, created with Kadu's shared profile.
+     *
+     * Null until the profile has been injected.
+     */
+    KaduWebEnginePage *kaduPage() const;
+
+    virtual void contextMenuEvent(QContextMenuEvent *e) override;
 
 public:
     explicit KaduWebView(QWidget *parent = nullptr);

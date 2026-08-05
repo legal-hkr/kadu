@@ -41,7 +41,9 @@
 
 #include <QtCore/QFile>
 #include <QtGui/QKeyEvent>
-#include <QtWebKitWidgets/QWebFrame>
+#include <QtWebEngineCore/QWebEnginePage>
+#include <QtWebEngineCore/QWebEngineScript>
+#include <QtWebEngineCore/QWebEngineScriptCollection>
 
 WebkitMessagesView::WebkitMessagesView(const Chat &chat, bool supportTransparency, QWidget *parent)
         : KaduWebView{parent}, m_chat{chat}, m_forcePruneDisabled{}, m_supportTransparency{supportTransparency},
@@ -96,17 +98,12 @@ void WebkitMessagesView::init()
         m_chatImageRequestService.data(), SIGNAL(chatImageStored(ChatImage, QString)), this,
         SLOT(chatImageStored(ChatImage, QString)));
 
-    auto oldManager = page()->networkAccessManager();
-    auto newManager = m_injectedFactory->makeOwned<ChatViewNetworkAccessManager>(oldManager, this);
-    page()->setNetworkAccessManager(newManager.get());
-
     // TODO: for me with empty styleSheet if has artifacts on scrollbars...
     // maybe Qt bug?
     setStyleSheet("QWidget { }");
     setFocusPolicy(Qt::NoFocus);
     setMinimumSize(QSize(100, 100));
-    settings()->setAttribute(QWebSettings::JavascriptEnabled, true);
-    settings()->setAttribute(QWebSettings::PluginsEnabled, true);
+    // JavaScript is enabled on the shared profile; plugins no longer exist in QtWebEngine.
 
     auto p = palette();
 
@@ -116,16 +113,30 @@ void WebkitMessagesView::init()
     p.setBrush(QPalette::Inactive, QPalette::Highlight, p.brush(QPalette::Active, QPalette::Highlight));
     p.setBrush(QPalette::Inactive, QPalette::HighlightedText, p.brush(QPalette::Active, QPalette::HighlightedText));
 
-    p.setBrush(QPalette::Base, Qt::transparent);
     setPalette(p);
 
+    // QWebEnginePage has no palette; a transparent page background is what QPalette::Base achieved.
+    page()->setBackgroundColor(Qt::transparent);
     setAttribute(Qt::WA_OpaquePaintEvent, false);
 
-    page()->currentFrame()->evaluateJavaScript(
-        "XMLHttpRequest.prototype.open = function() { return false; };"
-        "XMLHttpRequest.prototype.send = function() { return false; };");
+    // Messages are written by other people. Neutering XMLHttpRequest keeps rendered content from
+    // reaching the network. Injected as a script so it covers every document, not just this one.
+    QWebEngineScript blockXhr;
+    blockXhr.setName(QStringLiteral("kadu-block-xhr"));
+    blockXhr.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    blockXhr.setWorldId(QWebEngineScript::MainWorld);
+    blockXhr.setRunsOnSubFrames(true);
+    blockXhr.setSourceCode(
+        QStringLiteral("XMLHttpRequest.prototype.open = function() { return false; };"
+                       "XMLHttpRequest.prototype.send = function() { return false; };"));
+    page()->scripts().insert(blockXhr);
 
-    connect(this->page()->mainFrame(), SIGNAL(contentsSizeChanged(const QSize &)), this, SLOT(scrollToBottom()));
+    connect(page(), &QWebEnginePage::contentsSizeChanged, this, &WebkitMessagesView::scrollToBottom);
+
+    // QtWebEngine renders into a native child widget, so mouse and wheel events never reach this
+    // widget. Tracking the scroll position directly is both simpler and more reliable than the
+    // event handlers this replaces.
+    connect(page(), &QWebEnginePage::scrollPositionChanged, this, &WebkitMessagesView::updateAtBottom);
     connect(m_chatStyleManager, SIGNAL(chatStyleConfigurationUpdated()), this, SLOT(chatStyleConfigurationUpdated()));
 
     configurationUpdated();
@@ -133,29 +144,19 @@ void WebkitMessagesView::init()
     refreshView();
 }
 
-void WebkitMessagesView::mouseReleaseEvent(QMouseEvent *e)
-{
-    updateAtBottom();
-    KaduWebView::mouseReleaseEvent(e);
-}
-
 void WebkitMessagesView::resizeEvent(QResizeEvent *e)
 {
-    QWebView::resizeEvent(e);
+    QWebEngineView::resizeEvent(e);
 
     scrollToBottom();
 }
 
-void WebkitMessagesView::wheelEvent(QWheelEvent *e)
-{
-    updateAtBottom();
-    QWebView::wheelEvent(e);
-}
-
 void WebkitMessagesView::updateAtBottom()
 {
-    m_atBottom =
-        page()->mainFrame()->scrollBarValue(Qt::Vertical) >= page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
+    // QtWebEngine exposes no scroll bars; the equivalent is how much of the content is still below
+    // the viewport. A pixel of slack absorbs fractional scroll positions.
+    auto const viewportHeight = page()->contentsSize().height() - page()->scrollPosition().y();
+    m_atBottom = viewportHeight <= height() + 1;
 }
 
 void WebkitMessagesView::connectChat()
@@ -223,7 +224,7 @@ void WebkitMessagesView::refreshView()
 
     auto chatStyleRenderer = m_chatStyleRendererFactory->createChatStyleRenderer(rendererConfiguration());
     auto handler = m_webkitMessagesViewHandlerFactory.data()->createWebkitMessagesViewHandler(
-        std::move(chatStyleRenderer), page()->mainFrame());
+        std::move(chatStyleRenderer), page());
     setWebkitMessagesViewHandler(std::move(handler));
 }
 
@@ -232,20 +233,20 @@ ChatStyleRendererConfiguration WebkitMessagesView::rendererConfiguration()
     QFile file{m_pathsProvider->dataPath() + QStringLiteral("scripts/chat-scripts.js")};
     auto javaScript = file.open(QIODevice::ReadOnly | QIODevice::Text) ? file.readAll() : QString{};
     auto transparency = m_chatConfigurationHolder->useTransparency() && supportTransparency() && isCompositingEnabled();
-    return ChatStyleRendererConfiguration{chat(), *page()->mainFrame(), javaScript, transparency};
+    return ChatStyleRendererConfiguration{chat(), *page(), javaScript, transparency};
 }
 
 void WebkitMessagesView::setWebkitMessagesViewHandler(owned_qptr<WebkitMessagesViewHandler> handler)
 {
     ScopedUpdatesDisabler updatesDisabler{*this};
-    auto scrollBarPosition = page()->mainFrame()->scrollBarValue(Qt::Vertical);
+    auto scrollBarPosition = page()->scrollPosition().y();
 
     auto messages = m_handler ? m_handler->messages() : SortedMessages{};
     m_handler = std::move(handler);
     setForcePruneDisabled(m_forcePruneDisabled);
     m_handler->add(messages);
 
-    page()->mainFrame()->setScrollBarValue(Qt::Vertical, scrollBarPosition);
+    page()->runJavaScript(QStringLiteral("window.scrollTo(0, %1);").arg(scrollBarPosition));
 }
 
 void WebkitMessagesView::pageUp()
@@ -318,19 +319,20 @@ void WebkitMessagesView::contactActivityChanged(const Contact &contact, ChatStat
 
 void WebkitMessagesView::scrollToTop()
 {
-    page()->mainFrame()->setScrollBarValue(Qt::Vertical, 0);
+    page()->runJavaScript(QStringLiteral("window.scrollTo(0, 0);"));
     updateAtBottom();
 }
 
 void WebkitMessagesView::scrollToBottom()
 {
     if (m_atBottom)
-        page()->mainFrame()->setScrollBarValue(Qt::Vertical, page()->mainFrame()->scrollBarMaximum(Qt::Vertical));
+        forceScrollToBottom();
 }
 
 void WebkitMessagesView::forceScrollToBottom()
 {
-    page()->mainFrame()->setScrollBarValue(Qt::Vertical, page()->mainFrame()->scrollBarMaximum(Qt::Vertical));
+    // No scroll bar API in QtWebEngine; scrolling is done from the document itself.
+    page()->runJavaScript(QStringLiteral("window.scrollTo(0, document.body.scrollHeight);"));
     updateAtBottom();
 }
 

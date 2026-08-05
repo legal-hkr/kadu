@@ -93,9 +93,7 @@ signals:
 
 protected:
     virtual void configurationUpdated() override;
-    virtual void mouseReleaseEvent(QMouseEvent *e) override;
     virtual void resizeEvent(QResizeEvent *e) override;
-    virtual void wheelEvent(QWheelEvent *e) override;
 
     virtual void compositingEnabled() override;
     virtual void compositingDisabled() override;

@@ -48,8 +48,8 @@
 #include <QtCore5Compat/QRegExp>
 #include <QtCore/QFile>
 #include <QtGui/QTextDocument>
-#include <QtWebKitWidgets/QWebFrame>
-#include <QtWebKitWidgets/QWebPage>
+#include <QtWebEngineCore/QWebEnginePage>
+
 
 AdiumStyleRenderer::AdiumStyleRenderer(
     ChatStyleRendererConfiguration configuration, std::shared_ptr<AdiumStyle> style, QObject *parent)
@@ -88,26 +88,31 @@ void AdiumStyleRenderer::setSystemInfo(SystemInfo *systemInfo)
 
 void AdiumStyleRenderer::init()
 {
-    configuration().webFrame().setHtml(preprocessStyleBaseHtml(configuration().useTransparency()));
-    connect(&configuration().webFrame(), SIGNAL(loadFinished(bool)), this, SLOT(pageLoaded()));
+    // Relative references inside the style are resolved by the <base> element the Adium template
+    // carries, but the document still needs a local origin of its own -- otherwise QtWebEngine
+    // refuses every file:// resource while reporting a successful load.
+    configuration().page().setHtml(
+        preprocessStyleBaseHtml(configuration().useTransparency()),
+        QUrl::fromLocalFile(m_style->baseHref()));
+    connect(&configuration().page(), SIGNAL(loadFinished(bool)), this, SLOT(pageLoaded()));
 }
 
 void AdiumStyleRenderer::pageLoaded()
 {
-    configuration().webFrame().evaluateJavaScript(configuration().javaScript());
-    configuration().webFrame().evaluateJavaScript("initStyle()");
+    configuration().page().runJavaScript(configuration().javaScript());
+    configuration().page().runJavaScript("initStyle()");
 
     setReady();
 }
 
 void AdiumStyleRenderer::removeFirstMessage()
 {
-    configuration().webFrame().evaluateJavaScript("adium_removeFirstMessage()");
+    configuration().page().runJavaScript("adium_removeFirstMessage()");
 }
 
 void AdiumStyleRenderer::clearMessages()
 {
-    configuration().webFrame().evaluateJavaScript("adium_clearMessages()");
+    configuration().page().runJavaScript("adium_clearMessages()");
 }
 
 void AdiumStyleRenderer::appendChatMessage(const Message &message, const MessageRenderInfo &messageRenderInfo)
@@ -154,9 +159,9 @@ void AdiumStyleRenderer::appendChatMessage(const Message &message, const Message
     formattedMessageHtml.append("</span>");
 
     if (messageRenderInfo.includeHeader())
-        configuration().webFrame().evaluateJavaScript("appendMessage('" + formattedMessageHtml + "')");
+        configuration().page().runJavaScript("appendMessage('" + formattedMessageHtml + "')");
     else
-        configuration().webFrame().evaluateJavaScript("appendNextMessage('" + formattedMessageHtml + "')");
+        configuration().page().runJavaScript("appendNextMessage('" + formattedMessageHtml + "')");
 }
 
 QString AdiumStyleRenderer::preprocessStyleBaseHtml(bool useTransparency)
@@ -382,13 +387,13 @@ QString AdiumStyleRenderer::replaceKeywords(
 
 void AdiumStyleRenderer::displayMessageStatus(const QString &id, MessageStatus status)
 {
-    configuration().webFrame().evaluateJavaScript(
+    configuration().page().runJavaScript(
         QString("adium_messageStatusChanged(\"%1\", %2);").arg((id).toHtmlEscaped()).arg(static_cast<int>(status)));
 }
 
 void AdiumStyleRenderer::displayChatState(ChatState state, const QString &message, const QString &name)
 {
-    configuration().webFrame().evaluateJavaScript(QString("adium_contactActivityChanged(%1, \"%2\", \"%3\");")
+    configuration().page().runJavaScript(QString("adium_contactActivityChanged(%1, \"%2\", \"%3\");")
                                                       .arg(static_cast<int>(state))
                                                       .arg((message).toHtmlEscaped())
                                                       .arg((name).toHtmlEscaped()));
@@ -396,7 +401,7 @@ void AdiumStyleRenderer::displayChatState(ChatState state, const QString &messag
 
 void AdiumStyleRenderer::displayChatImage(const ChatImage &chatImage, const QString &fileName)
 {
-    configuration().webFrame().evaluateJavaScript(QString("adium_chatImageAvailable(\"%1\", \"%2\");")
+    configuration().page().runJavaScript(QString("adium_chatImageAvailable(\"%1\", \"%2\");")
                                                       .arg((chatImage.key()).toHtmlEscaped())
                                                       .arg((fileName).toHtmlEscaped()));
 }
