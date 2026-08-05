@@ -63,7 +63,6 @@ set (widgets_SRCS
 	chat-top-bar-container-widget.cpp
 	chat-top-bar-widget-factory.cpp
 	chat-top-bar-widget-factory-repository.cpp
-	chat-view-network-access-manager.cpp
 	color-button.cpp
 	composite-configuration-value-state-notifier.cpp
 	configuration-value-state-notifier.cpp

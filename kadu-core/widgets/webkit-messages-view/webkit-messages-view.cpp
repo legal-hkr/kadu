@@ -34,7 +34,6 @@
 #include "protocols/services/chat-image-service.h"
 #include "protocols/services/chat-service.h"
 #include "services/chat-image-request-service.h"
-#include "widgets/chat-view-network-access-manager.h"
 #include "widgets/webkit-messages-view/message-limit-policy.h"
 #include "widgets/webkit-messages-view/webkit-messages-view-handler-factory.h"
 #include "widgets/webkit-messages-view/webkit-messages-view-handler.h"

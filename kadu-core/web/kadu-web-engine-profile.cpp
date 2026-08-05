@@ -20,6 +20,9 @@
 #include <QtWebEngineCore/QWebEngineProfile>
 #include <QtWebEngineCore/QWebEngineSettings>
 
+#include "services/image-storage-service.h"
+
+#include "kadu-image-scheme-handler.h"
 #include "kadu-web-engine-profile.h"
 #include "kadu-web-engine-profile.moc"
 
@@ -68,6 +71,15 @@ KaduWebEngineProfile::KaduWebEngineProfile(QObject *parent)
 
 KaduWebEngineProfile::~KaduWebEngineProfile()
 {
+}
+
+void KaduWebEngineProfile::setImageStorageService(ImageStorageService *imageStorageService)
+{
+    // Images received in messages are addressed as kaduimg:///<id>; the handler resolves those
+    // through the storage service and serves the file. Installed here because the profile is what
+    // owns scheme handlers, and it outlives every page that needs them.
+    m_imageSchemeHandler = std::make_unique<KaduImageSchemeHandler>(imageStorageService);
+    m_profile->installUrlSchemeHandler(KaduImageSchemeHandler::schemeName(), m_imageSchemeHandler.get());
 }
 
 QWebEngineProfile *KaduWebEngineProfile::profile() const

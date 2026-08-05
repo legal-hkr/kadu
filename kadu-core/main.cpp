@@ -66,6 +66,7 @@
 #include "talkable/talkable-module.h"
 #include "task/task-module.h"
 #include "themes/themes-module.h"
+#include "web/kadu-image-scheme-handler.h"
 #include "web/web-module.h"
 #include "widgets/chat-widget/chat-widget-module.h"
 #include "windows/chat-window/chat-window-module.h"
@@ -182,6 +183,10 @@ static void printUsage()
 int main(int argc, char *argv[]) try
 {
     WSAHandler wsaHandler;
+
+    // Has to happen before QApplication: QtWebEngine reads the scheme registry while starting up
+    // and ignores anything registered afterwards.
+    KaduImageSchemeHandler::registerScheme();
 
     QApplication application{argc, argv};
     application.setApplicationName("Kadu");

@@ -27,6 +27,9 @@
 
 class QWebEngineProfile;
 
+class ImageStorageService;
+class KaduImageSchemeHandler;
+
 /**
  * @addtogroup Web
  * @{
@@ -53,6 +56,9 @@ class KADUAPI KaduWebEngineProfile : public QObject
 {
     Q_OBJECT
 
+private slots:
+    INJEQT_SET void setImageStorageService(ImageStorageService *imageStorageService);
+
 public:
     Q_INVOKABLE explicit KaduWebEngineProfile(QObject *parent = nullptr);
     virtual ~KaduWebEngineProfile();
@@ -66,6 +72,7 @@ public:
 
 private:
     std::unique_ptr<QWebEngineProfile> m_profile;
+    std::unique_ptr<KaduImageSchemeHandler> m_imageSchemeHandler;
 };
 
 /**
