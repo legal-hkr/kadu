@@ -8,7 +8,7 @@
 # Copyright (c) 2009, Ruslan Nigmatullin, <euroelessar@gmail.com>
 # Copyrignt (c) 2011, Rafał 'Vogel' Malinowski <vogel@kadu.im>
 
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.16)
 
 # Set default install prefix
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -22,21 +22,25 @@ endif ()
 
 # libraries
 # TODO: support cmake parameters for this
-find_package (Qt5Core 5.2 REQUIRED)
-find_package (Qt5Gui REQUIRED)
-find_package (Qt5LinguistTools REQUIRED)
-find_package (Qt5Network REQUIRED)
-find_package (Qt5Qml REQUIRED)
-find_package (Qt5Quick REQUIRED)
-find_package (Qt5QuickWidgets REQUIRED)
-find_package (Qt5WebKit REQUIRED)
-find_package (Qt5WebKitWidgets REQUIRED)
-find_package (Qt5Widgets REQUIRED)
-find_package (Qt5Xml REQUIRED)
+# QtWebKit does not exist in Qt6 -- the HTML-based chat layer is excluded from
+# the build for now.
+# Core5Compat provides QRegExp/QTextCodec/QStringRef for the duration of the
+# port; to be dropped in favour of QRegularExpression/QStringConverter.
+find_package (Qt6 6.2 REQUIRED COMPONENTS
+	Core
+	Core5Compat
+	DBus
+	Gui
+	LinguistTools
+	Network
+	Qml
+	Quick
+	QuickWidgets
+	Widgets
+	Xml
+)
 
-if (UNIX AND NOT APPLE)
-	find_package (Qt5X11Extras REQUIRED)
-endif ()
+# Qt5X11Extras was absorbed into QtGui in Qt6 (native interfaces).
 
 include (FindPkgConfig)
 pkg_check_modules (INJEQT REQUIRED injeqt>=1.1)
@@ -44,7 +48,8 @@ include_directories (${INJEQT_INCLUDEDIR})
 link_directories (${INJEQT_LIBRARY_DIRS})
 
 set (CMAKE_CXX_FLAGS "-Woverloaded-virtual -Wnon-virtual-dtor ${CMAKE_CXX_FLAGS}")
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (NOT WIN32)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
@@ -172,7 +177,7 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 	endif ()
 
 	if (_translation_sources)
-		qt5_add_translation (_translation_files ${_translation_sources})
+		qt6_add_translation (_translation_files ${_translation_sources})
 
 		install (FILES ${_translation_files}
 			DESTINATION ${KADU_INSTALL_PLUGINS_DATA_DIR}/translations
@@ -201,12 +206,15 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 		endforeach ()
 	endif ()
 
-	qt5_use_modules (${KADU_PLUGIN_NAME} LINK_PRIVATE Core Gui Network Qml Quick QuickWidgets WebKit WebKitWidgets Widgets Xml)
+	target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE
+		Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Network
+		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::Widgets Qt6::Xml
+	)
 	if (UNIX AND NOT APPLE)
-		qt5_use_modules (${KADU_PLUGIN_NAME} LINK_PRIVATE DBus)
+		target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE Qt6::DBus)
 	endif ()
 	if (KADU_PLUGIN_ADDITIONAL_QT_MODULES)
-		qt5_use_modules (${KADU_PLUGIN_NAME} LINK_PRIVATE ${KADU_PLUGIN_ADDITIONAL_QT_MODULES})
+		target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE ${KADU_PLUGIN_ADDITIONAL_QT_MODULES})
 	endif ()
 
 	target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE ${INJEQT_LIBRARIES})

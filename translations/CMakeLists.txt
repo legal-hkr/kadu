@@ -31,7 +31,7 @@ else ()
 	set (KADU_ENABLED_LANGUAGES ${LANGUAGES} PARENT_SCOPE) # Do not use it here, it's in parent scope
 endif ()
 
-qt5_add_translation (TRANSLATION_FILES ${TRANSLATION_SOURCES})
+qt6_add_translation (TRANSLATION_FILES ${TRANSLATION_SOURCES})
 
 add_custom_target (translations DEPENDS ${TRANSLATION_FILES})
 add_dependencies (kadu translations)

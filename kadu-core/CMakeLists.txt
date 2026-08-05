@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.16)
 
 if (ENABLE_DEVELOPER_BUILD AND NOT MSVC AND NOT APPLE)
 	set (FAST_LINKING_DEFAULT ON)
@@ -115,7 +115,9 @@ include_directories (${LibArchive_INCLUDE_DIRS})
 list (APPEND ADDITIONAL_LIBKADU_LIBRARIES ${LibArchive_LIBRARIES})
 
 if (UNIX AND NOT APPLE)
-	find_package (X11 REQUIRED COMPONENTS X11 Xutil Xfixes)
+	# The current FindX11 has no component named "X11" (extensions only),
+	# and the required variables are checked below anyway.
+	find_package (X11 REQUIRED)
 	if (X11_FOUND AND X11_Xutil_FOUND AND X11_Xfixes_FOUND)
 		message (STATUS "Found required X11 libraries: ${X11_X11_LIB};${X11_Xfixes_LIB}")
 	else ()
@@ -170,9 +172,14 @@ if (FAST_LINKING)
 	endif ()
 endif ()
 
-qt5_use_modules (libkadu LINK_PRIVATE Core Gui Network Qml Quick QuickWidgets WebKit WebKitWidgets Widgets Xml)
+# WebKit/WebKitWidgets do not exist in Qt6; Core5Compat for the port.
+target_link_libraries (libkadu LINK_PRIVATE
+		Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Network
+		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::Widgets Qt6::Xml
+)
 if (UNIX AND NOT APPLE)
-	qt5_use_modules (libkadu LINK_PRIVATE DBus X11Extras)
+	# X11Extras is gone in Qt6 -- absorbed into QtGui.
+	target_link_libraries (libkadu LINK_PRIVATE Qt6::DBus)
 endif ()
 if (WIN32)
 	qt5_use_modules (libkadu LINK_PRIVATE WinExtras)
@@ -182,7 +189,7 @@ target_link_libraries (libkadu LINK_PRIVATE ${ADDITIONAL_LIBKADU_LIBRARIES})
 
 add_executable (kadu WIN32 ${main_SRCS})
 kadu_set_flags (kadu)
-qt5_use_modules (kadu LINK_PRIVATE Core Gui Widgets Network Xml)
+target_link_libraries (kadu LINK_PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
 target_link_libraries (kadu LINK_PRIVATE libkadu ${ADDITIONAL_LIBRARIES})
 
 if (NOT IS_ABSOLUTE "${KADU_INSTALL_LIB_DIR}")
@@ -209,7 +216,7 @@ endif ()
 if (WIN32)
 	add_executable (kadu_c ${main_SRCS})
 	kadu_set_flags (kadu_c)
-	qt5_use_modules (kadu_c LINK_PRIVATE Core Gui Widgets Network Xml)
+	target_link_libraries (kadu_c LINK_PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
 	target_link_libraries (kadu_c LINK_PRIVATE libkadu ${ADDITIONAL_LIBRARIES})
 
 	# Do not link against qtmain on Windows
