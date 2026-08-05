@@ -38,7 +38,11 @@ Preview::Preview(QWidget *parent) : QFrame(parent), m_webView{nullptr}, m_layout
 {
     setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     setFixedHeight(PREVIEW_DEFAULT_HEIGHT);
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    // Expanding rather than Preferred: QWebEngineView derives its size hint from the loaded
+    // contents and reports 0x0 until something is rendered, which left this frame two pixels wide.
+    // QWebView used to answer with the page's preferred size instead, so Preferred was enough.
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -56,6 +60,7 @@ void Preview::init()
     // The view has to come from the injected factory: KaduWebView is given the shared QtWebEngine
     // profile through injection, and a plain new would leave it without one.
     m_webView = m_injectedFactory->makeInjected<KaduWebView>(this);
+    m_webView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout->addWidget(m_webView);
 
     // QWebEnginePage has no palette; the transparent page background replaces QPalette::Base.

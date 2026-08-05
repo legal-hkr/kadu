@@ -56,4 +56,14 @@ private slots:
     INJEQT_SET void setChatStyleManager(ChatStyleManager *chatStyleManager);
     INJEQT_SET void setParser(Parser *parser);
     INJEQT_INIT void init();
+
+    /**
+     * @short Mark the renderer ready once the style document has actually loaded.
+     *
+     * QtWebKit's setHtml() was synchronous, so the document existed the moment init() returned.
+     * QtWebEngine loads asynchronously, and reporting readiness too early means every message
+     * appended afterwards runs its JavaScript against a document that does not have the style's
+     * functions yet -- silently rendering nothing.
+     */
+    void pageLoaded();
 };

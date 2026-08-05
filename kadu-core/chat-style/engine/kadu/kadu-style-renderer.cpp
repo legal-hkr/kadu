@@ -73,11 +73,16 @@ void KaduStyleRenderer::init()
 
     // The base URL is not optional: without it QtWebEngine leaves the document on an about:blank
     // origin and refuses every file:// resource the style asks for, while still reporting the load
-    // as successful.
+    // as successful. A plain file:/// root is what this engine needs -- the syntax refers to
+    // images by absolute path, and mainStyle() is the style sheet itself, not a location.
+    connect(&configuration().page(), &QWebEnginePage::loadFinished, this, &KaduStyleRenderer::pageLoaded);
     configuration().page().setHtml(
         html.arg((m_chatStyleManager->mainStyle()).toHtmlEscaped()).arg(configuration().javaScript()).arg(top),
-        QUrl::fromLocalFile(m_chatStyleManager->mainStyle()));
+        QUrl{QStringLiteral("file:///")});
+}
 
+void KaduStyleRenderer::pageLoaded()
+{
     setReady();
 }
 
