@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QHash>
 #include <QtCore/QObject>
 #include <QtCore/QPoint>
 #include <QtCore/QSize>
@@ -278,11 +279,14 @@ public:
 Q_SIGNALS:
     void linkClicked(const QUrl &url);
     void downloadRequested(const QNetworkRequest &request);
+    void loadStarted();
+    void loadFinished(bool ok);
 
 private:
     QWebFrame *m_frame;
     QNetworkAccessManager *m_networkAccessManager;
     mutable QWebHistory m_history;
+    mutable QHash<int, QAction *> m_actions;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebPage::FindFlags)
@@ -313,6 +317,12 @@ public:
     QString selectedText() const;
 
     bool findText(const QString &subString, QWebPage::FindFlags options = QWebPage::FindFlags());
+
+public Q_SLOTS:
+    void reload();
+    void stop();
+    void back();
+    void forward();
 
 Q_SIGNALS:
     void loadStarted();

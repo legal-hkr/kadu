@@ -32,6 +32,10 @@
 
 bool X11_getCardinalProperty(Display *display, Window window, const char *propertyName, uint32_t *value, long offset)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     Atom property = XInternAtom(display, propertyName, False);
     if (property == None)
         return false;
@@ -60,6 +64,10 @@ bool X11_getCardinalProperty(Display *display, Window window, const char *proper
 
 bool X11_getFirstPropertyAtom(Display *display, Window window, const char *propertyName, Atom *value)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     Atom property = XInternAtom(display, propertyName, False);
     if (property == None)
         return false;
@@ -88,6 +96,10 @@ bool X11_getFirstPropertyAtom(Display *display, Window window, const char *prope
 
 bool X11_isPropertyAtomSet(Display *display, Window window, const char *propertyName, const char *atomName)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     Atom property = XInternAtom(display, propertyName, False);
     if (property == None)
         return false;
@@ -119,6 +131,10 @@ bool X11_isPropertyAtomSet(Display *display, Window window, const char *property
 
 std::pair<int, int> X11_getResolution(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {0, 0};
+
     return X11_getWindowSize(display, DefaultRootWindow(display));
     // neither XDisplayWidth/XDisplayHeight nor _NET_WORKAREA work for Gnome :|
     // they do not get updated after resolution change
@@ -126,6 +142,10 @@ std::pair<int, int> X11_getResolution(Display *display)
 
 std::pair<int, int> X11_getDesktopSize(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {0, 0};
+
     uint32_t width;
     if (!X11_getCardinalProperty(display, DefaultRootWindow(display), "_NET_DESKTOP_GEOMETRY", &width, 0))
         return std::make_pair(0, 0);
@@ -137,6 +157,10 @@ std::pair<int, int> X11_getDesktopSize(Display *display)
 
 std::pair<int, int> X11_getMousePos(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {0, 0};
+
     int x = 0;
     int y = 0;
     Window root;
@@ -149,6 +173,10 @@ std::pair<int, int> X11_getMousePos(Display *display)
 
 bool X11_isPointerGrabbed(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     int status = XGrabPointer(
         display, DefaultRootWindow(display), True, ButtonReleaseMask | ButtonMotionMask | ButtonPressMask,
         GrabModeAsync, GrabModeAsync, None, None, 0xFFFFFFFFL);
@@ -169,6 +197,10 @@ bool X11_isPointerGrabbed(Display *display)
 
 bool X11_isFreeDesktopCompatible(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     if (X11_getDesktopsCount(display, true) != 1)   // _NET multiple desktops, FreeDesktop compatible
         return true;
     std::pair<int, int> resolution = X11_getResolution(display);
@@ -186,6 +218,10 @@ bool X11_isFreeDesktopCompatible(Display *display)
 
 uint32_t X11_getDesktopsCount(Display *display, bool forceFreeDesktop)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     if ((!forceFreeDesktop) && (!X11_isFreeDesktopCompatible(display)))
     {
         std::pair<int, int> resolution = X11_getResolution(display);
@@ -203,6 +239,10 @@ uint32_t X11_getDesktopsCount(Display *display, bool forceFreeDesktop)
 
 uint32_t X11_getCurrentDesktop(Display *display, bool forceFreeDesktop)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     if ((!forceFreeDesktop) && (!X11_isFreeDesktopCompatible(display)))
     {
         uint32_t dx = 0, dy = 0;
@@ -228,6 +268,10 @@ uint32_t X11_getCurrentDesktop(Display *display, bool forceFreeDesktop)
 
 void X11_setCurrentDesktop(Display *display, uint32_t desktop, bool forceFreeDesktop)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     if ((desktop != X11_ALLDESKTOPS) && (desktop != X11_NODESKTOP) &&
         (desktop != X11_getCurrentDesktop(display, forceFreeDesktop)))
     {
@@ -309,6 +353,10 @@ void X11_setCurrentDesktop(Display *display, uint32_t desktop, bool forceFreeDes
 
 uint32_t X11_getDesktopOfWindow(Display *display, Window window, bool forceFreeDesktop, bool windowareadecides)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     if ((!forceFreeDesktop) && (!X11_isFreeDesktopCompatible(display)))
     {
         uint32_t currentdesktop = X11_getCurrentDesktop(display, forceFreeDesktop);
@@ -394,6 +442,10 @@ void X11_moveWindowToDesktop(
 
 bool X11_isWindowOnDesktop(Display *display, Window window, uint32_t desktop, bool forceFreeDesktop)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     if ((!forceFreeDesktop) && (!X11_isFreeDesktopCompatible(display)))
     {
         uint32_t desktopofwindow = X11_getDesktopOfWindow(display, window, forceFreeDesktop);
@@ -410,6 +462,10 @@ bool X11_isWindowOnDesktop(Display *display, Window window, uint32_t desktop, bo
 
 bool X11_isWholeWindowOnOneDesktop(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     std::pair<int, int> pos = X11_getWindowPos(display, window);
     std::pair<int, int> size = X11_getWindowSize(display, window);
     std::pair<int, int> resolution = X11_getResolution(display);
@@ -430,6 +486,10 @@ bool X11_isWholeWindowOnOneDesktop(Display *display, Window window)
 
 bool X11_isWindowCovered(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     bool notypes = true;
     Window parent = window;
     Window root;
@@ -533,16 +593,28 @@ bool X11_isWindowCovered(Display *display, Window window)
 
 bool X11_isWindowShaded(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     return X11_isPropertyAtomSet(display, window, "_NET_WM_STATE", "_NET_WM_STATE_SHADED");
 }
 
 void X11_shadeWindow(Display *display, Window window, bool shade)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     X11_windowSendXEvent(display, window, "_NET_WM_STATE", "_NET_WM_STATE_SHADED", shade);
 }
 
 bool X11_isWindowMinimized(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     if (X11_isPropertyAtomSet(display, window, "_NET_WM_STATE", "_NET_WM_STATE_HIDDEN"))
     {
         return true;
@@ -571,6 +643,10 @@ bool X11_isWindowMinimized(Display *display, Window window)
 
 std::pair<int, int> X11_getWindowPos(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {0, 0};
+
     if (window == None)
         return std::make_pair(0, 0);
     Window parent = window;
@@ -596,6 +672,10 @@ std::pair<int, int> X11_getWindowPos(Display *display, Window window)
 
 std::pair<int, int> X11_getWindowSize(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {0, 0};
+
     if (window == None)
         return std::make_pair(0, 0);
     Window parent = window;
@@ -621,6 +701,10 @@ std::pair<int, int> X11_getWindowSize(Display *display, Window window)
 
 std::pair<int, int> X11_getWindowFramelessSize(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {0, 0};
+
     Window root;
     int x, y;
     unsigned int width, height, border, depth;
@@ -631,12 +715,20 @@ std::pair<int, int> X11_getWindowFramelessSize(Display *display, Window window)
 
 void X11_moveWindow(Display *display, Window window, int x, int y)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     XMoveWindow(display, window, x, y);
     XFlush(display);
 }
 
 void X11_centerWindow(Display *display, Window window, uint32_t desktop, bool forceFreeDesktop)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     if (desktop == X11_NODESKTOP)
         desktop = X11_getCurrentDesktop(display, forceFreeDesktop);
     if ((!forceFreeDesktop) && (!X11_isFreeDesktopCompatible(display)))
@@ -661,12 +753,20 @@ void X11_centerWindow(Display *display, Window window, uint32_t desktop, bool fo
 
 void X11_resizeWindow(Display *display, Window window, unsigned int width, unsigned int height)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     XResizeWindow(display, window, width, height);
     XFlush(display);
 }
 
 void X11_setSizeHintsOfWindow(Display *display, Window window, int minwidth, int minheight, int maxwidth, int maxheight)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     XSizeHints sizehints;
     long supplied_return;
     XGetWMNormalHints(display, window, &sizehints, &supplied_return);
@@ -680,6 +780,10 @@ void X11_setSizeHintsOfWindow(Display *display, Window window, int minwidth, int
 
 Window X11_getActiveWindow(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     // _NET_ACTIVE_WINDOW
     Atom net_active_window = XInternAtom(display, "_NET_ACTIVE_WINDOW", False);
     if (net_active_window != None)
@@ -714,6 +818,10 @@ Window X11_getActiveWindow(Display *display)
 
 void X11_setActiveWindow(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     // raise
     XRaiseWindow(display, window);
     // NET
@@ -734,6 +842,10 @@ void X11_setActiveWindow(Display *display, Window window)
 
 void X11_setActiveWindowCheck(Display *display, Window window, bool forceFreeDesktop)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     int time = 0;
     while (time < X11_SETACTIVEWINDOW_TIMEOUT)
     {
@@ -749,6 +861,10 @@ void X11_setActiveWindowCheck(Display *display, Window window, bool forceFreeDes
 
 Window X11_getTopMostWindow(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     Atom listatom = None;
     Atom type_return = None;
     int format_return;
@@ -790,6 +906,10 @@ Window X11_getTopMostWindow(Display *display)
 
 Window X11_getLatestCreatedWindow(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     Window window = None;
     Window parent;
     Window root;
@@ -804,6 +924,10 @@ Window X11_getLatestCreatedWindow(Display *display)
 
 Window X11_getWindowUnderCursor(Display *display, int *rootx, int *rooty, int *windowx, int *windowy)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     Window root = DefaultRootWindow(display);
     Window window = None;
     int _rootx, _rooty, _windowx, _windowy;
@@ -816,6 +940,10 @@ Window X11_getWindowUnderCursor(Display *display, int *rootx, int *rooty, int *w
 
 Window X11_getInnerMostWindowUnderCursor(Display *display, int *rootx, int *rooty, int *windowx, int *windowy)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return 0;
+
     Window root = DefaultRootWindow(display);
     Window child = root;
     Window window;
@@ -833,6 +961,10 @@ Window X11_getInnerMostWindowUnderCursor(Display *display, int *rootx, int *root
 
 std::string X11_getWindowClass(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {};
+
     XClassHint classhint;
     if (XGetClassHint(display, window, &classhint) == 0)   // 0 means error
         return "";
@@ -847,6 +979,10 @@ std::string X11_getWindowClass(Display *display, Window window)
 
 std::string X11_getWindowRole(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return {};
+
     XTextProperty textproperty;
     std::string s = "";
     Atom _XA_WM_WINDOW_ROLE = XInternAtom(display, "WM_WINDOW_ROLE", False);
@@ -861,6 +997,10 @@ std::string X11_getWindowRole(Display *display, Window window)
 
 void X11_windowSendXEvent(Display *display, Window window, const char *type, const char *message, bool set)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     Atom atomtype = XInternAtom(display, type, False);
     Atom atommessage = XInternAtom(display, message, False);
     XEvent xev;
@@ -882,6 +1022,10 @@ void X11_windowSendXEvent(Display *display, Window window, const char *type, con
 
 void X11_windowChangeProperty(Display *display, Window window, const char *property, const char *value)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     Atom atomproperty = XInternAtom(display, property, False);
     Atom atomvalue = XInternAtom(display, value, False);
     XChangeProperty(display, window, atomproperty, XA_ATOM, 32, PropModeReplace, (unsigned char *)&atomvalue, 1);
@@ -889,6 +1033,10 @@ void X11_windowChangeProperty(Display *display, Window window, const char *prope
 
 void X11_windowSetDecoration(Display *display, Window window, bool set)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     MotifWMHints hints;
     Atom atom = XInternAtom(display, "_MOTIF_WM_HINTS", False);
     if (atom != None)
@@ -901,6 +1049,10 @@ void X11_windowSetDecoration(Display *display, Window window, bool set)
 
 bool X11_checkFullScreen(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     _x11toolsdebug("[A]");
     Window wa = X11_getActiveWindow(display);
     if (wa != None)
@@ -1002,6 +1154,10 @@ bool X11_checkFullScreen(Display *display)
 
 void X11_waitForWindowMapped(Display *display, Window window)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     XEvent event;
     do
     {
@@ -1011,12 +1167,20 @@ void X11_waitForWindowMapped(Display *display, Window window)
 
 bool X11_isCompositingManagerRunning(Display *display)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return false;
+
     Atom netwmcms0 = XInternAtom(display, "_NET_WM_CM_S0", False);
     return XGetSelectionOwner(display, netwmcms0);
 }
 
 void X11_setBlur(Display *display, Window window, bool enable)
 {
+    // No X11 connection (Wayland, offscreen): nothing to do.
+    if (!display)
+        return;
+
     Atom atom = XInternAtom(display, "_KDE_NET_WM_BLUR_BEHIND_REGION", False);
     if (atom == None)
         return;

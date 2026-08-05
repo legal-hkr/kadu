@@ -133,8 +133,16 @@ QWebHistory *QWebPage::history() const
 
 QAction *QWebPage::action(WebAction action) const
 {
-    Q_UNUSED(action)
-    return nullptr;
+    // Callers connect() to these, so a null action is not good enough. They are
+    // created disabled and never trigger anything.
+    auto it = m_actions.find(static_cast<int>(action));
+    if (it == m_actions.end())
+    {
+        auto created = new QAction{const_cast<QWebPage *>(this)};
+        created->setEnabled(false);
+        it = m_actions.insert(static_cast<int>(action), created);
+    }
+    return it.value();
 }
 
 void QWebPage::triggerAction(WebAction action, bool checked)
@@ -236,8 +244,7 @@ QWebHistory *QWebView::history() const
 
 QAction *QWebView::pageAction(QWebPage::WebAction action) const
 {
-    Q_UNUSED(action)
-    return nullptr;
+    return m_page ? m_page->action(action) : nullptr;
 }
 
 void QWebView::triggerPageAction(QWebPage::WebAction action, bool checked)
@@ -256,6 +263,22 @@ bool QWebView::findText(const QString &subString, QWebPage::FindFlags options)
     Q_UNUSED(subString)
     Q_UNUSED(options)
     return false;
+}
+
+void QWebView::reload()
+{
+}
+
+void QWebView::stop()
+{
+}
+
+void QWebView::back()
+{
+}
+
+void QWebView::forward()
+{
 }
 
 QWebInspector::QWebInspector(QWidget *parent) : QWidget{parent}

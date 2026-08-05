@@ -201,7 +201,14 @@ QString ChatStyleManager::fixedStyleName(QString styleName)
         {
             styleName = "kadu";
             if (!AvailableStyles.contains(styleName))
-                styleName = *AvailableStyles.keys().constBegin();
+            {
+                // Falling back to the first available style dereferenced begin() without
+                // checking for emptiness, which crashes when no style was found at all
+                // (an uninstalled tree, or a broken data directory).
+                if (AvailableStyles.isEmpty())
+                    return QString{};
+                styleName = AvailableStyles.firstKey();
+            }
         }
     }
 
