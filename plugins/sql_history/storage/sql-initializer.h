@@ -41,6 +41,7 @@ class SqlInitializer : public QObject
     QPointer<PathsProvider> m_pathsProvider;
 
     QSqlDatabase Database;
+    QString DatabaseFilePath;
 
     bool oldHistoryFileExists();
     bool currentHistoryFileExists();
@@ -62,7 +63,16 @@ public slots:
     void initialize();
 
 signals:
-    void databaseReady(bool ok);
+    /**
+     * @short Emitted when the database file is ready to be opened.
+     * @param ok whether preparation succeeded
+     * @param databaseFilePath path of the prepared database file
+     *
+     * The connection used here belongs to this thread and is removed before the signal is emitted.
+     * The receiver has to open its own, in the thread that will use it -- QSqlDatabase connections
+     * cannot be handed between threads.
+     */
+    void databaseReady(bool ok, const QString &databaseFilePath);
 
     void progressMessage(const QString &iconName, const QString &message);
     void progressFinished(bool ok, const QString &iconName, const QString &message);

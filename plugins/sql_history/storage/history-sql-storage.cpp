@@ -192,7 +192,8 @@ void HistorySqlStorage::init()
     connect(
         initializer, SIGNAL(progressFinished(bool, QString, QString)), this,
         SLOT(initializerProgressFinished(bool, QString, QString)));
-    connect(initializer, SIGNAL(databaseReady(bool)), this, SLOT(databaseReady(bool)));
+    connect(
+        initializer, SIGNAL(databaseReady(bool, QString)), this, SLOT(databaseReady(bool, QString)));
 
     InitializerThread->start();
 
@@ -234,10 +235,18 @@ void HistorySqlStorage::initializerProgressFinished(bool ok, const QString &icon
         ImportProgressWindow->progressFinished(ok, iconName, message);
 }
 
-void HistorySqlStorage::databaseReady(bool ok)
+void HistorySqlStorage::databaseReady(bool ok, const QString &databaseFilePath)
 {
+    // The connection has to be created here rather than fetched by name. The initializer opened
+    // one on its own thread to prepare the file; QSqlDatabase connections are bound to the thread
+    // that created them, and asking for someone else's yields an invalid object reporting
+    // "Driver not loaded" -- which says nothing about the actual problem.
     if (ok)
-        Database = QSqlDatabase::database("kadu-history", true);
+    {
+        Database = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("kadu-history"));
+        Database.setDatabaseName(databaseFilePath);
+        Database.open();
+    }
 
     if (!Database.isOpen() || Database.isOpenError())
     {

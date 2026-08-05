@@ -71,7 +71,13 @@ void SqlInitializer::initialize()
     bool ok = Database.isOpen() && !Database.isOpenError();
     Database.close();
 
-    emit databaseReady(ok);
+    // The connection belongs to this thread, so it is of no use to anyone else: fetching it by
+    // name from another thread yields an invalid QSqlDatabase whose error reads "Driver not
+    // loaded". Drop it here and let the receiver open its own.
+    Database = QSqlDatabase{};
+    QSqlDatabase::removeDatabase(QStringLiteral("kadu-history"));
+
+    emit databaseReady(ok, DatabaseFilePath);
 
     deleteLater();
 }
@@ -133,6 +139,7 @@ void SqlInitializer::initDatabase()
     }
 
     QString historyFilePath = m_pathsProvider->profilePath() + QStringLiteral(HISTORY_FILE_CURRENT);
+    DatabaseFilePath = historyFilePath;
 
     Database = QSqlDatabase::addDatabase("QSQLITE", "kadu-history");
     Database.setDatabaseName(historyFilePath);
