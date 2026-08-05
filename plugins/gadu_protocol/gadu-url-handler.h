@@ -24,7 +24,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 #include <injeqt/injeqt.h>
 
 class AccountManager;

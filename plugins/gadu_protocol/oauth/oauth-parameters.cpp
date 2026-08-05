@@ -32,7 +32,7 @@ QString OAuthParameters::createUniqueNonce()
 
 QString OAuthParameters::createTimestamp()
 {
-    return QString::number(QDateTime::currentDateTime().toTime_t());
+    return QString::number(QDateTime::currentDateTime().toSecsSinceEpoch());
 }
 
 OAuthParameters::OAuthParameters()

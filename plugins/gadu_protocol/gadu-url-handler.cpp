@@ -95,7 +95,7 @@ void GaduUrlHandler::openUrl(UrlOpener *urlOpener, const QByteArray &url, bool d
     if (gaduId.startsWith(QStringLiteral("gg:")))
     {
         gaduId.remove(0, 3);
-        gaduId.remove(QRegExp("/*"));
+        gaduId = QRegExp("/*").removeIn(gaduId);
     }
 
     if (gaduAccounts.count() == 1 || disableMenu)
