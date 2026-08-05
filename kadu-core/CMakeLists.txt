@@ -108,6 +108,7 @@ set (kadu_SUBDIRS
 	task
 	themes
 	url-handlers
+	web
 	widgets
 	windows
 )
@@ -184,7 +185,7 @@ endif ()
 # WebKit/WebKitWidgets do not exist in Qt6; Core5Compat for the port.
 target_link_libraries (libkadu LINK_PRIVATE
 		Qt6::Core Qt6::Core5Compat Qt6::StateMachine Qt6::Gui Qt6::Network
-		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::Widgets Qt6::Xml
+		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::WebEngineWidgets Qt6::Widgets Qt6::Xml
 )
 if (UNIX AND NOT APPLE)
 	# X11Extras is gone in Qt6 -- absorbed into QtGui.
