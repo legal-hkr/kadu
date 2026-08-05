@@ -22,7 +22,7 @@
 #include "gui/services/clipboard-html-transformer.h"
 
 #include <QtCore/QObject>
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 
 /**
  * @addtogroup Emoticons

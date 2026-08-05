@@ -318,7 +318,7 @@ void SqlImport::importContactsToV4(QSqlDatabase &database)
         int id = query.value(0).toInt();
         QString uuid = query.value(1).toString();
 
-        Contact contact = m_contactManager->byUuid(uuid);
+        Contact contact = m_contactManager->byUuid(QUuid{uuid});
         if (contact && contact.contactAccount() && !contact.id().isEmpty())
             contacts.insert(id, contact);
     }
@@ -353,7 +353,7 @@ void SqlImport::importContactsToV4(QSqlDatabase &database)
     // force creating contacts table entries for all contacts used in statuses
     while (query.next())
     {
-        Contact contact = m_contactManager->byUuid(query.value(0).toString());
+        Contact contact = m_contactManager->byUuid(QUuid{query.value(0).toString()});
         if (contact)
             contactsMapping->idByContact(contact, true);
     }
@@ -403,7 +403,7 @@ void SqlImport::importChatsToV4(QSqlDatabase &database)
         int id = query.value(0).toInt();
         QString uuid = query.value(1).toString();
 
-        Chat chat = m_chatManager->byUuid(uuid);
+        Chat chat = m_chatManager->byUuid(QUuid{uuid});
         if (chat && chat.chatAccount() && !chat.contacts().isEmpty())
             chats.insert(id, chat);
     }

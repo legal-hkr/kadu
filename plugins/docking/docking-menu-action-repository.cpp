@@ -20,7 +20,7 @@
 #include "docking-menu-action-repository.h"
 #include "docking-menu-action-repository.moc"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 
 DockingMenuActionRepository::DockingMenuActionRepository(QObject *parent) : QObject{parent}
 {

@@ -87,7 +87,7 @@ void TimelineChatMessagesView::init()
     ResultsProxyModel->setSourceModel(ResultsModel);
 
     setLayout(new QVBoxLayout(this));
-    layout()->setMargin(0);
+    layout()->setContentsMargins(0, 0, 0, 0);
     layout()->setSpacing(0);
 
     createGui();
@@ -112,7 +112,7 @@ void TimelineChatMessagesView::createGui()
     frame->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
-    frameLayout->setMargin(0);
+    frameLayout->setContentsMargins(0, 0, 0, 0);
     frameLayout->setSpacing(0);
 
     MessagesView = m_webkitMessagesViewFactory->createWebkitMessagesView(Chat::null, false, frame);

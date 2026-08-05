@@ -18,7 +18,7 @@
  */
 
 #include <QtCore/QDir>
-#include <QtCore/QTextCodec>
+#include <QtCore5Compat/QTextCodec>
 #include <QtCore/QTextStream>
 #include <QtCore/QVector>
 
@@ -48,8 +48,12 @@ void GaduEmoticonThemeLoader::loadEmoticons(const QString &path)
     if (!emotsTxtFile.open(QIODevice::ReadOnly))
         return;
 
-    QTextStream emotsTxtStream(&emotsTxtFile);
-    emotsTxtStream.setCodec(QTextCodec::codecForName("CP1250"));
+    // Gadu-Gadu emoticon definitions are CP1250. QTextStream lost setCodec() in Qt6 and
+    // QStringConverter, its replacement, only knows a fixed set of encodings that does not include
+    // CP1250 -- so the file is decoded through Core5Compat and streamed from the decoded text.
+    auto const *codec = QTextCodec::codecForName("CP1250");
+    auto decoded = codec ? codec->toUnicode(emotsTxtFile.readAll()) : QString::fromLatin1(emotsTxtFile.readAll());
+    QTextStream emotsTxtStream(&decoded, QIODevice::ReadOnly);
     while (!emotsTxtStream.atEnd())
     {
         GaduEmoticonParser parser(dir, emotsTxtStream.readLine());

@@ -94,7 +94,7 @@ void HistoryWindow::init()
 void HistoryWindow::createGui()
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
     TabWidget = new QTabWidget(this);
@@ -126,7 +126,7 @@ void HistoryWindow::createGui()
     QPushButton *closeButton = buttons->addButton(QDialogButtonBox::Close);
     connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
-    buttons->layout()->setMargin(5);
+    buttons->layout()->setContentsMargins(5, 5, 5, 5);
 
     layout->addWidget(TabWidget);
     layout->addWidget(buttons);

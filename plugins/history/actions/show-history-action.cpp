@@ -19,7 +19,7 @@
  */
 
 #include <QtCore/QFutureWatcher>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QMenu>
 
 #include "actions/action.h"

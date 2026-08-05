@@ -25,8 +25,8 @@
 #include <QtCore/QPointer>
 
 #include "message/message.h"
-
-class SortedMessages;
+// QFuture<T> requires a complete type in Qt6, so this can no longer be forward declared.
+#include "message/sorted-messages.h"
 class WebkitMessagesView;
 
 /**

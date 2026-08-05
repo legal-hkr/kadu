@@ -44,7 +44,7 @@ EmoticonSelectorButton::EmoticonSelectorButton(
     QPixmap p(DisplayEmoticon.staticFilePath());
     setPixmap(p.scaledToHeight(18, Qt::SmoothTransformation));
     setMouseTracking(true);
-    setMargin(4);
+    setContentsMargins(4, 4, 4, 4);
     setFixedSize(sizeHint());
 }
 

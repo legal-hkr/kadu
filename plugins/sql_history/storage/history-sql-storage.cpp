@@ -86,7 +86,7 @@ HistorySqlStorage::HistorySqlStorage(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           HistoryStorage(parent),
           InitializerThread(), ImportProgressWindow(), AccountsMapping(), ContactsMapping(), ChatsMapping(),
-          DatabaseMutex(QMutex::NonRecursive), m_historyChatStorage(), StatusStorage(), SmsStorage()
+          DatabaseMutex(), m_historyChatStorage(), StatusStorage(), SmsStorage()
 {
 }
 
@@ -572,7 +572,7 @@ QVector<Talkable> HistorySqlStorage::syncChats()
 
 QFuture<QVector<Talkable>> HistorySqlStorage::chats()
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncChats);
+    return QtConcurrent::run(&HistorySqlStorage::syncChats, this);
 }
 
 QVector<Talkable> HistorySqlStorage::syncStatusBuddies()
@@ -605,7 +605,7 @@ QVector<Talkable> HistorySqlStorage::syncStatusBuddies()
 
 QFuture<QVector<Talkable>> HistorySqlStorage::statusBuddies()
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncStatusBuddies);
+    return QtConcurrent::run(&HistorySqlStorage::syncStatusBuddies, this);
 }
 
 QVector<Talkable> HistorySqlStorage::syncSmsRecipients()
@@ -633,7 +633,7 @@ QVector<Talkable> HistorySqlStorage::syncSmsRecipients()
 
 QFuture<QVector<Talkable>> HistorySqlStorage::smsRecipients()
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncSmsRecipients);
+    return QtConcurrent::run(&HistorySqlStorage::syncSmsRecipients, this);
 }
 
 QVector<HistoryQueryResult> HistorySqlStorage::syncChatDates(const HistoryQuery &historyQuery)
@@ -756,7 +756,7 @@ QVector<HistoryQueryResult> HistorySqlStorage::syncChatDates(const HistoryQuery 
 
 QFuture<QVector<HistoryQueryResult>> HistorySqlStorage::chatDates(const HistoryQuery &historyQuery)
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncChatDates, historyQuery);
+    return QtConcurrent::run(&HistorySqlStorage::syncChatDates, this, historyQuery);
 }
 
 QVector<HistoryQueryResult> HistorySqlStorage::syncStatusDates(const HistoryQuery &historyQuery)
@@ -833,7 +833,7 @@ QVector<HistoryQueryResult> HistorySqlStorage::syncStatusDates(const HistoryQuer
 
 QFuture<QVector<HistoryQueryResult>> HistorySqlStorage::statusDates(const HistoryQuery &historyQuery)
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncStatusDates, historyQuery);
+    return QtConcurrent::run(&HistorySqlStorage::syncStatusDates, this, historyQuery);
 }
 
 QVector<HistoryQueryResult> HistorySqlStorage::syncSmsRecipientDates(const HistoryQuery &historyQuery)
@@ -903,7 +903,7 @@ QVector<HistoryQueryResult> HistorySqlStorage::syncSmsRecipientDates(const Histo
 
 QFuture<QVector<HistoryQueryResult>> HistorySqlStorage::smsRecipientDates(const HistoryQuery &historyQuery)
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncSmsRecipientDates, historyQuery);
+    return QtConcurrent::run(&HistorySqlStorage::syncSmsRecipientDates, this, historyQuery);
 }
 
 SortedMessages HistorySqlStorage::syncMessages(const HistoryQuery &historyQuery)
@@ -962,7 +962,7 @@ SortedMessages HistorySqlStorage::syncMessages(const HistoryQuery &historyQuery)
 
 QFuture<SortedMessages> HistorySqlStorage::messages(const HistoryQuery &historyQuery)
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncMessages, historyQuery);
+    return QtConcurrent::run(&HistorySqlStorage::syncMessages, this, historyQuery);
 }
 
 SortedMessages HistorySqlStorage::syncStatuses(const HistoryQuery &historyQuery)
@@ -1001,7 +1001,7 @@ SortedMessages HistorySqlStorage::syncStatuses(const HistoryQuery &historyQuery)
 
 QFuture<SortedMessages> HistorySqlStorage::statuses(const HistoryQuery &historyQuery)
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncStatuses, historyQuery);
+    return QtConcurrent::run(&HistorySqlStorage::syncStatuses, this, historyQuery);
 }
 
 SortedMessages HistorySqlStorage::syncSmses(const HistoryQuery &historyQuery)
@@ -1044,7 +1044,7 @@ SortedMessages HistorySqlStorage::syncSmses(const HistoryQuery &historyQuery)
 
 QFuture<SortedMessages> HistorySqlStorage::smses(const HistoryQuery &historyQuery)
 {
-    return QtConcurrent::run(this, &HistorySqlStorage::syncSmses, historyQuery);
+    return QtConcurrent::run(&HistorySqlStorage::syncSmses, this, historyQuery);
 }
 
 void HistorySqlStorage::executeQuery(QSqlQuery &query)
