@@ -26,6 +26,7 @@
 #include "exports.h"
 #include "status/status-type.h"
 
+#include <QtGui/QActionGroup>
 #include <QtCore/QList>
 #include <QtCore/QObject>
 #include <QtCore/QPointer>

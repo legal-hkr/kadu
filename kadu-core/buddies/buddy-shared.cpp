@@ -146,7 +146,7 @@ void BuddyShared::load()
             QDomElement groupElement = groupsList.at(i).toElement();
             if (groupElement.isNull())
                 continue;
-            doAddToGroup(m_groupManager->byUuid(groupElement.text()));
+            doAddToGroup(m_groupManager->byUuid(QUuid{groupElement.text()}));
         }
     }
 

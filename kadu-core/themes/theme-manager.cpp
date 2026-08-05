@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore5Compat/QRegExp>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QStringList>
@@ -76,7 +77,7 @@ void ThemeManager::setCurrentTheme(const QString &themeName)
     // compatibility with pre-0.12 versions
     QString fixedName = themeName;
     // custom themes had two trailing slashes and QDir::dirName() was returning empty string
-    fixedName.replace(QRegExp("/*$"), QString());
+    fixedName = QRegExp("/*$").replaceIn(fixedName, QString());
     if (QFileInfo(fixedName).isAbsolute())
         fixedName = QDir(fixedName).dirName();
 

@@ -31,10 +31,10 @@ void KaduChatSyntax::setSyntax(const QString &syntax)
     Syntax = syntax;
     QString syntax2 = syntax;
     QRegExp topRegexp("<kadu:top>(.*)</kadu:top>");
-    if (syntax2.contains(topRegexp))
+    if (topRegexp.containedIn(syntax2))
     {
         Top = topRegexp.cap(1);
-        syntax2.remove(topRegexp);
+        syntax2 = topRegexp.removeIn(syntax2);
     }
     else
         Top = QString();
@@ -42,5 +42,5 @@ void KaduChatSyntax::setSyntax(const QString &syntax)
     WithHeader.remove("<kadu:header>");
     WithHeader.remove("</kadu:header>");
     WithoutHeader = syntax2;
-    WithoutHeader.remove(QRegExp("<kadu:header>.*</kadu:header>"));
+    WithoutHeader = QRegExp("<kadu:header>.*</kadu:header>").removeIn(WithoutHeader);
 }

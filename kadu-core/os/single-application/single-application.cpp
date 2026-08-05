@@ -95,7 +95,7 @@ QString SingleApplication::normalizedPrefix(bool useOnlyLastSection, const QStri
     if (useOnlyLastSection)
         result = result.section(QLatin1Char{'/'}, -1);
 
-    result.remove(QRegExp{"[^a-zA-Z]"});
+    result = QRegExp{"[^a-zA-Z]"}.removeIn(result);
     result.truncate(24);
 
     return result;

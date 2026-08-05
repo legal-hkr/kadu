@@ -180,16 +180,17 @@ void About::init()
     QString changelog = (loadFile("ChangeLog")).toHtmlEscaped();
     changelog.replace('\n', "<br/>");
     // #bug_no -> Redmine URL
-    changelog.replace(QRegExp("#(\\d+)"), "<a href=\"http://www.kadu.im/redmine/issues/\\1\">#\\1</a>");
+    changelog = QRegExp("#(\\d+)").replaceIn(changelog, "<a href=\"http://www.kadu.im/redmine/issues/\\1\">#\\1</a>");
     // bold headers with green "+++"
-    changelog.replace(
-        QRegExp("(^|<br/>)\\+\\+\\+([^<]*)<br/>"), "\\1<b><span style=\"color:green;\">+++</span>\\2</b><br/>");
+    changelog = QRegExp("(^|<br/>)\\+\\+\\+([^<]*)<br/>")
+                    .replaceIn(changelog, "\\1<b><span style=\"color:green;\">+++</span>\\2</b><br/>");
     // bold subsystem names preceded by nice green bullets instead of "*"
-    changelog.replace(QRegExp("<br/>\\* ([^:<]*):"), "<br/><b><span style=\"color:green;\">&#8226;</span> \\1</b>:");
+    changelog = QRegExp("<br/>\\* ([^:<]*):")
+                    .replaceIn(changelog, "<br/><b><span style=\"color:green;\">&#8226;</span> \\1</b>:");
     // green bullets also when no subsystem name
     changelog.replace("<br/>* ", "<br/><b><span style=\"color:green;\">&#8226;</span></b> ");
     // authors in italics
-    changelog.replace(QRegExp("\\(([^\\)]+)\\)<br/>"), "<i>(\\1)</i><br/>");
+    changelog = QRegExp("\\(([^\\)]+)\\)<br/>").replaceIn(changelog, "<i>(\\1)</i><br/>");
     tb_changelog->setHtml(changelog);
     connect(tb_changelog, SIGNAL(anchorClicked(const QUrl &)), this, SLOT(openUrl(const QUrl &)));
 
@@ -229,7 +230,7 @@ void About::init()
         new ConfigFileVariantWrapper(m_configuration, "General", "AboutGeometry"), QRect(0, 50, 480, 380), this);
 
     QString authors = loadFile("AUTHORS.html");
-    authors.remove(QRegExp("[\\[\\]]"));
+    authors = QRegExp("[\\[\\]]").removeIn(authors);
     // convert the email addresses
     authors.replace(" (at) ", "@");
     authors.replace(" (dot) ", ".");
@@ -261,11 +262,11 @@ QString About::loadFile(const QString &name)
         return QString();
 
     QTextStream str(&file);
-    str.setCodec("UTF-8");
+    str.setEncoding(QStringConverter::Utf8);
     QString data = str.readAll();
     file.close();
 
-    data.replace(QRegExp("\r\n?"), QStringLiteral("\n"));
+    data = QRegExp("\r\n?").replaceIn(data, QStringLiteral("\n"));
 
     return data;
 }

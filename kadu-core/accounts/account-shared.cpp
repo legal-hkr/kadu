@@ -161,7 +161,7 @@ void AccountShared::load()
 
     Shared::load();
 
-    Identity identity = m_identityManager->byUuid(loadValue<QString>("Identity"));
+    Identity identity = m_identityManager->byUuid(QUuid{loadValue<QString>("Identity")});
     if (identity.isNull() && !m_identityManager->items().isEmpty())
         identity = m_identityManager->items().at(0);
     doSetAccountIdentity(identity);
@@ -177,7 +177,7 @@ void AccountShared::load()
 
     UseDefaultProxy = loadValue<bool>("UseDefaultProxy", true);
     if (!UseDefaultProxy)
-        Proxy = m_networkProxyManager->byUuid(loadValue<QString>("Proxy"));
+        Proxy = m_networkProxyManager->byUuid(QUuid{loadValue<QString>("Proxy")});
 
     PrivateStatus = loadValue<bool>("PrivateStatus", true);
 

@@ -24,6 +24,7 @@
  */
 
 #include <algorithm>
+#include <QtGui/QActionGroup>
 #include <QtCore/QMimeData>
 #include <QtCore/QTextStream>
 #include <QtGui/QContextMenuEvent>
@@ -1139,7 +1140,7 @@ bool ActionDrag::decode(QDropEvent *event, QString &actionName, Qt::ToolButtonSt
         return false;
 
     QTextStream stream(mimeData->data("application/x-kadu-action"), QIODevice::ReadOnly);
-    stream.setCodec("UTF-8");
+    stream.setEncoding(QStringConverter::Utf8);
 
     if (stream.atEnd())
         return false;

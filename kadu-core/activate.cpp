@@ -6,7 +6,7 @@
 
 #if defined(Q_OS_UNIX)
 
-#include <QtX11Extras/QX11Info>
+#include "compat/x11-display.h"
 
 #include "configuration/configuration.h"
 #include "configuration/deprecated-configuration-api.h"
@@ -19,15 +19,15 @@ bool _isActiveWindow(QWidget *window)
     // we need to ensure we operate on widget's window, if not passed
     window = window->window();
 
-    if (X11_isWindowShaded(QX11Info::display(), window->winId()))   // not needed in Qt 5.4
+    if (X11_isWindowShaded(kaduX11Display(), window->winId()))   // not needed in Qt 5.4
         return false;
-    if (X11_isWindowMinimized(QX11Info::display(), window->winId()))   // not needed in Qt 5.4
+    if (X11_isWindowMinimized(kaduX11Display(), window->winId()))   // not needed in Qt 5.4
         return false;
 
     // desktop
-    unsigned long desktopofwindow = X11_getDesktopOfWindow(QX11Info::display(), window->winId());
+    unsigned long desktopofwindow = X11_getDesktopOfWindow(kaduX11Display(), window->winId());
     if ((desktopofwindow != X11_ALLDESKTOPS) && (desktopofwindow != X11_NODESKTOP) &&
-        (desktopofwindow != X11_getCurrentDesktop(QX11Info::display())))
+        (desktopofwindow != X11_getCurrentDesktop(kaduX11Display())))
         return false;
     // standard isActiveWindow() method
     return window->isActiveWindow();
@@ -42,32 +42,32 @@ void _activateWindow(Configuration *configuration, QWidget *window)
     // show window (in case it's hidden)
     window->show();
     // unshade the window if needed (important!)
-    if (X11_isWindowShaded(QX11Info::display(), window->winId()))
-        X11_shadeWindow(QX11Info::display(), window->winId(), false);
+    if (X11_isWindowShaded(kaduX11Display(), window->winId()))
+        X11_shadeWindow(kaduX11Display(), window->winId(), false);
     // read user settings
     int action = configuration->deprecatedApi()->readNumEntry("General", "WindowActivationMethod");
     // window & desktop
-    if (X11_getDesktopsCount(QX11Info::display()) > 1)
+    if (X11_getDesktopsCount(kaduX11Display()) > 1)
     {
-        auto desktopofwindow = X11_getDesktopOfWindow(QX11Info::display(), window->winId());
-        auto currentdesktop = X11_getCurrentDesktop(QX11Info::display());
+        auto desktopofwindow = X11_getDesktopOfWindow(kaduX11Display(), window->winId());
+        auto currentdesktop = X11_getCurrentDesktop(kaduX11Display());
         if ((desktopofwindow != currentdesktop) && (desktopofwindow != X11_ALLDESKTOPS))
         {
             if ((action == 1) && (desktopofwindow != X11_NODESKTOP))
             {
-                X11_setCurrentDesktop(QX11Info::display(), desktopofwindow);
+                X11_setCurrentDesktop(kaduX11Display(), desktopofwindow);
             }
             else
             {
-                if (X11_isWholeWindowOnOneDesktop(QX11Info::display(), window->winId()))
-                    X11_moveWindowToDesktop(QX11Info::display(), window->winId(), currentdesktop);
+                if (X11_isWholeWindowOnOneDesktop(kaduX11Display(), window->winId()))
+                    X11_moveWindowToDesktop(kaduX11Display(), window->winId(), currentdesktop);
                 else
-                    X11_centerWindow(QX11Info::display(), window->winId(), currentdesktop);
+                    X11_centerWindow(kaduX11Display(), window->winId(), currentdesktop);
             }
         }
     }
     // activate
-    X11_setActiveWindow(QX11Info::display(), window->winId());
+    X11_setActiveWindow(kaduX11Display(), window->winId());
     window->raise();
     window->activateWindow();
 }
@@ -121,15 +121,15 @@ bool _isWindowActiveOrFullyVisible(QWidget *window)
     if (_isActiveWindow(window))
         return true;
 
-    if (X11_isWindowShaded(QX11Info::display(), window->winId()))   // not needed in Qt 5.4
+    if (X11_isWindowShaded(kaduX11Display(), window->winId()))   // not needed in Qt 5.4
         return false;
-    if (X11_isWindowMinimized(QX11Info::display(), window->winId()))   // not needed in Qt 5.4
+    if (X11_isWindowMinimized(kaduX11Display(), window->winId()))   // not needed in Qt 5.4
         return false;
 
     // we need to ensure we operate on widget's window, if not passed
     window = window->window();
 
-    Display *display = QX11Info::display();
+    Display *display = kaduX11Display();
     WId wId = window->winId();
     return !window->isMinimized() && X11_isWindowOnDesktop(display, wId, X11_getCurrentDesktop(display)) &&
            X11_isWholeWindowOnOneDesktop(display, wId) && !X11_isWindowCovered(display, wId);

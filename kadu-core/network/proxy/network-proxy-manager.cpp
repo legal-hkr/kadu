@@ -85,7 +85,7 @@ NetworkProxy NetworkProxyManager::loadStubFromStorage(const std::shared_ptr<Stor
 
 void NetworkProxyManager::configurationUpdated()
 {
-    DefaultProxy = byUuid(m_configuration->deprecatedApi()->readEntry("Network", "DefaultProxy"));
+    DefaultProxy = byUuid(QUuid{m_configuration->deprecatedApi()->readEntry("Network", "DefaultProxy")});
 }
 
 void NetworkProxyManager::setDefaultProxy(const NetworkProxy &proxy)

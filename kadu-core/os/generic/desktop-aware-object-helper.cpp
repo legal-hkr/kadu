@@ -23,7 +23,8 @@
 #include "desktop-aware-object-helper.moc"
 
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QWidget>
 
 #include "misc/misc.h"
@@ -36,7 +37,14 @@ DesktopAwareObjectHelper::DesktopAwareObjectHelper()
     Timer.setInterval(DESKTOP_AWARE_OBJECT_HELPER_TIMER_INTERVAL);
     Timer.setSingleShot(true);
     connect(&Timer, SIGNAL(timeout()), this, SLOT(workAreaResized()));
-    connect(QApplication::desktop(), SIGNAL(workAreaResized(int)), &Timer, SLOT(start()));
+    // Qt6 has no QDesktopWidget::workAreaResized(); watch every screen's
+    // available geometry instead, including screens plugged in later.
+    auto watchScreen = [this](QScreen *screen) {
+        connect(screen, &QScreen::availableGeometryChanged, &Timer, qOverload<>(&QTimer::start));
+    };
+    for (auto screen : QGuiApplication::screens())
+        watchScreen(screen);
+    connect(qApp, &QGuiApplication::screenAdded, this, watchScreen);
 }
 
 DesktopAwareObjectHelper::~DesktopAwareObjectHelper()

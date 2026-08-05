@@ -79,7 +79,7 @@ void FileTransferShared::load()
 
     Shared::load();
 
-    *m_peer = m_contactManager->byUuid(loadValue<QString>("Peer"));
+    *m_peer = m_contactManager->byUuid(QUuid{loadValue<QString>("Peer")});
     m_localFileName = loadValue<QString>("LocalFileName");
     m_remoteFileName = loadValue<QString>("RemoteFileName");
 

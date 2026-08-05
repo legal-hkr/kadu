@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <QtGui/QActionGroup>
 #include <QtCore/QObject>
 #include <QtCore/QPoint>
 #include <QtCore/QPointer>

@@ -26,7 +26,8 @@
 #include "widgets/tool-tip-widget.h"
 
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 
 ToolTipManager::ToolTipManager(QObject *parent) : QObject{parent}
 {
@@ -47,7 +48,10 @@ void ToolTipManager::showToolTip(const QPoint &where, const Talkable &talkable)
 
     auto pos = where + QPoint{5, 5};
     auto preferredSize = m_toolTipWidget->sizeHint();
-    auto desktopSize = QApplication::desktop()->screenGeometry(m_toolTipWidget).size();
+    auto screen = m_toolTipWidget->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    auto desktopSize = screen->geometry().size();
     if (pos.x() + preferredSize.width() > desktopSize.width())
         pos.setX(pos.x() - preferredSize.width() - 10);
     if (pos.y() + preferredSize.height() > desktopSize.height())

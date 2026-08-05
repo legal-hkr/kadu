@@ -20,7 +20,7 @@
 
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
-#include <QtX11Extras/QX11Info>
+#include "compat/x11-display.h"
 
 #include "x11-screen-mode-checker.h"
 

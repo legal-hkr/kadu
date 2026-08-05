@@ -80,11 +80,11 @@ void ChatDetailsContact::load()
 
     QString cadUuid = loadValue<QString>("Contact");
 
-    CurrentContact = m_contactManager->byUuid(cadUuid);
+    CurrentContact = m_contactManager->byUuid(QUuid{cadUuid});
     if (!CurrentContact)
     {
         // import from old 0.6.6 releases
-        Buddy buddy = m_buddyManager->byUuid(cadUuid);
+        Buddy buddy = m_buddyManager->byUuid(QUuid{cadUuid});
         if (buddy)
         {
             QVector<Contact> contactList = buddy.contacts(mainData()->chatAccount());

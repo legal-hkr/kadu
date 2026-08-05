@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore5Compat/QRegExp>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QLabel>
 
@@ -68,7 +69,7 @@ void ConfigPathListEdit::loadConfiguration()
 {
     if (!dataManager)
         return;
-    setPathList(dataManager->readEntry(section, item).toString().split(QRegExp("&"), Qt::SkipEmptyParts));
+    setPathList(dataManager->readEntry(section, item).toString().split('&', Qt::SkipEmptyParts));
 }
 
 void ConfigPathListEdit::saveConfiguration()

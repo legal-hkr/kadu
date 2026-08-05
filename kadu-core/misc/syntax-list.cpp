@@ -67,7 +67,7 @@ QString SyntaxList::readSyntax(
 
     QString result;
     QTextStream stream(&syntaxFile);
-    stream.setCodec("UTF-8");
+    stream.setEncoding(QStringConverter::Utf8);
     result = stream.readAll();
     syntaxFile.close();
 
@@ -142,7 +142,7 @@ bool SyntaxList::updateSyntax(const QString &name, const QString &syntax)
         return false;
 
     QTextStream stream(&syntaxFile);
-    stream.setCodec("UTF-8");
+    stream.setEncoding(QStringConverter::Utf8);
     stream << syntax;
     syntaxFile.close();
 
@@ -176,7 +176,7 @@ QString SyntaxList::readSyntax(const QString &name)
 
     QString result;
     QTextStream stream(&syntaxFile);
-    stream.setCodec("UTF-8");
+    stream.setEncoding(QStringConverter::Utf8);
     result = stream.readAll();
     syntaxFile.close();
 

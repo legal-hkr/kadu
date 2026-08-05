@@ -25,7 +25,8 @@
 #include <QtCore/QTimer>
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QVBoxLayout>
 
 #include "chat/chat-details.h"
@@ -149,12 +150,15 @@ QRect ChatWindow::defaultGeometry() const
     else
         size.setWidth(400);
 
-    QDesktopWidget *desk = qApp->desktop();
+    auto screen = this->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    const QRect deskGeometry = screen->geometry();
 
-    if ((size.width() + x) > desk->width())
-        x = desk->width() - size.width() - 50;
-    if ((size.height() + y) > desk->height())
-        y = desk->height() - size.height() - 50;
+    if ((size.width() + x) > deskGeometry.width())
+        x = deskGeometry.width() - size.width() - 50;
+    if ((size.height() + y) > deskGeometry.height())
+        y = deskGeometry.height() - size.height() - 50;
 
     if (x < 50)
         x = 50;

@@ -130,7 +130,7 @@ GroupFilter GroupTabBarConfigurator::loadGroupFilter(QDomElement element) const
     auto groupUuid = m_configuration->api()->getTextNode(element, "Group");
 
     if (type == "Regular")
-        return GroupFilter(m_groupManager->byUuid(groupUuid));
+        return GroupFilter(m_groupManager->byUuid(QUuid{groupUuid}));
     if (type == "Everybody")
         return GroupFilter(GroupFilterEverybody);
     if (type == "Ungroupped")

@@ -43,6 +43,7 @@
 #include "status/status-type.h"
 #include "talkable/talkable-converter.h"
 
+#include <QtCore5Compat/QRegExp>
 #include <QtCore/QFileInfo>
 #include <QtCore/QProcess>
 #include <QtCore/QStack>
@@ -181,7 +182,7 @@ QString Parser::executeCmd(const QString &cmd)
 {
     QString s(cmd);
     // TODO: check if Qt escapes these
-    s.remove(QRegExp("`|>|<"));
+    s = QRegExp("`|>|<").removeIn(s);
 
     QProcess executor;
     executor.start(s);
@@ -298,7 +299,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
             {
                 QString content = pe.decodedContent();
                 content.replace('\n', QStringLiteral("<br/>"));
-                content.replace(QRegExp("\\s\\s"), QString(" &nbsp;"));
+                content = QRegExp("\\s\\s").replaceIn(content, QString(" &nbsp;"));
                 pe.setContent(content);
             }
         }

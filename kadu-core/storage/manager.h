@@ -170,7 +170,7 @@ protected:
         for (auto const &itemElement : itemElements)
         {
             auto storagePoint = std::make_shared<StoragePoint>(storage()->storage(), itemElement);
-            QUuid uuid = storagePoint->point().attribute("uuid");
+            QUuid uuid{storagePoint->point().attribute("uuid")};
             if (!uuid.isNull())
             {
                 Item item = loadStubFromStorage(storagePoint);

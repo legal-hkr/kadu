@@ -32,6 +32,7 @@
 #include "protocols/protocol.h"
 #include "themes/icon-theme-manager.h"
 
+#include <QtCore5Compat/QRegExp>
 #include <QtCore/QFileInfo>
 
 IconsManager::IconsManager(QObject *parent) : QObject{parent}
@@ -140,7 +141,7 @@ QIcon IconsManager::iconByPath(const QString &themePath, const QString &path, Al
             if (icon.isNull())
             {
                 QRegExp commonRegexp = QRegExp("^protocols/common/(.+)$");
-                if (path.contains(commonRegexp))
+                if (commonRegexp.containedIn(path))
                 {
                     QString protocolpath;
                     if (m_accountManager->defaultAccount().protocolHandler())

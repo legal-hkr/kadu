@@ -30,6 +30,7 @@
 #include "windows/proxy-edit-window-service.h"
 
 #include <QtGui/QAction>
+#include <QtGui/QActionGroup>
 #include <QtWidgets/QMenu>
 
 DefaultProxyAction::DefaultProxyAction(QObject *parent) : ActionDescription(parent)

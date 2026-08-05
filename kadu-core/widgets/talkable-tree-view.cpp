@@ -235,8 +235,8 @@ void TalkableTreeView::wheelEvent(QWheelEvent *event)
     QTreeView::wheelEvent(event);
 
     // if event source (e->globalPos()) is inside this widget (QRect(...))
-    if (QRect(QPoint(0, 0), size()).contains(event->pos()))
-        toolTipRestart(event->pos());
+    if (QRect(QPoint(0, 0), size()).contains(event->position().toPoint()))
+        toolTipRestart(event->position().toPoint());
     else
         toolTipHide(false);
 }

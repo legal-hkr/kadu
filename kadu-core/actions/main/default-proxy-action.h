@@ -25,6 +25,7 @@
 
 #include <QtCore/QPointer>
 #include <QtGui/QAction>
+#include <QtGui/QActionGroup>
 #include <injeqt/injeqt.h>
 
 class Actions;

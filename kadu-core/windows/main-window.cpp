@@ -45,7 +45,7 @@
 #include "main-window.moc"
 
 #if defined(Q_OS_UNIX)
-#include <QtX11Extras/QX11Info>
+#include "compat/x11-display.h"
 
 #include "os/x11/x11tools.h"   // this should be included as last one,
 #undef KeyPress
@@ -523,7 +523,7 @@ void MainWindow::setBlur(bool enable)
     Q_UNUSED(enable);
 #else
     BlurEnabled = enable;
-    X11_setBlur(QX11Info::display(), winId(), enable);
+    X11_setBlur(kaduX11Display(), winId(), enable);
 #endif
 }
 

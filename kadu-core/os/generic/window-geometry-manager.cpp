@@ -44,7 +44,8 @@
 #include <QtCore/QVariant>
 #include <QtGui/QWindow>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QWidget>
 
 #include "misc/misc.h"
@@ -129,7 +130,8 @@ void WindowGeometryManager::saveGeometry()
     configuration.insert(
         NormalGeometryIndex, rectToString(isMaximized ? NormalGeometry : parentWidget->normalGeometry()));
     configuration.insert(FrameGeometryIndex, rectToString(parentWidget->frameGeometry()));
-    configuration.insert(ScreenIndex, QString::number(QApplication::desktop()->screenNumber(parentWidget)));
+    configuration.insert(
+        ScreenIndex, QString::number(QGuiApplication::screens().indexOf(parentWidget->screen())));
     configuration.insert(MaximizedIndex, QString::number(int(isMaximized)));
     configuration.insert(
         FullscreenIndex, QString::number(int(bool(parentWidget->windowState() & Qt::WindowFullScreen))));

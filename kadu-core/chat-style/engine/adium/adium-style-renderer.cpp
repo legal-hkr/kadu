@@ -45,6 +45,7 @@
 #include "protocols/protocol.h"
 #include "protocols/services/chat-image.h"
 
+#include <QtCore5Compat/QRegExp>
 #include <QtCore/QFile>
 #include <QtGui/QTextDocument>
 #include <QtWebKitWidgets/QWebFrame>
