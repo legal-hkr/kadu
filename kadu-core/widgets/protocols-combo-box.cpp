@@ -30,7 +30,7 @@
 #include "protocols/model/protocols-model.h"
 #include "protocols/protocols-manager.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 
 ProtocolsComboBox::ProtocolsComboBox(QWidget *parent) : ActionsComboBox(parent)
 {

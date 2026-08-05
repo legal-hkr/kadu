@@ -31,7 +31,7 @@ NotifyGroupBox::NotifyGroupBox(Notifier *notificator, const QString &caption, QW
         : QWidget{parent}, m_notificator{notificator}
 {
     auto layout = new QHBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
     m_notifierCheckBox = make_owned<QCheckBox>(caption, this);

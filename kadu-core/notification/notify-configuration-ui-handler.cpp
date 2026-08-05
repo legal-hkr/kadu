@@ -166,7 +166,7 @@ void NotifyConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigurat
 
     notifierMainWidget = new QWidget{notificationsGroupBox->widget()};
     notifierMainWidgetLayout = new QVBoxLayout(notifierMainWidget);
-    notifierMainWidgetLayout->setMargin(0);
+    notifierMainWidgetLayout->setContentsMargins(0, 0, 0, 0);
 
     notificationsGroupBox->addWidget(notifierMainWidget, true);
 

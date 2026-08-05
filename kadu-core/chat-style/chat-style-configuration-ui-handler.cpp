@@ -31,6 +31,7 @@
 #include "widgets/configuration/configuration-widget.h"
 #include "windows/main-configuration-window.h"
 
+#include <algorithm>
 #include <QtCore/QCoreApplication>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
@@ -80,7 +81,7 @@ void ChatStyleConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigu
 
     m_syntaxListCombo = new QComboBox(editor);
     auto styleNames = m_chatStyleManager->availableStyles().keys();
-    qSort(styleNames.begin(), styleNames.end(), [](const QString &s1, const QString &s2) {
+    std::sort(styleNames.begin(), styleNames.end(), [](const QString &s1, const QString &s2) {
         return s1.toLower() < s2.toLower();
     });
     m_syntaxListCombo->addItems(styleNames);

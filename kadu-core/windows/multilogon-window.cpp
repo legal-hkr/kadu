@@ -83,7 +83,7 @@ void MultilogonWindow::createGui()
     QHBoxLayout *selectAccountLayout = new QHBoxLayout(selectAccountWidget);
 
     selectAccountLayout->addWidget(new QLabel(tr("Account:"), selectAccountWidget));
-    selectAccountLayout->setMargin(0);
+    selectAccountLayout->setContentsMargins(0, 0, 0, 0);
 
     Accounts = m_injectedFactory->makeInjected<AccountsComboBox>(
         true, AccountsComboBox::NotVisibleWithOneRowSourceModel, selectAccountWidget);

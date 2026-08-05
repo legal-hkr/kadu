@@ -44,7 +44,7 @@
 #include <QtWebKit/QWebHistory>
 #include <QtWebKitWidgets/QWebHitTestResult>
 #include <QtWebKitWidgets/QWebPage>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>

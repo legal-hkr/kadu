@@ -37,7 +37,7 @@ ToolTipWidget::ToolTipWidget(const Talkable &talkable, QWidget *parent)
         QStringLiteral("#tool_tip { border: 1px solid %1; }").arg(palette().window().color().darker().name()));
 
     auto layout = make_owned<QHBoxLayout>(this);
-    layout->setMargin(10);
+    layout->setContentsMargins(10, 10, 10, 10);
     layout->setSizeConstraint(QLayout::SetFixedSize);
 
     m_tipLabel = make_owned<QLabel>(this);

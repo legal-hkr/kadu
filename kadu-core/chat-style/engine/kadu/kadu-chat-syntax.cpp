@@ -19,7 +19,7 @@
 
 #include "kadu-chat-syntax.h"
 
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 
 KaduChatSyntax::KaduChatSyntax(const QString &syntax)
 {

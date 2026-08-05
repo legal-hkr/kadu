@@ -29,7 +29,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDataStream>
 #include <QtCore/QDir>
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <memory>

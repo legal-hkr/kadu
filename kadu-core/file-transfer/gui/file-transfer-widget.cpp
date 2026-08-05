@@ -40,7 +40,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 #include <QtGui/QDesktopServices>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
@@ -98,16 +98,16 @@ void FileTransferWidget::createGui()
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     auto mainLayout = new QGridLayout{this};
-    mainLayout->setMargin(6);
+    mainLayout->setContentsMargins(6, 6, 6, 6);
     mainLayout->setSpacing(6);
     mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 
     auto descriptionLayout = new QGridLayout{this};
-    descriptionLayout->setMargin(0);
+    descriptionLayout->setContentsMargins(0, 0, 0, 0);
     descriptionLayout->setSpacing(2);
 
     auto buttonsLayout = new QHBoxLayout{this};
-    buttonsLayout->setMargin(0);
+    buttonsLayout->setContentsMargins(0, 0, 0, 0);
     buttonsLayout->setSpacing(2);
 
     auto avatar = m_injectedFactory->makeInjected<ContactAvatarDisplay>(m_transfer.peer(), QSize{48, 48}, this);
@@ -482,7 +482,7 @@ void FileTransferWidget::updateTransferData()
     }
 
     auto now = QDateTime::currentDateTime();
-    auto timeDiff = now.toTime_t() - m_lastUpdateTime.toTime_t();
+    auto timeDiff = now.toSecsSinceEpoch() - m_lastUpdateTime.toSecsSinceEpoch();
     if (0 < timeDiff && m_lastTransferredSize <= m_transfer.transferredSize())
     {
         m_speed = ((m_transfer.transferredSize() - m_lastTransferredSize) / 1024) / timeDiff;

@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <QtCore/QTimer>
 
 #include "actions/action-description.h"
@@ -118,7 +119,7 @@ void KaduMenu::sort()
     if (IsSorted)
         return;
 
-    qSort(Items.begin(), Items.end(), lessThan);
+    std::sort(Items.begin(), Items.end(), lessThan);
     IsSorted = true;
 }
 

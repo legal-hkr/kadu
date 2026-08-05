@@ -146,7 +146,7 @@ void StatusWindow::createLayout()
 
     QFormLayout *formLayout = new QFormLayout();
     mainLayout->addLayout(formLayout);
-    formLayout->setMargin(0);
+    formLayout->setContentsMargins(0, 0, 0, 0);
     formLayout->setVerticalSpacing(0);
 
     // status combo box
@@ -161,7 +161,7 @@ void StatusWindow::createLayout()
     // description combo box
 
     QHBoxLayout *descriptionSelectLayout = new QHBoxLayout();
-    descriptionSelectLayout->setMargin(0);
+    descriptionSelectLayout->setContentsMargins(0, 0, 0, 0);
     descriptionSelectLayout->setSpacing(0);
 
     DescriptionSelect = new QComboBox(this);
@@ -180,7 +180,7 @@ void StatusWindow::createLayout()
 
     QWidget *descriptionCounterLayoutWidget = new QWidget(this);
     QVBoxLayout *descriptionCounterLayout = new QVBoxLayout(descriptionCounterLayoutWidget);
-    descriptionCounterLayout->setMargin(0);
+    descriptionCounterLayout->setContentsMargins(0, 0, 0, 0);
     descriptionCounterLayout->setSpacing(5);
 
     descriptionCounterLayout->addStretch();
@@ -193,7 +193,7 @@ void StatusWindow::createLayout()
 
     QWidget *descriptionEditLayoutWidget = new QWidget(this);
     QHBoxLayout *descriptionEditLayout = new QHBoxLayout(descriptionEditLayoutWidget);
-    descriptionEditLayout->setMargin(0);
+    descriptionEditLayout->setContentsMargins(0, 0, 0, 0);
     descriptionEditLayout->setSpacing(0);
 
     DescriptionEdit = new KaduTextEdit(this);
@@ -203,7 +203,7 @@ void StatusWindow::createLayout()
     descriptionEditLayout->addWidget(DescriptionEdit);
 
     QVBoxLayout *descriptionEraseLayout = new QVBoxLayout();
-    descriptionEraseLayout->setMargin(0);
+    descriptionEraseLayout->setContentsMargins(0, 0, 0, 0);
     descriptionEraseLayout->setSpacing(0);
     descriptionEraseLayout->addStretch();
     EraseButton = new QPushButton(m_iconsManager->iconByPath(KaduIcon("edit-clear-locationbar-rtl")), "", this);

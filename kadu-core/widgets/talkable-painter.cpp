@@ -75,7 +75,7 @@ bool TalkablePainter::useColorsWorkaround()
 #endif
 
 TalkablePainter::TalkablePainter(
-    TalkableDelegateConfiguration *configuration, QStyleOptionViewItemV4 option, const QModelIndex &index)
+    TalkableDelegateConfiguration *configuration, QStyleOptionViewItem option, const QModelIndex &index)
         : Configuration(configuration), Option(option), Index(index), FontMetrics(Configuration->font()),
           BoldFontMetrics(Configuration->boldFont()), DescriptionFontMetrics(Configuration->descriptionFont()),
           DescriptionDocument(0)
@@ -273,7 +273,7 @@ bool TalkablePainter::drawDisabled() const
 
 QTextDocument *TalkablePainter::createDescriptionDocument(const QString &text, int width, QColor color) const
 {
-    QString description = Qt::escape(text).replace(
+    QString description = (text).toHtmlEscaped().replace(
         '\n', Configuration->showMultiLineDescription() ? QStringLiteral("<br/>") : QStringLiteral(" "));
 
     QTextDocument *const doc = new QTextDocument();
@@ -289,7 +289,7 @@ QTextDocument *TalkablePainter::createDescriptionDocument(const QString &text, i
     doc->setDefaultTextOption(opt);
 
     QTextFrameFormat frameFormat = doc->rootFrame()->frameFormat();
-    frameFormat.setMargin(0);
+    frameFormat.setContentsMargins(0, 0, 0, 0);
     doc->rootFrame()->setFrameFormat(frameFormat);
 
     doc->setTextWidth(width);

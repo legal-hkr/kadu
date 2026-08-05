@@ -287,7 +287,7 @@ void KaduWindow::createGui()
 {
     MainWidget = new QWidget(this);
     MainLayout = new QVBoxLayout(MainWidget);
-    MainLayout->setMargin(0);
+    MainLayout->setContentsMargins(0, 0, 0, 0);
     MainLayout->setSpacing(0);
 
     Split = new QSplitter(Qt::Vertical, MainWidget);

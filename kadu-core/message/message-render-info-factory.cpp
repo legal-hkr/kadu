@@ -83,11 +83,11 @@ bool MessageRenderInfoFactory::includeHeader(
     if (message.messageSender() != previous.messageSender())
         return true;
 
-    if (message.receiveDate().toTime_t() < previous.receiveDate().toTime_t())
+    if (message.receiveDate().toSecsSinceEpoch() < previous.receiveDate().toSecsSinceEpoch())
         qWarning("New message has earlier date than last message");
 
     auto minimumInterval = m_chatStyleManager->cfgNoHeaderInterval() * 60;
-    auto actualInterval = static_cast<int>(message.receiveDate().toTime_t() - previous.receiveDate().toTime_t());
+    auto actualInterval = static_cast<int>(message.receiveDate().toSecsSinceEpoch() - previous.receiveDate().toSecsSinceEpoch());
     return actualInterval > minimumInterval;
 }
 
@@ -105,6 +105,6 @@ bool MessageRenderInfoFactory::showServerTime(const Message &message) const
 
     auto minimumInterval = m_chatStyleManager->noServerTimeDiff();
     auto actuvalInterval =
-        static_cast<int>(message.receiveDate().toTime_t()) - static_cast<int>(message.sendDate().toTime_t());
+        static_cast<int>(message.receiveDate().toSecsSinceEpoch()) - static_cast<int>(message.sendDate().toSecsSinceEpoch());
     return abs(actuvalInterval) > minimumInterval;
 }

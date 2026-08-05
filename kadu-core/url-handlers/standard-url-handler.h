@@ -23,7 +23,7 @@
 #ifndef STANDARD_URL_HANDLER_H
 #define STANDARD_URL_HANDLER_H
 
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 
 #include "url-handler.h"
 

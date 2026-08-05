@@ -28,7 +28,7 @@
 
 #include <QtCore/QMultiMap>
 #include <QtCore/QPointer>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <injeqt/injeqt.h>
 
 class ActionContext;

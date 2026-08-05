@@ -20,7 +20,7 @@
 #ifndef URL_CLIPBOARD_HTML_TRANSFORMER_H
 #define URL_CLIPBOARD_HTML_TRANSFORMER_H
 
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 
 #include "gui/services/clipboard-html-transformer.h"
 

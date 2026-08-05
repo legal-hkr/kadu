@@ -21,7 +21,7 @@
 #ifndef DOM_TEXT_REGEXP_VISITOR_H
 #define DOM_TEXT_REGEXP_VISITOR_H
 
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 
 #include "dom/dom-visitor.h"
 #include "exports.h"

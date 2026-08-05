@@ -64,7 +64,7 @@
 #include "widgets/select-talkable-combo-box.h"
 
 #include <QtCore/QSortFilterProxyModel>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>

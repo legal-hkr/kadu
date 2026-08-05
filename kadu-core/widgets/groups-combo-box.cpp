@@ -21,7 +21,7 @@
  */
 
 #include <QtCore/QSortFilterProxyModel>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLineEdit>
 

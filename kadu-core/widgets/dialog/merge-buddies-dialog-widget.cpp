@@ -34,7 +34,7 @@
 #include "widgets/select-talkable-combo-box.h"
 
 #include <QtGui/QIcon>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QLabel>
 

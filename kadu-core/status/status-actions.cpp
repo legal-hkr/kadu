@@ -38,7 +38,7 @@
 #include "status/status-type-manager.h"
 #include "status/status-type.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 
 StatusActions::StatusActions(StatusContainer *statusContainer, bool includePrefix, bool onlyStatuses, QObject *parent)
         : QObject(parent), MyStatusContainer(statusContainer), IncludePrefix(includePrefix), OnlyStatuses{onlyStatuses},

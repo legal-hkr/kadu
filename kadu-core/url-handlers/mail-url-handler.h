@@ -22,7 +22,7 @@
 #ifndef MAIL_URL_HANDLER_H
 #define MAIL_URL_HANDLER_H
 
-#include <QtCore/QRegExp>
+#include <QtCore5Compat/QRegExp>
 
 #include "url-handler.h"
 

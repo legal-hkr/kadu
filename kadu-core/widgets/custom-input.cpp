@@ -29,7 +29,7 @@
 #include <QtCore/QUrl>
 #include <QtGui/QImageReader>
 #include <QtGui/QKeyEvent>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QMenu>
 
 #include "core/core.h"
@@ -315,7 +315,7 @@ void CustomInput::acceptImageData(QByteArray imageData)
     QBuffer buffer{&imageData};
     buffer.open(QIODevice::ReadOnly);
     auto ext = QString::fromUtf8(QImageReader{&buffer}.format().toLower());
-    auto filename = QString{"drop%1.%2"}.arg(QDateTime::currentDateTime().toTime_t()).arg(ext);
+    auto filename = QString{"drop%1.%2"}.arg(QDateTime::currentDateTime().toSecsSinceEpoch()).arg(ext);
 
     auto path = m_imageStorageService->fullPath(filename);
     QFile file(path);
