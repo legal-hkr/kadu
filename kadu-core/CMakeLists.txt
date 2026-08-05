@@ -26,7 +26,14 @@ set (kadu_SRCS
 
 	os/single-application/long-lived-lock-file.cpp
 	os/single-application/single-application.cpp
+
+	# Qt6 port scaffolding; see compat/webkit-stub/webkit-stub.h.
+	compat/webkit-stub/webkit-stub.cpp
 )
+
+# Resolves <QtWebKit/...> and <QtWebKitWidgets/...> to the stubs, so no source
+# file needs its includes changed.
+include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/compat/webkit-stub")
 
 if (WIN32)
 	list (APPEND kadu_SRCS
@@ -56,6 +63,8 @@ endif ()
 set (kadu_MOC_SRCS
 	themes.h
 	updates.h
+
+	compat/webkit-stub/webkit-stub.h
 )
 
 set (kadu_SUBDIRS
@@ -174,7 +183,7 @@ endif ()
 
 # WebKit/WebKitWidgets do not exist in Qt6; Core5Compat for the port.
 target_link_libraries (libkadu LINK_PRIVATE
-		Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Network
+		Qt6::Core Qt6::Core5Compat Qt6::StateMachine Qt6::Gui Qt6::Network
 		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::Widgets Qt6::Xml
 )
 if (UNIX AND NOT APPLE)

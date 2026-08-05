@@ -1,0 +1,8 @@
+/*
+ * Qt6 port scaffolding -- forwards to the WebKit stubs.
+ * See ../webkit-stub.h.
+ */
+
+#pragma once
+
+#include "../webkit-stub.h"

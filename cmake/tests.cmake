@@ -15,7 +15,7 @@ function (kadu_add_plugin_test plugin_name name_)
 		NAME ${test_name}
 		COMMAND ${test_name})
 
-	target_link_libraries (${test_name} LINK_PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Network Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::Test Qt6::Widgets Qt6::Xml)
+	target_link_libraries (${test_name} LINK_PRIVATE Qt6::Core Qt6::Core5Compat Qt6::StateMachine Qt6::Gui Qt6::Network Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::Test Qt6::Widgets Qt6::Xml)
 
 	# Add libkadu after the plugin so that --as-needed won't drop anything
 	target_link_libraries (${test_name} LINK_PRIVATE libkadu ${plugin_name} ${ADDITIONAL_LIBRARIES})

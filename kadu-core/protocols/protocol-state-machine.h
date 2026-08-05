@@ -21,7 +21,8 @@
 #pragma once
 
 #include <QtCore/QPointer>
-#include <QtCore/QStateMachine>
+#include <QtStateMachine/QStateMachine>
+#include <QtStateMachine/QState>
 #include <QtCore/QTimer>
 #include <injeqt/injeqt.h>
 

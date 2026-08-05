@@ -29,6 +29,7 @@ endif ()
 find_package (Qt6 6.2 REQUIRED COMPONENTS
 	Core
 	Core5Compat
+	StateMachine
 	DBus
 	Gui
 	LinguistTools
@@ -207,7 +208,7 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 	endif ()
 
 	target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE
-		Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Network
+		Qt6::Core Qt6::Core5Compat Qt6::StateMachine Qt6::Gui Qt6::Network
 		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::Widgets Qt6::Xml
 	)
 	if (UNIX AND NOT APPLE)
