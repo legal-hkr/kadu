@@ -18,7 +18,6 @@ set (DEFAULT_PLUGINS
 	# Speech synthesis support
 	speech
 	# PC Speaker notification support
-	pcspeaker
 
 # history
 	# General history plugin

@@ -205,7 +205,6 @@ void Core::createDefaultConfiguration()
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "General", "StartupStatusInvisibleWhenLastWasOffline", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("General", "UserBoxHeight", 300);
-    m_injector.get<Configuration>()->deprecatedApi()->addVariable("General", "WindowActivationMethod", 0);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "General", "MainConfiguration_Geometry", "50, 50, 790, 580");
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(

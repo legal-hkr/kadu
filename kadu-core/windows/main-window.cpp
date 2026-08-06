@@ -44,12 +44,10 @@
 #include "main-window.h"
 #include "main-window.moc"
 
-#if defined(Q_OS_UNIX)
-#include "compat/x11-display.h"
+#include "kadu-config.h"
 
-#include "os/x11/x11tools.h"   // this should be included as last one,
-#undef KeyPress
-#undef Status   // and Status defined by Xlib.h must be undefined
+#if HAVE_KWINDOWSYSTEM
+#include <KWindowEffects>
 #endif
 
 MainWindow *MainWindow::findMainWindow(QWidget *widget)
@@ -519,11 +517,14 @@ ActionContext *MainWindow::actionContext()
 
 void MainWindow::setBlur(bool enable)
 {
-#if !defined(Q_OS_UNIX)
-    Q_UNUSED(enable);
-#else
     BlurEnabled = enable;
-    X11_setBlur(kaduX11Display(), winId(), enable);
+
+#if HAVE_KWINDOWSYSTEM
+    // Blurring what shows through a translucent window is the compositor's work, and only KWin
+    // offers it; elsewhere the window is simply translucent, as it was on any X11 session whose
+    // window manager did not implement the hint either.
+    if (auto *windowHandle = window()->windowHandle())
+        KWindowEffects::enableBlurBehind(windowHandle, enable);
 #endif
 }
 

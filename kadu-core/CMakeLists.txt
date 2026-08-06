@@ -35,12 +35,6 @@ if (WIN32)
 	)
 endif ()
 
-if (UNIX AND NOT APPLE)
-	list (APPEND kadu_SRCS
-		os/x11/x11tools.cpp
-	)
-endif ()
-
 set (main_SRCS
 	main.cpp
 
@@ -117,18 +111,16 @@ endif ()
 include_directories (${LibArchive_INCLUDE_DIRS})
 list (APPEND ADDITIONAL_LIBKADU_LIBRARIES ${LibArchive_LIBRARIES})
 
-if (UNIX AND NOT APPLE)
-	# The current FindX11 has no component named "X11" (extensions only),
-	# and the required variables are checked below anyway.
-	find_package (X11 REQUIRED)
-	if (X11_FOUND AND X11_Xutil_FOUND AND X11_Xfixes_FOUND)
-		message (STATUS "Found required X11 libraries: ${X11_X11_LIB};${X11_Xfixes_LIB}")
-	else ()
-		message (FATAL_ERROR "Could NOT find X11 or X11 Xfixes extension")
-	endif ()
-
-	include_directories (${X11_INCLUDE_DIR})
-	list (APPEND ADDITIONAL_LIBKADU_LIBRARIES ${X11_X11_LIB} ${X11_Xfixes_LIB})
+# KWindowSystem carries the activation token a Wayland compositor wants before it lets a window
+# raise itself, and reaches KWin's background blur. Both degrade quietly when it is absent.
+find_package (KF6WindowSystem QUIET)
+if (KF6WindowSystem_FOUND)
+	set (HAVE_KWINDOWSYSTEM 1)
+	message (STATUS "Found KF6WindowSystem: window activation and blur enabled")
+	list (APPEND ADDITIONAL_LIBKADU_LIBRARIES KF6::WindowSystem)
+else ()
+	set (HAVE_KWINDOWSYSTEM 0)
+	message (STATUS "KF6WindowSystem not found: windows will not raise themselves under Wayland")
 endif ()
 
 if (APPLE)

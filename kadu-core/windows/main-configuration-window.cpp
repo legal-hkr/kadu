@@ -74,12 +74,6 @@
 #include "main-configuration-window.h"
 #include "main-configuration-window.moc"
 
-#if defined(Q_OS_UNIX)
-#include "os/x11/x11tools.h"   // this should be included as last one,
-#undef KeyPress
-#undef Status   // and Status defined by Xlib.h must be undefined
-#endif
-
 const char *MainConfigurationWindow::SyntaxText = QT_TRANSLATE_NOOP(
     "@default",
     "Syntax: %s - status, %d - description, %i - ip, %n - nick, %a - altnick, %f - first name\n"
@@ -158,10 +152,6 @@ void MainConfigurationWindow::init()
 #ifndef Q_OS_WIN
     widget()->widgetById("startup")->hide();
     widget()->widgetById("hideMainWindowFromTaskbar")->hide();
-#endif
-
-#if !defined(Q_OS_UNIX)
-    widget()->widgetById("windowActivationMethod")->hide();
 #endif
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_WIN)

@@ -7,4 +7,5 @@
 #cmakedefine01 KADU_PRERELEASE
 
 #cmakedefine01 HAVE_EXECINFO
+#cmakedefine01 HAVE_KWINDOWSYSTEM
 #cmakedefine01 WITH_LIBINDICATE_QT
