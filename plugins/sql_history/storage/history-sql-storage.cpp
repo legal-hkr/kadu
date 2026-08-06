@@ -204,10 +204,27 @@ void HistorySqlStorage::init()
 
 void HistorySqlStorage::done()
 {
+    // A transaction stays open between syncs, so everything written since the last one reaches the
+    // file only on commit. That commit lives in the destructor, which runs after this method, and
+    // it is guarded by isOpen() -- closing the connection here without committing first silently
+    // discarded the unsynced messages.
     if (Database.isOpen())
-        Database.close();
+    {
+        Database.commit();
 
-    QSqlDatabase::removeDatabase("kadu-history");
+        // Everything still referring to the connection has to let go before it is removed, or Qt
+        // disables it under whatever is left holding it and warns that all queries will cease to
+        // work. The prepared statements outlive this method otherwise, and so does the
+        // QSqlDatabase member itself.
+        AppendMessageQuery = QSqlQuery{};
+        AppendStatusQuery = QSqlQuery{};
+        AppendSmsQuery = QSqlQuery{};
+
+        Database.close();
+        Database = QSqlDatabase{};
+    }
+
+    QSqlDatabase::removeDatabase(QStringLiteral("kadu-history"));
 }
 
 void HistorySqlStorage::ensureProgressWindowReady()
