@@ -27,10 +27,13 @@
 #include "configuration/configuration.h"
 #include "configuration/deprecated-configuration-api.h"
 #include "core/core.h"
+#include "icons/kadu-icon-engine.h"
 #include "icons/kadu-icon.h"
 #include "misc/misc.h"
 #include "protocols/protocol.h"
 #include "themes/icon-theme-manager.h"
+
+#include <memory>
 
 #include <QtCore/QRegularExpression>
 #include <QtCore/QFileInfo>
@@ -153,7 +156,10 @@ QString IconsManager::iconPath(
 
 QIcon IconsManager::buildPngIcon(const QString &themePath, const QString &path)
 {
-    QIcon icon;
+    // The engine is filled before it is wrapped, not through QIcon::addFile: that detaches first,
+    // and detaching discards an engine whose isNull() is still true -- which an engine with no
+    // files yet must answer, or IconsManager could not tell a missing icon from a present one.
+    auto engine = std::make_unique<KaduIconEngine>();
     for (auto const &size : iconSizes())
     {
         KaduIcon kaduIcon(path, size);
@@ -163,10 +169,13 @@ QIcon IconsManager::buildPngIcon(const QString &themePath, const QString &path)
         // different size would add the same file several times over.
         QString fullPath = iconPath(kaduIcon, EmptyAllowed, ExactSizeOnly);
         if (!fullPath.isEmpty())
-            icon.addFile(fullPath);
+            engine->addFile(fullPath, QSize{}, QIcon::Normal, QIcon::Off);
     }
 
-    return icon;
+    if (engine->isNull())
+        return QIcon{};
+
+    return QIcon{engine.release()};
 }
 
 QIcon IconsManager::iconByPath(const QString &themePath, const QString &path, AllowEmpty allowEmpty)
