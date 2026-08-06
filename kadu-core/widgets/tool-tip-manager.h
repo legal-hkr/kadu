@@ -28,6 +28,8 @@
 #include <injeqt/injeqt.h>
 
 class InjectedFactory;
+class QWidget;
+
 class Talkable;
 class ToolTipWidget;
 
@@ -39,7 +41,7 @@ public:
     Q_INVOKABLE explicit ToolTipManager(QObject *parent = nullptr);
     virtual ~ToolTipManager();
 
-    void showToolTip(const QPoint &point, const Talkable &talkable);
+    void showToolTip(const QPoint &point, const Talkable &talkable, QWidget *parent);
     void hideToolTip();
 
 private:

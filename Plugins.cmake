@@ -14,7 +14,6 @@ set (DEFAULT_PLUGINS
 	# Notification by external commands module
 	exec_notify
 	# Hints near tray icon
-	hints
 	# Speech synthesis support
 	speech
 	# PC Speaker notification support

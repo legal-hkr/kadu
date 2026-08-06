@@ -26,9 +26,11 @@
 #include <QtWidgets/QLabel>
 
 ToolTipWidget::ToolTipWidget(const Talkable &talkable, QWidget *parent)
-        : QFrame{parent,
-                 Qt::FramelessWindowHint | Qt::Tool | Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint |
-                     Qt::MSWindowsOwnDC},
+        // A tool window is a window in its own right, and a Wayland client may not say where its
+        // windows go -- measured on a live compositor, a tool window asked to appear at one corner
+        // was placed in the middle of the screen instead. A tooltip is a popup anchored to the
+        // widget it belongs to, which is placed where it is asked for, so that is what this is.
+        : QFrame{parent, Qt::FramelessWindowHint | Qt::ToolTip},
           m_talkable{talkable}
 {
     setObjectName(QStringLiteral("tool_tip"));

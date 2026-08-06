@@ -42,13 +42,15 @@ void ToolTipManager::setInjectedFactory(InjectedFactory *injectedFactory)
     m_injectedFactory = injectedFactory;
 }
 
-void ToolTipManager::showToolTip(const QPoint &where, const Talkable &talkable)
+void ToolTipManager::showToolTip(const QPoint &where, const Talkable &talkable, QWidget *parent)
 {
-    m_toolTipWidget = m_injectedFactory->makeNotOwned<ToolTipWidget>(talkable);
+    // The parent is what makes this a popup rather than a window: without one there is nothing for
+    // the compositor to anchor it to, and it lands wherever the compositor pleases.
+    m_toolTipWidget = m_injectedFactory->makeNotOwned<ToolTipWidget>(talkable, parent);
 
     auto pos = where + QPoint{5, 5};
     auto preferredSize = m_toolTipWidget->sizeHint();
-    auto screen = m_toolTipWidget->screen();
+    auto screen = parent ? parent->screen() : m_toolTipWidget->screen();
     if (!screen)
         screen = QGuiApplication::primaryScreen();
     auto desktopSize = screen->geometry().size();

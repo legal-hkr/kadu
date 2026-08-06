@@ -322,7 +322,7 @@ void TalkableTreeView::toolTipTimeout()
 {
     if (Talkable::ItemNone != ToolTipItem.type())
     {
-        m_toolTipManager->showToolTip(QCursor::pos(), ToolTipItem);
+        m_toolTipManager->showToolTip(QCursor::pos(), ToolTipItem, this);
         ToolTipTimeoutTimer.stop();
     }
 }
