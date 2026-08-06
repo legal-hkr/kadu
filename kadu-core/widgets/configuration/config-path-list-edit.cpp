@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtCore5Compat/QRegExp>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QLabel>
 

@@ -21,7 +21,6 @@
  */
 
 #include <QtCore/QFile>
-#include <QtCore/QRegExp>
 #include <QtCore/QString>
 #include <QtCore/QTextStream>
 #include <QtWidgets/QGridLayout>

@@ -20,7 +20,6 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
-#include <QtCore5Compat/QRegExp>
 #include <QtGui/QTextBlock>
 #include <QtGui/QTextDocument>
 

@@ -23,7 +23,6 @@
 
 #include "jid.h"
 
-#include <QtCore/QRegExp>
 
 JabberIdValidator::JabberIdValidator(QObject *parent) : QValidator(parent)
 {
