@@ -42,15 +42,20 @@ QString UrlClipboardHtmlTransformer::transform(const QString &clipboardHtml)
     QString result = clipboardHtml;
 
     int pos = 0;
-    while (-1 != (pos = UrlRegExp.indexIn(result, pos)))
+    while (true)
     {
-        int matchedLength = UrlRegExp.matchedLength();
-        QString displayStr = UrlRegExp.cap(1);
-        QString realDisplayStr = UrlRegExp.cap(3);
+        auto const match = UrlRegExp.match(result, pos);
+        if (!match.hasMatch())
+            break;
+
+        pos = match.capturedStart();
+        int matchedLength = match.capturedLength();
+        QString displayStr = match.captured(1);
+        QString realDisplayStr = match.captured(3);
 
         if (displayStr == realDisplayStr)   // i.e., we are copying the entire link, not a part of it
         {
-            QString hRef = UrlRegExp.cap(2);
+            QString hRef = match.captured(2);
             QString unfoldedLink = QString("<a href=\"%1\">%1</a>").arg(hRef);
             result.replace(pos, matchedLength, unfoldedLink);
 

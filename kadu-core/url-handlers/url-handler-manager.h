@@ -59,10 +59,10 @@ public:
 
     // TODO:
     // for mail validation:
-    const QRegExp &mailRegExp();
+    const QRegularExpression &mailRegExp();
 
     // for link validation
-    const QRegExp &urlRegExp();
+    const QRegularExpression &urlRegExp();
 
 private:
     QPointer<ClipboardHtmlTransformerService> m_clipboardHtmlTransformerService;

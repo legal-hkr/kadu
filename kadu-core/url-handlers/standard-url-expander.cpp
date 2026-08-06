@@ -23,7 +23,7 @@
 #include "standard-url-expander.h"
 #include "standard-url-expander.moc"
 
-StandardUrlExpander::StandardUrlExpander(QRegExp regExp) : DomTextRegexpVisitor(regExp)
+StandardUrlExpander::StandardUrlExpander(QRegularExpression regExp) : DomTextRegexpVisitor(regExp)
 {
 }
 
@@ -51,11 +51,11 @@ void StandardUrlExpander::setConfiguration(const StandardUrlExpanderConfiguratio
     Configuration = configuration;
 }
 
-QList<QDomNode> StandardUrlExpander::matchToDomNodes(QDomDocument document, QRegExp regExp) const
+QList<QDomNode> StandardUrlExpander::matchToDomNodes(QDomDocument document, const QRegularExpressionMatch &match) const
 {
     QDomElement linkElement = document.createElement("a");
 
-    QString link = regExp.cap();
+    QString link = match.captured();
     QString display = displayLink(link);
 
     if (link.contains("://"))

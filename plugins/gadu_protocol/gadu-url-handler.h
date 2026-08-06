@@ -24,7 +24,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
-#include <QtCore5Compat/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <injeqt/injeqt.h>
 
 class AccountManager;
@@ -55,7 +55,7 @@ private:
     QPointer<ContactManager> m_contactManager;
     QPointer<IconsManager> m_iconsManager;
 
-    QRegExp m_gaduRegExp;
+    QRegularExpression m_gaduRegExp;
 
 private slots:
     INJEQT_SET void setAccountManager(AccountManager *accountManager);

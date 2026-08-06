@@ -64,15 +64,14 @@ void OpenDescriptionLinkAction::actionTriggered(QAction *sender, bool)
     if (description.isEmpty())
         return;
 
-    auto url = m_urlHandlerManager->urlRegExp();
-    int idx_start = url.indexIn(description);
-    if (idx_start >= 0)
-        m_urlOpener->openUrl(description.mid(idx_start, url.matchedLength()).toUtf8());
+    auto const match = m_urlHandlerManager->urlRegExp().match(description);
+    if (match.hasMatch())
+        m_urlOpener->openUrl(match.captured().toUtf8());
 }
 
 void OpenDescriptionLinkAction::updateActionState(Action *action)
 {
     action->setEnabled(
-        m_urlHandlerManager->urlRegExp().indexIn(
-            action->context()->contacts().toContact().currentStatus().description()) >= 0);
+        action->context()->contacts().toContact().currentStatus().description().contains(
+            m_urlHandlerManager->urlRegExp()));
 }

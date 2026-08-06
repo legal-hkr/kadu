@@ -22,7 +22,7 @@
 
 #include "simple-url-expander.h"
 
-SimpleUrlExpander::SimpleUrlExpander(QRegExp regExp) : DomTextRegexpVisitor(regExp)
+SimpleUrlExpander::SimpleUrlExpander(QRegularExpression regExp) : DomTextRegexpVisitor(regExp)
 {
 }
 
@@ -30,10 +30,10 @@ SimpleUrlExpander::~SimpleUrlExpander()
 {
 }
 
-QList<QDomNode> SimpleUrlExpander::matchToDomNodes(QDomDocument document, QRegExp regExp) const
+QList<QDomNode> SimpleUrlExpander::matchToDomNodes(QDomDocument document, const QRegularExpressionMatch &match) const
 {
     QDomElement linkElement = document.createElement("a");
-    QString link = regExp.cap();
+    QString link = match.captured();
 
     linkElement.setAttribute("href", link);
     linkElement.appendChild(document.createTextNode(link));

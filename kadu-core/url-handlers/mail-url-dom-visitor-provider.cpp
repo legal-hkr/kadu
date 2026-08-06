@@ -25,7 +25,8 @@
 
 MailUrlDomVisitorProvider::MailUrlDomVisitorProvider()
         : m_ignoreLinks{std::make_unique<MailUrlExpander>(
-              QRegExp{"\\b[a-zA-Z0-9_\\.\\-]+@[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,4}\\b"})}
+              QRegularExpression{QStringLiteral("\\b[a-zA-Z0-9_\\.\\-]+@[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,4}\\b"),
+                                 QRegularExpression::UseUnicodePropertiesOption})}
 {
 }
 

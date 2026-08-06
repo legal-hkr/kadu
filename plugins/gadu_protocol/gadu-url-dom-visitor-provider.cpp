@@ -25,7 +25,7 @@
 #include "gadu-url-dom-visitor-provider.moc"
 
 GaduUrlDomVisitorProvider::GaduUrlDomVisitorProvider(QObject *parent)
-        : QObject{parent}, m_ignoreLinks{std::make_unique<SimpleUrlExpander>(QRegExp{"\\bgg:(/){0,3}[0-9]{1,12}\\b"})}
+        : QObject{parent}, m_ignoreLinks{std::make_unique<SimpleUrlExpander>(QRegularExpression{QStringLiteral("\\bgg:(/){0,3}[0-9]{1,12}\\b"), QRegularExpression::UseUnicodePropertiesOption})}
 {
 }
 

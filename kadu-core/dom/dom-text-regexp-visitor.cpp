@@ -22,7 +22,7 @@
 
 #include "dom-text-regexp-visitor.h"
 
-DomTextRegexpVisitor::DomTextRegexpVisitor(QRegExp regExp) : RegExp(regExp)
+DomTextRegexpVisitor::DomTextRegexpVisitor(QRegularExpression regExp) : RegExp(std::move(regExp))
 {
 }
 
@@ -33,16 +33,17 @@ DomTextRegexpVisitor::~DomTextRegexpVisitor()
 QDomText DomTextRegexpVisitor::expandFirstMatch(QDomText textNode) const
 {
     auto text = textNode.nodeValue();
-    auto index = RegExp.indexIn(text);
-    if (index < 0)
+    auto match = RegExp.match(text);
+    if (!match.hasMatch())
         return QDomText();
 
-    auto length = RegExp.matchedLength();
+    auto index = match.capturedStart();
+    auto length = match.capturedLength();
 
     auto afterMatch = textNode.splitText(index + length);
     textNode.setNodeValue(textNode.nodeValue().mid(0, index));
 
-    auto newNodes = matchToDomNodes(textNode.ownerDocument(), RegExp);
+    auto newNodes = matchToDomNodes(textNode.ownerDocument(), match);
     for (auto newNode : newNodes)
         textNode.parentNode().insertBefore(newNode, afterMatch);
 

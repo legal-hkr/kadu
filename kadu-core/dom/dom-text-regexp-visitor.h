@@ -21,7 +21,7 @@
 #ifndef DOM_TEXT_REGEXP_VISITOR_H
 #define DOM_TEXT_REGEXP_VISITOR_H
 
-#include <QtCore5Compat/QRegExp>
+#include <QtCore/QRegularExpression>
 
 #include "dom/dom-visitor.h"
 #include "exports.h"
@@ -45,7 +45,7 @@ class QDomNode;
  */
 class KADUAPI DomTextRegexpVisitor : public DomVisitor
 {
-    QRegExp RegExp;
+    QRegularExpression RegExp;
 
     QDomText expandFirstMatch(QDomText textNode) const;
 
@@ -54,7 +54,7 @@ public:
      * @short Create new DomTextRegexpVisitor that splits text nodes on matches of regExp.
      * @param regExp regular expression to match on text nodes
      */
-    explicit DomTextRegexpVisitor(QRegExp regExp);
+    explicit DomTextRegexpVisitor(QRegularExpression regExp);
     virtual ~DomTextRegexpVisitor();
 
     virtual QDomNode visit(QDomText textNode) const;
@@ -64,10 +64,13 @@ public:
     /**
      * @short Replace matched regular expression with DOM node.
      * @param document searched DOM document
-     * @param regExp object containing match information
+     * @param match object containing match information
      * @return DOM nodes replacing matched text
+     *
+     * QRegExp carried both the pattern and the state of the last match; QRegularExpression keeps
+     * the two apart, so implementations receive the match rather than the expression.
      */
-    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, QRegExp regExp) const = 0;
+    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, const QRegularExpressionMatch &match) const = 0;
 };
 
 /**
