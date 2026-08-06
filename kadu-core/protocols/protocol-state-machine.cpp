@@ -186,6 +186,8 @@ void ProtocolStateMachine::printConfiguration()
         states.append("logging-in-maybe-online");
     if (configuration().contains(LoggedInState))
         states.append("logged-in");
+    if (configuration().contains(WaitForSslErrorResult))
+        states.append("wait-for-ssl-error-result");
 
     qCDebug(KADU_PROTOCOL_STATE) << CurrentProtocol->account().protocolName() << CurrentProtocol->account().id()
                                  << "->" << states.join(QStringLiteral(", "));
