@@ -111,7 +111,6 @@ void MPRISPlayer::choosePlayer(const QString &key, const QString &value)
     {
         QString oldMPRISService = m_configuration->deprecatedApi()->readEntry("MediaPlayer", "MPRISService");
         QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-        userPlayersSettings.setIniCodec("ISO8859-2");
 
         userPlayersSettings.setValue(value + "/player", value);
         userPlayersSettings.setValue(value + "/service", oldMPRISService);
@@ -123,7 +122,6 @@ void MPRISPlayer::choosePlayer(const QString &key, const QString &value)
     else   // Choose player based on old module loaded.
     {
         QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-        globalPlayersSettings.setIniCodec("ISO8859-2");
 
         m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Player", value);
         m_configuration->deprecatedApi()->writeEntry(

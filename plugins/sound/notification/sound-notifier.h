@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "notification/notifier.h"
 
 #include <QtCore/QPointer>

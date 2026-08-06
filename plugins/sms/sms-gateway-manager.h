@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include <QtCore/QPair>
 #include <QtCore/QPointer>
 #include <QtCore/QStringList>

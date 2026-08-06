@@ -16,7 +16,8 @@ set (SOURCES
 )
 
 if (UNIX AND NOT APPLE)
-	find_package (X11 REQUIRED COMPONENTS X11 Xutil Xscreensaver)
+		# The current FindX11 has no component named "X11"; it only knows extensions.
+	find_package (X11 REQUIRED COMPONENTS Xscreensaver)
 	if (X11_Xscreensaver_FOUND)
 		message (STATUS "Found required X11 libraries: ${X11_X11_LIB};${X11_Xscreensaver_LIB}")
 	else ()

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include <QtCore/QList>
 #include <QtCore/QPointer>
 #include <QtNetwork/QHostAddress>

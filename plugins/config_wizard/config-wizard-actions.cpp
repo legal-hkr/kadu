@@ -29,7 +29,7 @@
 #include "misc/paths-provider.h"
 #include "widgets/configuration/configuration-widget.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 
 ConfigWizardActions::ConfigWizardActions(QObject *parent) : QObject{parent}
 {

@@ -28,7 +28,8 @@
 
 #include <QtCore/QDateTime>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QLayoutItem>
 #include <QtWidgets/QVBoxLayout>
 
@@ -42,7 +43,7 @@ HintsWidget::HintsWidget(QWidget *parent)
 
     m_layout = make_owned<QVBoxLayout>(this);
     m_layout->setSpacing(0);
-    m_layout->setMargin(0);
+    m_layout->setContentsMargins(0, 0, 0, 0);
 
     connect(&m_timer, &QTimer::timeout, this, &HintsWidget::removeExpiredHints);
 }
@@ -84,7 +85,8 @@ void HintsWidget::addNotification(const Notification &notification)
         height += w->height();
     }
 
-    auto maximumHeight = QApplication::desktop()->availableGeometry(this).height() / 2;
+    auto const *screen = this->screen() ? this->screen() : QGuiApplication::primaryScreen();
+    auto maximumHeight = screen->availableGeometry().height() / 2;
     while (height > maximumHeight)
     {
         auto hintToRemove = static_cast<Hint *>(m_layout->itemAt(0)->widget());

@@ -82,7 +82,10 @@ void Speech::say(
         t = m_configuration->deprecatedApi()->readEntry("Speech", "SpeechProgram", "powiedz");
         klatt = m_configuration->deprecatedApi()->readBoolEntry("Speech", "KlattSynt");
         melody = m_configuration->deprecatedApi()->readBoolEntry("Speech", "Melody");
-        soundSystem = m_configuration->deprecatedApi()->readBoolEntry("Speech", "SoundSystem");
+        // readBoolEntry() here assigned a bool to a QString. Qt5 let that through by way of
+        // bool -> char, so the variable held a control character and never matched "Dsp" or
+        // "aRts" below -- the configured sound system was silently ignored. It is a string entry.
+        soundSystem = m_configuration->deprecatedApi()->readEntry("Speech", "SoundSystem");
         dev = m_configuration->deprecatedApi()->readEntry("Speech", "DspDev", "/dev/dsp");
         freq = m_configuration->deprecatedApi()->readNumEntry("Speech", "Frequency");
         tempo = m_configuration->deprecatedApi()->readNumEntry("Speech", "Tempo");

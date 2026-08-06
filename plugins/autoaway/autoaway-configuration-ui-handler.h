@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "configuration/gui/configuration-ui-handler.h"
 
 class QLineEdit;

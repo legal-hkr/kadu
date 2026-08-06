@@ -65,7 +65,7 @@ ScreenshotWidget::ScreenshotWidget(QWidget *parent)
 #endif
 
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setContentsMargins(0, 0, 0, 0);
 
     CropWidget = new CropImageWidget(this);

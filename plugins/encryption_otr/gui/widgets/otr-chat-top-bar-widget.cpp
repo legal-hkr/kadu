@@ -51,7 +51,7 @@ void OtrChatTopBarWidget::init()
 void OtrChatTopBarWidget::createGui()
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setMargin(2);
+    layout->setContentsMargins(2, 2, 2, 2);
     layout->setSpacing(0);
 
     OtrStatusButton = new QPushButton();

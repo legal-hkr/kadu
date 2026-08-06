@@ -29,7 +29,6 @@
 #include <injeqt/injeqt.h>
 
 #if defined(Q_OS_UNIX)
-#include <QtX11Extras/QX11Info>
 #endif
 
 class Configuration;
@@ -53,7 +52,10 @@ private:
     QPointer<PluginInjectedFactory> m_pluginInjectedFactory;
 
 #if defined(Q_OS_UNIX)
-    Display *xdisplay;
+    // Forward declared rather than pulling in Xlib.h, which would define Bool, Status and None
+    // into every translation unit that includes this header. This plugin opens a display of its
+    // own with XOpenDisplay(); it does not share Qt's.
+    struct _XDisplay *xdisplay;
 #endif
     int volume;
 

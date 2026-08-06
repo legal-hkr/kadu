@@ -38,7 +38,7 @@ ExecConfigurationWidget::ExecConfigurationWidget(QWidget *parent) : NotifierConf
     m_commandLineEdit->setToolTip(QCoreApplication::translate("@default", MainConfigurationWindow::SyntaxTextNotify));
 
     auto layout = new QHBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_commandLineEdit);
 
     static_cast<NotifyGroupBox *>(parent)->addWidget(this);

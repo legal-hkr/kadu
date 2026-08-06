@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "configuration/configuration-aware-object.h"
 #include "message/message-filter.h"
 #include "windows/main-configuration-window.h"

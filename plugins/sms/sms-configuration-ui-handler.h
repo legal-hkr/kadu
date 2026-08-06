@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include <QtCore/QBuffer>
 #include <QtCore/QMap>
 #include <QtWidgets/QDialog>

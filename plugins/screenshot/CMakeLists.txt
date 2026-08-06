@@ -30,7 +30,8 @@ set (CONFIGURATION_FILES
 
 if (UNIX AND NOT APPLE)
 	set (PLUGIN_ADDITIONAL_QT_MODULES X11Extras)
-	find_package (X11 REQUIRED COMPONENTS X11 Xext Xshape)
+		# The current FindX11 has no component named "X11"; it only knows extensions.
+	find_package (X11 REQUIRED COMPONENTS Xext Xshape)
 	if (X11_Xshape_FOUND)
 		message (STATUS "Found required X11 libraries: ${X11_X11_LIB};${X11_Xext_LIB}")
 	else ()

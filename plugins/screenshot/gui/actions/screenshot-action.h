@@ -21,7 +21,7 @@
 #pragma once
 
 #include <QtCore/QPointer>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 
 #include "actions/action-description.h"
 

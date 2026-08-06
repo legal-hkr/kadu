@@ -24,7 +24,8 @@
 
 #include <QtCore/QRect>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 
 HintsWidgetPositioner::HintsWidgetPositioner(QObject *parent) : QObject{parent}
 {
@@ -59,7 +60,8 @@ void HintsWidgetPositioner::update()
 
 QPoint HintsWidgetPositioner::positionForSize(QSize size)
 {
-    auto availableGeometry = QApplication::desktop()->availableGeometry(m_hintsWidget);
+    auto const *screen = m_hintsWidget->screen() ? m_hintsWidget->screen() : QGuiApplication::primaryScreen();
+    auto availableGeometry = screen->availableGeometry();
     switch (m_hintsConfiguration->corner())
     {
     case HintsConfiguration::Corner::TopLeft:

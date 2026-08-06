@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include <injeqt/injeqt.h>
 #include <mpd/client.h>
 

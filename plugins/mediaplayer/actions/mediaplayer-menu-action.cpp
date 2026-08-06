@@ -24,7 +24,7 @@
 
 #include "widgets/chat-edit-box.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QMenu>
 
 MediaplayerMenuAction::MediaplayerMenuAction(QObject *parent)

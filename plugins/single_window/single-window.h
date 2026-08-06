@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QtCore/QObject>
 #include <QtCore/QList>
 #include <QtWidgets/QWidget>
 #include <injeqt/injeqt.h>

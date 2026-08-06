@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include <QtCore/QMap>
 #include <QtCore/QPointer>
 #include <injeqt/injeqt.h>

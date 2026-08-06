@@ -24,7 +24,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
-#include <QtCore/QTime>
+#include <QtCore/QElapsedTimer>
 #include <injeqt/injeqt.h>
 
 class Configuration;
@@ -40,7 +40,9 @@ class Speech : public QObject, public Notifier
 {
     Q_OBJECT
 
-    QTime lastSpeech;
+    // QTime lost elapsed()/restart() in Qt6; measuring an interval is what
+    // QElapsedTimer is for.
+    QElapsedTimer lastSpeech;
 
 public:
     Q_INVOKABLE explicit Speech(QObject *parent = nullptr);
