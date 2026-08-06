@@ -151,7 +151,10 @@ bool JabberChatService::sendMessage(const Message &message)
 
     xmppMessage.setBody(plain);
     xmppMessage.setFrom(m_client.data()->clientPresence().id());
-    xmppMessage.setStamp(QDateTime::currentDateTime());
+    // No stamp: a stamp becomes a <delay/> element, which by XEP-0203 is added only by whoever
+    // held the message up -- a server queueing it, or a room replaying its history. Sending one
+    // with a live message tells the other end it is reading something old, and clients that skip
+    // delayed messages when catching up drop it.
     xmppMessage.setTo(jid.full());
     xmppMessage.setType(chatMessageType(message.messageChat(), jid.bare()));
 
@@ -173,7 +176,6 @@ bool JabberChatService::sendRawMessage(const Chat &chat, const QByteArray &rawMe
 
     xmppMessage.setBody(rawMessage);
     xmppMessage.setFrom(m_client.data()->clientPresence().id());
-    xmppMessage.setStamp(QDateTime::currentDateTime());
     xmppMessage.setTo(jid.full());
     xmppMessage.setType(chatMessageType(chat, jid.bare()));
 
@@ -201,7 +203,10 @@ void JabberChatService::handleReceivedMessage(const QXmppMessage &xmppMessage)
         return;
 
     message.setType(MessageTypeReceived);
-    message.setSendDate(xmppMessage.stamp().toLocalTime());
+    // Only a message that really was held up carries a stamp, so anything live arrives without
+    // one. Reading it unconditionally gave those messages a null send date.
+    auto const stamp = xmppMessage.stamp();
+    message.setSendDate(stamp.isValid() ? stamp.toLocalTime() : QDateTime::currentDateTime());
     message.setReceiveDate(QDateTime::currentDateTime());
 
     auto body = xmppMessage.body();

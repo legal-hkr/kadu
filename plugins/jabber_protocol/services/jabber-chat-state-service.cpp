@@ -155,7 +155,8 @@ void JabberChatStateService::sendState(const Contact &contact, ChatState state)
 
     auto xmppMessage = QXmppMessage{};
     xmppMessage.setFrom(m_client.data()->clientPresence().id());
-    xmppMessage.setStamp(QDateTime::currentDateTime());
+    // A typing notification describes what is happening right now, so a <delay/> stamp on it is
+    // a contradiction. See the same removal in JabberChatService.
     xmppMessage.setTo(jid.full());
     xmppMessage.setType(QXmppMessage::Chat);
 
