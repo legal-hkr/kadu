@@ -97,7 +97,7 @@ void ShowXmlConsoleAction::updateShowXmlConsoleMenu()
         if (jabberAccounts.isEmpty() || 1 == m_accountManager->items().count())
         {
             delete menu;
-            action->setMenu(0);
+            action->setMenu(nullptr);
 
             if (jabberAccounts.isEmpty())
             {

@@ -33,7 +33,7 @@
 #include "protocols/services/chat-service.h"
 
 #include <injeqt/injeqt.h>
-#include <qxmpp/QXmppClient.h>
+#include <QXmppQt6/QXmppClient.h>
 
 class JabberChangePasswordService;
 class JabberChatService;

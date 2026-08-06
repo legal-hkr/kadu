@@ -28,7 +28,7 @@
 
 #include "avatars/avatars.h"
 
-#include <QXmppVCardIq.h>
+#include <QXmppQt6/QXmppVCardIq.h>
 #include <QtCore/QBuffer>
 
 namespace

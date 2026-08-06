@@ -30,8 +30,8 @@
 #include "contacts/contact-set.h"
 #include "protocols/services/chat-state.h"
 
-#include <qxmpp/QXmppClient.h>
-#include <qxmpp/QXmppMessage.h>
+#include <QXmppQt6/QXmppClient.h>
+#include <QXmppQt6/QXmppMessage.h>
 
 namespace
 {

@@ -24,8 +24,8 @@
 #include "services/jabber-error-service.h"
 
 #include <QtXml/QDomElement>
-#include <qxmpp/QXmppClient.h>
-#include <qxmpp/QXmppRosterIq.h>
+#include <QXmppQt6/QXmppClient.h>
+#include <QXmppQt6/QXmppRosterIq.h>
 
 JabberRosterExtension::JabberRosterExtension()
 {

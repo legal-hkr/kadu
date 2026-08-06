@@ -40,6 +40,7 @@
 #include "url-handlers/simple-url-expander.h"
 #include "widgets/chat-widget/chat-widget-manager.h"
 
+#include <QtCore/QRegularExpression>
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 
@@ -49,7 +50,12 @@ JabberUrlHandler::JabberUrlHandler(QObject *parent) : QObject{parent}
     // (RFC5122 - 3.3, XEP-0147)
     // "(?:xmpp|jabber):" - if we ever need to handle jabber: links
 
-    m_jabberRegExp = QRegExp(
+    // \b is Unicode-aware in QRegExp and ASCII-only in PCRE2, so without
+    // UseUnicodePropertiesOption "ąxmpp:jan@example.com" would start matching at the "x".
+    // exactMatch() is expressed by anchoring the pattern; the groups are never read, this is
+    // only ever used to decide whether a string is an XMPP URL.
+    m_jabberRegExp = QRegularExpression(
+        QRegularExpression::anchoredPattern(
         "\\b"
         "xmpp:"
         "(?://([^@ ]+)@([^/?# ]+)/?)?"                   // auth-xmpp
@@ -57,7 +63,8 @@ JabberUrlHandler::JabberUrlHandler(QObject *parent) : QObject{parent}
         "(?:\\?([^&# ]+)"                                // querytype
         "(&[^# ]+)?)?"                                   // pair, will need to be reparsed, later
         "(?:#(\\S*))?"                                   // fragment
-        "\\b");
+        "\\b"),
+        QRegularExpression::UseUnicodePropertiesOption);
     // Reparse pair with: "&([^=]+)=([^&]+)"
 }
 
@@ -100,7 +107,7 @@ bool JabberUrlHandler::isUrlValid(const QByteArray &url)
     if (url == "xmpp:")
         return false;
 
-    return m_jabberRegExp.exactMatch(QString::fromUtf8(url));
+    return m_jabberRegExp.match(QString::fromUtf8(url)).hasMatch();
 }
 
 void JabberUrlHandler::openUrl(UrlOpener *urlOpener, const QByteArray &url, bool disableMenu)
@@ -115,7 +122,9 @@ void JabberUrlHandler::openUrl(UrlOpener *urlOpener, const QByteArray &url, bool
     if (jabberId.startsWith(QStringLiteral("jid:")))
     {
         jabberId.remove(0, 3);
-        jabberId.remove(QRegExp("/*"));
+        // "/*" matches the empty string at every position; "/" removes exactly the same
+        // characters without depending on how empty matches advance.
+        jabberId.remove(QLatin1Char('/'));
     }
 
     if (jabberAccounts.count() == 1 || disableMenu)

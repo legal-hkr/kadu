@@ -21,7 +21,7 @@
 
 #include <QtCore/QObject>
 
-class QStringList;
+#include <QtCore/QStringList>
 
 class JabberServersService : public QObject
 {

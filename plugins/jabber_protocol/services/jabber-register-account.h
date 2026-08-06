@@ -25,7 +25,7 @@
 #include <QtCore/QPointer>
 #include <injeqt/injector.h>
 #include <memory>
-#include <qxmpp/QXmppClient.h>
+#include <QXmppQt6/QXmppClient.h>
 
 class PluginInjectedFactory;
 class JabberErrorService;

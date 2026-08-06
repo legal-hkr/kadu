@@ -20,8 +20,8 @@
 #pragma once
 
 #include <QtCore/QObject>
-#include <qxmpp/QXmppClient.h>
-#include <qxmpp/QXmppStanza.h>
+#include <QXmppQt6/QXmppClient.h>
+#include <QXmppQt6/QXmppStanza.h>
 
 class QXmppIq;
 

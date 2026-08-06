@@ -17,6 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include "jabber-url-dom-visitor-provider.h"
 #include "jabber-url-dom-visitor-provider.moc"
 
@@ -26,14 +27,15 @@
 
 JabberUrlDomVisitorProvider::JabberUrlDomVisitorProvider(QObject *parent)
         : QObject{parent}, m_ignoreLinks{std::make_unique<SimpleUrlExpander>(
-                               QRegExp{"\\b"
+                               QRegularExpression{"\\b"
                                        "xmpp:"
                                        "(?://([^@ ]+)@([^/?# ]+)/?)?"                   // auth-xmpp
                                        "(?:(?:([^@ ]+)@)?([^/?# ]+)(?:/([^?# ]+))?)?"   // path-xmpp
                                        "(?:\\?([^&# ]+)"                                // querytype
                                        "(&[^# ]+)?)?"   // pair, will need to be reparsed, later
                                        "(?:#(\\S*))?"   // fragment
-                                       "\\b"})}
+                                       "\\b",
+                               QRegularExpression::UseUnicodePropertiesOption})}
 {
 }
 
