@@ -34,6 +34,7 @@
 #include "core/session-service.h"
 #include "icons/icons-manager.h"
 #include "icons/kadu-icon.h"
+#include "misc/kadu-logging.h"
 #include "plugin/plugin-injected-factory.h"
 #include "protocols/protocol-factory.h"
 #include "protocols/protocol-state-machine.h"
@@ -168,8 +169,18 @@ void Protocol::disconnectedCleanup()
 
 void Protocol::setStatus(Status status, StatusChangeSource source)
 {
+    // The guard below is the last point at which an account can stop connecting without a word:
+    // no login attempt, no error, and no password prompt either, because the prompt is raised by
+    // the state machine and the machine is never asked to move.
     if (SourceStatusChanger == source && !account().hasPassword())
+    {
+        qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id()
+                                    << "ignoring status change from a status changer: no stored password";
         return;
+    }
+
+    qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id() << "status change accepted,"
+                                << (SourceUser == source ? "from user" : "from status changer");
 
     LoginStatus = protocolFactory()->adaptStatus(status);
     doSetStatus(LoginStatus);
