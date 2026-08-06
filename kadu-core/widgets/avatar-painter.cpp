@@ -50,29 +50,36 @@ bool AvatarPainter::greyOut()
     return contact.currentStatus().isDisconnected();
 }
 
-QString AvatarPainter::cacheKey()
+QString AvatarPainter::cacheKey(qreal devicePixelRatio)
 {
-    return QString("msi-%1-%2,%3,%4")
+    // The ratio belongs in the key: an item rendered for one screen must not be reused on another
+    // with a different scale, which is exactly what happens with two monitors magnified
+    // differently.
+    return QString("msi-%1-%2,%3,%4,%5")
         .arg(Avatar.cacheKey())
         .arg(greyOut())
         .arg(Configuration->avatarBorder())
-        .arg(Option.state & QStyle::State_Selected ? 1 : 0);
+        .arg(Option.state & QStyle::State_Selected ? 1 : 0)
+        .arg(devicePixelRatio);
 }
 
-QPixmap AvatarPainter::getOrCreateCacheItem()
+QPixmap AvatarPainter::getOrCreateCacheItem(qreal devicePixelRatio)
 {
-    QString key = cacheKey();
+    QString key = cacheKey(devicePixelRatio);
 
     QPixmap cached;
     if (QPixmapCache::find(key, &cached))
         return cached;
 
-    QPixmap item = QPixmap(AvatarRect.size());
+    // The item has to hold as many pixels as the screen shows, while the painting below stays in
+    // the logical coordinates the rest of the delegate works in.
+    QPixmap item = QPixmap((QSizeF{AvatarRect.size()} * devicePixelRatio).toSize());
+    item.setDevicePixelRatio(devicePixelRatio);
     item.fill(QColor(0, 0, 0, 0));
 
     QPainter cachePainter;
     cachePainter.begin(&item);
-    doPaint(&cachePainter, item.size());
+    doPaint(&cachePainter, AvatarRect.size(), devicePixelRatio);
     cachePainter.end();
 
     QPixmapCache::insert(key, item);
@@ -82,7 +89,7 @@ QPixmap AvatarPainter::getOrCreateCacheItem()
 
 void AvatarPainter::paintFromCache(QPainter *painter)
 {
-    QPixmap cached = getOrCreateCacheItem();
+    QPixmap cached = getOrCreateCacheItem(painter->device()->devicePixelRatio());
 
     painter->drawPixmap(AvatarRect, cached);
 }
@@ -99,22 +106,31 @@ QPixmap AvatarPainter::cropped()
     return QPixmap::fromImage(cropped);
 }
 
-void AvatarPainter::doPaint(QPainter *painter, const QSize &size)
+void AvatarPainter::doPaint(QPainter *painter, const QSize &size, qreal devicePixelRatio)
 {
-    QPixmap displayAvatar;
     QPixmap croppedAvatar = cropped();
 
-    if (croppedAvatar.height() > size.height() || croppedAvatar.width() > size.width())
-        displayAvatar = croppedAvatar.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    else
-        displayAvatar = croppedAvatar;
+    // The area the avatar covers, in logical units: shrink to fit, never enlarge -- as before.
+    QSize displaySize = croppedAvatar.size();
+    if (displaySize.width() > size.width() || displaySize.height() > size.height())
+        displaySize.scale(size, Qt::KeepAspectRatio);
 
-    QRect displayRect = displayAvatar.rect();
+    // Fill that area with the pixel count the screen actually has. Scaling down to the logical
+    // size and leaving the enlargement to the painter is what made avatars soft: the stored file
+    // is usually larger than the contact list shows, and every pixel above the logical size was
+    // being discarded.
+    QSize const targetSize = (QSizeF{displaySize} * devicePixelRatio).toSize();
+    QPixmap displayAvatar = croppedAvatar.size() == targetSize
+                                ? croppedAvatar
+                                : croppedAvatar.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QRect displayRect{QPoint{0, 0}, displaySize};
     displayRect.moveTop((size.height() - displayRect.height()) / 2);
     displayRect.moveLeft((size.width() - displayRect.width()) / 2);
 
     // grey out offline contacts' avatar
     displayAvatar = greyOut() ? QIcon(displayAvatar).pixmap(displayAvatar.size(), QIcon::Disabled) : displayAvatar;
+    displayAvatar.setDevicePixelRatio(devicePixelRatio);
 
     int radius = 3;
     QPainterPath displayRectPath;

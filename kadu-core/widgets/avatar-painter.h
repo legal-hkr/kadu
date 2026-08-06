@@ -41,11 +41,11 @@ class AvatarPainter
 
     bool greyOut();
     QPixmap cropped();
-    QString cacheKey();
-    QPixmap getOrCreateCacheItem();
+    QString cacheKey(qreal devicePixelRatio);
+    QPixmap getOrCreateCacheItem(qreal devicePixelRatio);
     void paintFromCache(QPainter *painter);
 
-    void doPaint(QPainter *painter, const QSize &size);
+    void doPaint(QPainter *painter, const QSize &size, qreal devicePixelRatio);
 
 public:
     AvatarPainter(
