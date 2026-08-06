@@ -26,7 +26,7 @@ OpenRedmineAction::OpenRedmineAction(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           ActionDescription(parent)
 {
-    setIcon(KaduIcon{"kadu_icons/report-a-bug"});
+    setIcon(KaduIcon{"tools-report-bug"});
     setName(QStringLiteral("bugsAction"));
     setText(tr("Report a Bug"));
     setType(ActionDescription::TypeMainMenu);

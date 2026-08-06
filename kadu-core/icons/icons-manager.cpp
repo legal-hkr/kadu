@@ -35,6 +35,7 @@
 
 #include <memory>
 
+#include <QtCore/QHash>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QFileInfo>
 
@@ -52,6 +53,38 @@ const QStringList &iconSizes()
                                    QStringLiteral("48x48"), QStringLiteral("64x64"), QStringLiteral("96x96"),
                                    QStringLiteral("128x128"), QStringLiteral("256x256")};
     return sizes;
+}
+
+/**
+ * @short The bundled icon behind each standard name Kadu now asks for.
+ *
+ * Following the note the icons' author left -- "the less icons here, the better because then we may
+ * use system icons" -- these are asked for by their freedesktop names, so a desktop that has them
+ * supplies them. The files that used to answer are still here under their old names, and answer
+ * when the desktop has nothing and when the setting says to prefer Kadu's own.
+ */
+const QHash<QString, QString> &bundledEquivalent()
+{
+    static const QHash<QString, QString> equivalents{
+        {QStringLiteral("help-about"), QStringLiteral("kadu_icons/about-kadu")},
+        {QStringLiteral("system-users"), QStringLiteral("kadu_icons/conference")},
+        {QStringLiteral("edit-copy"), QStringLiteral("kadu_icons/copy-personal-info")},
+        {QStringLiteral("go-jump"), QStringLiteral("kadu_icons/enter")},
+        {QStringLiteral("help-contents"), QStringLiteral("kadu_icons/get-involved")},
+        {QStringLiteral("document-open-recent"), QStringLiteral("kadu_icons/history")},
+        {QStringLiteral("preferences-other"), QStringLiteral("kadu_icons/section-kadu")},
+        {QStringLiteral("go-next"), QStringLiteral("kadu_icons/stylesheet-branch-closed")},
+        {QStringLiteral("go-down"), QStringLiteral("kadu_icons/stylesheet-branch-open")},
+        {QStringLiteral("document-save"), QStringLiteral("kadu_icons/transfer-receive")},
+        {QStringLiteral("document-send"), QStringLiteral("kadu_icons/transfer-send")},
+        {QStringLiteral("edit-clear-history"), QStringLiteral("kadu_icons/clear-history")},
+        {QStringLiteral("preferences-desktop-notification"), QStringLiteral("kadu_icons/enable-notifications")},
+        {QStringLiteral("merge"), QStringLiteral("kadu_icons/merge-buddies")},
+        {QStringLiteral("preferences-plugin"), QStringLiteral("kadu_icons/plugins")},
+        {QStringLiteral("tools-report-bug"), QStringLiteral("kadu_icons/report-a-bug")},
+        {QStringLiteral("tab-detach"), QStringLiteral("kadu_icons/tab-detach")},
+    };
+    return equivalents;
 }
 }
 
@@ -199,6 +232,15 @@ QIcon IconsManager::iconByPath(const QString &themePath, const QString &path, Al
 
             if (icon.isNull())
                 icon = buildPngIcon(themePath, path);
+
+            // A standard name the desktop does not carry falls back to the file that used to answer
+            // to Kadu's own name for it.
+            if (icon.isNull())
+            {
+                auto const equivalent = bundledEquivalent().value(path);
+                if (!equivalent.isEmpty())
+                    icon = buildPngIcon(themePath, equivalent);
+            }
 
             if (icon.isNull())
             {

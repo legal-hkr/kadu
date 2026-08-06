@@ -118,7 +118,7 @@ void DockingMenuHandler::init()
 #endif
 
     m_silentModeAction =
-        new QAction{m_iconsManager->iconByPath(KaduIcon{"kadu_icons/enable-notifications"}), tr("Silent mode"), this};
+        new QAction{m_iconsManager->iconByPath(KaduIcon{"preferences-desktop-notification"}), tr("Silent mode"), this};
     m_silentModeAction->setCheckable(true);
     connect(m_silentModeAction, SIGNAL(triggered(bool)), this, SLOT(silentModeToggled(bool)));
 

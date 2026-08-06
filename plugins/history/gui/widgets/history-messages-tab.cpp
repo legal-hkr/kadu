@@ -105,7 +105,7 @@ void HistoryMessagesTab::createGui()
 {
     TimelinePopupMenu = new QMenu(this);
     TimelinePopupMenu->addAction(
-        m_iconsManager->iconByPath(KaduIcon("kadu_icons/clear-history")), tr("&Remove entries"), this,
+        m_iconsManager->iconByPath(KaduIcon("edit-clear-history")), tr("&Remove entries"), this,
         SLOT(removeEntries()));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -337,7 +337,7 @@ void HistoryMessagesTab::showTalkablePopupMenu()
 
     menu->addSeparator();
     menu->addAction(
-        m_iconsManager->iconByPath(KaduIcon("kadu_icons/clear-history")), ClearHistoryMenuItemTitle, this,
+        m_iconsManager->iconByPath(KaduIcon("edit-clear-history")), ClearHistoryMenuItemTitle, this,
         SLOT(clearTalkableHistory()));
 
     menu->exec(QCursor::pos());

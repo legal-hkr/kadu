@@ -30,7 +30,7 @@ AutoSendAction::AutoSendAction(QObject *parent)
           ActionDescription(parent)
 {
     setCheckable(true);
-    setIcon(KaduIcon{"kadu_icons/enter"});
+    setIcon(KaduIcon{"go-jump"});
     setName(QStringLiteral("autoSendAction"));
     setText(tr("More..."));
     setType(ActionDescription::TypeChat);

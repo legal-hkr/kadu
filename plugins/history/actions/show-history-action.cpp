@@ -70,7 +70,7 @@ void ShowHistoryAction::init()
 {
     setType(ActionDescription::TypeUser);
     setName("showHistoryAction");
-    setIcon(KaduIcon("kadu_icons/history"));
+    setIcon(KaduIcon("document-open-recent"));
     setText(tr("View Chat History"));
     setShortcut("kadu_viewhistory");
 

@@ -47,7 +47,7 @@
 FreedesktopNotifier::FreedesktopNotifier(QObject *parent)
         : QObject{parent}, Notifier(
                                "FreedesktopNotifier", QT_TRANSLATE_NOOP("@default", "System notifications"),
-                               KaduIcon("kadu_icons/notify-hints")),
+                               KaduIcon("preferences-desktop-notification")),
           KdePlasmaNotifications(true), IsXCanonicalAppendSupported(false), ServerSupportsActions(true),
           ServerSupportsBody(true), ServerSupportsHyperlinks(true), ServerSupportsMarkup(true),
           ServerCapabilitiesRequireChecking(true)
@@ -178,7 +178,7 @@ void FreedesktopNotifier::notify(const Notification &notification)
     KaduIcon icon(notification.icon);
     if (icon.isNull())
     {
-        icon.setPath("kadu_icons/section-kadu");
+        icon.setPath("preferences-other");
         icon.setSize("32x32");
     }
     else

@@ -32,7 +32,7 @@ MergeBuddiesAction::MergeBuddiesAction(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           ActionDescription(parent)
 {
-    setIcon(KaduIcon{"kadu_icons/merge-buddies"});
+    setIcon(KaduIcon{"merge"});
     setName(QStringLiteral("mergeContactAction"));
     setText(tr("Merge Buddies..."));
     setType(ActionDescription::TypeUser);

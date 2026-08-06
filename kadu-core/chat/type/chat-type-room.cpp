@@ -113,11 +113,11 @@ QStringList ChatTypeRoom::aliases() const
  *
  * Chat type icon. Icon is used in history window and as icon of chat windows.
  *
- * Icon for ChatTypeRoom is 'kadu_icons/conference'.
+ * Icon for ChatTypeRoom is 'system-users'.
  */
 KaduIcon ChatTypeRoom::icon() const
 {
-    return KaduIcon("kadu_icons/conference");
+    return KaduIcon("system-users");
 }
 
 /**

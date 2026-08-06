@@ -34,7 +34,7 @@ CopyPersonalInfoAction::CopyPersonalInfoAction(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           ActionDescription(parent)
 {
-    setIcon(KaduIcon{"kadu_icons/copy-personal-info"});
+    setIcon(KaduIcon{"edit-copy"});
     setName(QStringLiteral("copyPersonalInfoAction"));
     setText(tr("Copy Personal Info"));
     setType(ActionDescription::TypeUser);

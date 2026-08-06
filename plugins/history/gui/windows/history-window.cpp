@@ -80,7 +80,7 @@ void HistoryWindow::init()
     setAttribute(Qt::WA_DeleteOnClose);
 
     setWindowTitle(tr("History"));
-    setWindowIcon(m_iconsManager->iconByPath(KaduIcon("kadu_icons/history")));
+    setWindowIcon(m_iconsManager->iconByPath(KaduIcon("document-open-recent")));
 
     createGui();
 

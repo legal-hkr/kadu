@@ -33,7 +33,7 @@ ClearHistoryAction::ClearHistoryAction(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           ActionDescription(parent)
 {
-    setIcon(KaduIcon{"kadu_icons/clear-history"});
+    setIcon(KaduIcon{"edit-clear-history"});
     setName(QStringLiteral("clearHistoryAction"));
     setText(tr("Clear History"));
     setType(ActionDescription::TypeUser);

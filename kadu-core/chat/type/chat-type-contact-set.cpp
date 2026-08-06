@@ -131,11 +131,11 @@ QStringList ChatTypeContactSet::aliases() const
  *
  * Chat type icon. Icon is used in history window and as icon of chat windows.
  *
- * Icon for ChatTypeContactSet is 'kadu_icons/conference'.
+ * Icon for ChatTypeContactSet is 'system-users'.
  */
 KaduIcon ChatTypeContactSet::icon() const
 {
-    return KaduIcon("kadu_icons/conference");
+    return KaduIcon("system-users");
 }
 
 /**

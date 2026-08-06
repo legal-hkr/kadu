@@ -143,13 +143,13 @@ void FileTransferWidget::createGui()
     m_removeButton = new QToolButton{this};
     m_removeButton->setAutoRaise(true);
     m_removeButton->setFixedSize({22, 22});
-    m_removeButton->setIcon(m_iconsManager->iconByPath(KaduIcon("kadu_icons/tab-remove")));
+    m_removeButton->setIcon(m_iconsManager->iconByPath(KaduIcon("tab-close")));
     m_removeButton->setToolTip(tr("Remove"));
     connect(m_removeButton.get(), SIGNAL(clicked()), this, SLOT(remove()));
 
     auto icon = new QLabel{this};
-    auto iconName = FileTransferDirection::Outgoing == m_transfer.transferDirection() ? "kadu_icons/transfer-send"
-                                                                                      : "kadu_icons/transfer-receive";
+    auto iconName = FileTransferDirection::Outgoing == m_transfer.transferDirection() ? "document-send"
+                                                                                      : "document-save";
     icon->setPixmap(m_iconsManager->iconByPath(KaduIcon{iconName}).pixmap(22, 22));
 
     m_progressBar = new QProgressBar{this};

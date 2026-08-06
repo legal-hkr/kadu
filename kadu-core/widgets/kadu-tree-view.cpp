@@ -104,12 +104,12 @@ void KaduTreeView::updateBackground()
         style.append(
             "QTreeView::branch:has-children:!has-siblings:closed, QTreeView::branch:closed:has-children:has-siblings "
             "{ border-image: none; image: url(" +
-            m_iconsManager->iconPath(KaduIcon{"kadu_icons/stylesheet-branch-closed", "16x16"}) +
+            m_iconsManager->iconPath(KaduIcon{"go-next", "16x16"}) +
             "); margin-top: 4px; image-position: top }");
         style.append(
             "QTreeView::branch:open:has-children:!has-siblings, QTreeView::branch:open:has-children:has-siblings "
             "{ border-image: none; image: url(" +
-            m_iconsManager->iconPath(KaduIcon{"kadu_icons/stylesheet-branch-open", "16x16"}) +
+            m_iconsManager->iconPath(KaduIcon{"go-down", "16x16"}) +
             "); image-position: top; margin-top: 8px }");
     }
     else
@@ -117,11 +117,11 @@ void KaduTreeView::updateBackground()
         style.append(
             "QTreeView::branch:has-children:!has-siblings:closed, QTreeView::branch:closed:has-children:has-siblings "
             "{ border-image: none; image: url(" +
-            m_iconsManager->iconPath(KaduIcon{"kadu_icons/stylesheet-branch-closed", "16x16"}) + ") }");
+            m_iconsManager->iconPath(KaduIcon{"go-next", "16x16"}) + ") }");
         style.append(
             "QTreeView::branch:open:has-children:!has-siblings, QTreeView::branch:open:has-children:has-siblings "
             "{ border-image: none; image: url(" +
-            m_iconsManager->iconPath(KaduIcon{"kadu_icons/stylesheet-branch-open", "16x16"}) + ") }");
+            m_iconsManager->iconPath(KaduIcon{"go-down", "16x16"}) + ") }");
     }
 
     style.append("QTreeView { background-color: transparent;");

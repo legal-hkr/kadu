@@ -31,7 +31,7 @@ AttachTabAction::AttachTabAction(QObject *parent)
           ActionDescription(parent)
 {
     setCheckable(true);
-    setIcon(KaduIcon{"kadu_icons/tab-detach"});
+    setIcon(KaduIcon{"tab-detach"});
     setName(QStringLiteral("attachToTabsAction"));
     setText(tr("Attach Chat to Tabs"));
     setType(ActionDescription::TypeChat);

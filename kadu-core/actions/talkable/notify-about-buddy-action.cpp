@@ -29,7 +29,7 @@ NotifyAboutBuddyAction::NotifyAboutBuddyAction(QObject *parent)
           ActionDescription(parent)
 {
     setCheckable(true);
-    setIcon(KaduIcon{"kadu_icons/notify-about-buddy"});
+    setIcon(KaduIcon{"preferences-desktop-notification"});
     setName(QStringLiteral("notifyAboutUserAction"));
     setText(tr("Notify About Buddy"));
     setType(ActionDescription::TypeUser);

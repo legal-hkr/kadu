@@ -74,11 +74,11 @@ QStringList ChatTypeBuddy::aliases() const
  *
  * Chat type icon. Icon is used in history window and as icon of chat windows.
  *
- * Icon for ChatTypeBuddy is 'kadu_icons/conference'.
+ * Icon for ChatTypeBuddy is 'system-users'.
  */
 KaduIcon ChatTypeBuddy::icon() const
 {
-    return KaduIcon(QStringLiteral("kadu_icons/conference"));
+    return KaduIcon(QStringLiteral("system-users"));
 }
 
 /**
