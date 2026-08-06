@@ -104,13 +104,18 @@ void LineEditClearButton::paintEvent(QPaintEvent *event)
 
     QPainter painter(this);
     painter.setOpacity(1.0 * Timeline->currentFrame() / ANIMATION_FRAMES_COUNT);
-    painter.drawPixmap((width() - ButtonPixmap.width()) / 2, (height() - ButtonPixmap.height()) / 2, ButtonPixmap);
+    // Both the widget and drawPixmap() speak logical units, so the pixmap's own device pixel count
+    // must not be used to centre it.
+    auto const pixmapSize = ButtonPixmap.deviceIndependentSize().toSize();
+    painter.drawPixmap((width() - pixmapSize.width()) / 2, (height() - pixmapSize.height()) / 2, ButtonPixmap);
 }
 
 bool LineEditClearButton::event(QEvent *event)
 {
     if (event->type() == QEvent::EnabledChange)
-        ButtonPixmap = ButtonIcon.pixmap(ButtonPixmap.size(), isEnabled() ? QIcon::Normal : QIcon::Disabled);
+        // Asking for the size in device pixels would enlarge the button on every change.
+        ButtonPixmap = ButtonIcon.pixmap(
+            ButtonPixmap.deviceIndependentSize().toSize(), isEnabled() ? QIcon::Normal : QIcon::Disabled);
 
     return QWidget::event(event);
 }

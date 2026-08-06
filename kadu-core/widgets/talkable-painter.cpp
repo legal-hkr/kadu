@@ -227,7 +227,10 @@ void TalkablePainter::computeIconRect()
     if (paintedIcon.isNull())
         return;
 
-    IconRect.setSize(paintedIcon.size() + QSize(HFrameMargin, 0));
+    // The layout works in logical units, and QPixmap::size() counts device pixels: on a magnified
+    // screen it reported twice the size, so the rectangle came out twice too large and drawPixmap()
+    // stretched the icon into it a second time.
+    IconRect.setSize(paintedIcon.deviceIndependentSize().toSize() + QSize(HFrameMargin, 0));
 
     if (!Configuration->alignTop())
         IconRect.moveTop(ItemRect.top() + (ItemRect.height() - paintedIcon.height()) / 2);
