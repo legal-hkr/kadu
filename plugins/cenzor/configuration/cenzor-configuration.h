@@ -24,6 +24,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QStringList>
 #include <injeqt/injeqt.h>
 
@@ -35,8 +36,8 @@ class CenzorConfiguration : public QObject, private ConfigurationAwareObject
     Q_OBJECT
 
 public:
-    static QStringList toStringList(const QList<QRegExp> &list);
-    static QList<QRegExp> toRegExpList(const QStringList &list);
+    static QStringList toStringList(const QList<QRegularExpression> &list);
+    static QList<QRegularExpression> toRegularExpressionList(const QStringList &list);
 
     Q_INVOKABLE explicit CenzorConfiguration(QObject *parent = nullptr);
     virtual ~CenzorConfiguration();
@@ -51,17 +52,17 @@ public:
     {
         return Admonition;
     }
-    const QList<QRegExp> &swearList()
+    const QList<QRegularExpression> &swearList()
     {
         return SwearList;
     }
-    const QList<QRegExp> &exclusionList()
+    const QList<QRegularExpression> &exclusionList()
     {
         return ExclusionList;
     }
 
-    void setSwearList(const QList<QRegExp> &swearList);
-    void setExclusionList(const QList<QRegExp> &exclusionList);
+    void setSwearList(const QList<QRegularExpression> &swearList);
+    void setExclusionList(const QList<QRegularExpression> &exclusionList);
 
 protected:
     virtual void configurationUpdated();
@@ -72,10 +73,10 @@ private:
 
     bool Enabled;
     NormalizedHtmlString Admonition;
-    QList<QRegExp> SwearList;
-    QList<QRegExp> ExclusionList;
+    QList<QRegularExpression> SwearList;
+    QList<QRegularExpression> ExclusionList;
 
-    QList<QRegExp> loadRegExpList(const QString &itemName, const QString &fileName);
+    QList<QRegularExpression> loadRegularExpressionList(const QString &itemName, const QString &fileName);
 
 private slots:
     INJEQT_SET void setConfiguration(Configuration *configuration);

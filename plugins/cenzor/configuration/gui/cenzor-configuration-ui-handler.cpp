@@ -66,7 +66,7 @@ void CenzorConfigurationUiHandler::mainConfigurationWindowDestroyed()
 
 void CenzorConfigurationUiHandler::mainConfigurationWindowApplied()
 {
-    m_cenzorConfiguration->setSwearList(CenzorConfiguration::toRegExpList(m_swearwordsWidget->list()));
-    m_cenzorConfiguration->setExclusionList(CenzorConfiguration::toRegExpList(m_exclusionsWidget->list()));
+    m_cenzorConfiguration->setSwearList(CenzorConfiguration::toRegularExpressionList(m_swearwordsWidget->list()));
+    m_cenzorConfiguration->setExclusionList(CenzorConfiguration::toRegularExpressionList(m_exclusionsWidget->list()));
     m_cenzorConfiguration->saveConfiguration();
 }

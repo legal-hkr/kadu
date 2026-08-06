@@ -84,8 +84,6 @@ void WordFix::setPathsProvider(PathsProvider *pathsProvider)
 
 void WordFix::init()
 {
-    ExtractBody.setPattern("<body[^>]*>.*</body>");
-
     // Loading list
     QString data = m_configuration->deprecatedApi()->readEntry("word_fix", "WordFix_list");
     if (data.isEmpty())

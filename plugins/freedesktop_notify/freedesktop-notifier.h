@@ -28,7 +28,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
 #include <QtCore/QQueue>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <injeqt/injeqt.h>
 
 class QDBusInterface;
@@ -68,9 +68,9 @@ private:
     QPointer<PathsProvider> m_pathsProvider;
 
     QDBusInterface *NotificationsInterface;
-    QRegExp StripBr;
-    QRegExp StripHtml;
-    QRegExp StripUnsupportedHtml;
+    QRegularExpression StripBr;
+    QRegularExpression StripHtml;
+    QRegularExpression StripUnsupportedHtml;
     QMap<unsigned int, Notification> NotificationMap;
 
     bool CustomTimeout;

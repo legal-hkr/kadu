@@ -25,7 +25,7 @@
 #include <QtCore/QPointer>
 #include <QtCore/QStringList>
 #include <QtGui/QTextCursor>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <injeqt/injeqt.h>
 
 class ActionDescription;

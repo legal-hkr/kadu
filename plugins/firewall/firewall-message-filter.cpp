@@ -148,8 +148,6 @@ void FirewallMessageFilter::setPathsProvider(PathsProvider *pathsProvider)
 
 void FirewallMessageFilter::init()
 {
-    pattern.setCaseSensitivity(Qt::CaseSensitive);
-
     createDefaultConfiguration();
 
     configurationUpdated();
@@ -346,7 +344,7 @@ bool FirewallMessageFilter::checkChat(const Chat &chat, const Contact &sender, c
         }
     }
 
-    if (pattern.exactMatch(message.simplified()))
+    if (pattern.match(message.simplified()).hasMatch())
     {
         Passed.insert(sender);
 
@@ -594,7 +592,10 @@ void FirewallMessageFilter::configurationUpdated()
     MaxEmoticons = m_configuration->deprecatedApi()->readNumEntry("Firewall", "emoticons_max", 15);
     SafeSending = m_configuration->deprecatedApi()->readBoolEntry("Firewall", "safe_sending", false);
 
-    pattern.setPattern(m_configuration->deprecatedApi()->readEntry("Firewall", "answer", tr("I want something")));
+    // exactMatch() required the whole subject to match; QRegularExpression expresses that by
+    // anchoring the pattern rather than by how the match is run.
+    pattern.setPattern(QRegularExpression::anchoredPattern(
+        m_configuration->deprecatedApi()->readEntry("Firewall", "answer", tr("I want something"))));
 }
 
 void FirewallMessageFilter::createDefaultConfiguration()

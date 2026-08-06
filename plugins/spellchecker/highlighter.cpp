@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
+
 #include "spellchecker.h"
 
 #include "highlighter.h"
@@ -45,14 +47,18 @@ Highlighter::~Highlighter()
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    QRegExp word("\\b\\w+\\b");
+    // Both \b and \w are Unicode-aware in QRegExp but ASCII-only in PCRE2 unless asked
+    // otherwise. Without UseUnicodePropertiesOption every Polish diacritic would end a word and
+    // the spell checker would be handed fragments of it.
+    static const QRegularExpression word{
+        QStringLiteral("\\b\\w+\\b"), QRegularExpression::UseUnicodePropertiesOption};
 
-    int index = 0;
-    while ((index = word.indexIn(text, index)) != -1)
+    auto matches = word.globalMatch(text);
+    while (matches.hasNext())
     {
-        if (!m_spellChecker->checkWord(word.cap()))
-            setFormat(index, word.matchedLength(), HighlightFormat);
-        index += word.matchedLength();
+        auto const match = matches.next();
+        if (!m_spellChecker->checkWord(match.captured()))
+            setFormat(match.capturedStart(), match.capturedLength(), HighlightFormat);
     }
 }
 

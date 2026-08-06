@@ -25,7 +25,6 @@
 #include <QtCore/QMap>
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
-#include <QtCore/QRegExp>
 #include <injeqt/injeqt.h>
 
 class ChatWidget;
@@ -57,8 +56,6 @@ class WordFix : public QObject
      * wordList["to_replace"] = "correct_word";
      */
     QMap<QString, QString> m_wordsList;
-
-    QRegExp ExtractBody;
 
 private slots:
     INJEQT_SET void setChatWidgetRepository(ChatWidgetRepository *chatWidgetRepository);

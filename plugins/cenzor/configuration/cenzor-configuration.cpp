@@ -30,7 +30,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 
-QStringList CenzorConfiguration::toStringList(const QList<QRegExp> &list)
+QStringList CenzorConfiguration::toStringList(const QList<QRegularExpression> &list)
 {
     QStringList result;
     for (auto const &regExp : list)
@@ -38,11 +38,11 @@ QStringList CenzorConfiguration::toStringList(const QList<QRegExp> &list)
     return result;
 }
 
-QList<QRegExp> CenzorConfiguration::toRegExpList(const QStringList &list)
+QList<QRegularExpression> CenzorConfiguration::toRegularExpressionList(const QStringList &list)
 {
-    QList<QRegExp> result;
+    QList<QRegularExpression> result;
     for (auto const &item : list)
-        result.append(QRegExp(item));
+        result.append(QRegularExpression(item));
     return result;
 }
 
@@ -69,20 +69,20 @@ void CenzorConfiguration::init()
     configurationUpdated();
 }
 
-void CenzorConfiguration::setExclusionList(const QList<QRegExp> &exclusionList)
+void CenzorConfiguration::setExclusionList(const QList<QRegularExpression> &exclusionList)
 {
     ExclusionList = exclusionList;
 }
 
-void CenzorConfiguration::setSwearList(const QList<QRegExp> &swearList)
+void CenzorConfiguration::setSwearList(const QList<QRegularExpression> &swearList)
 {
     SwearList = swearList;
 }
 
-QList<QRegExp> CenzorConfiguration::loadRegExpList(const QString &itemName, const QString &fileName)
+QList<QRegularExpression> CenzorConfiguration::loadRegularExpressionList(const QString &itemName, const QString &fileName)
 {
-    QList<QRegExp> result = toRegExpList(
-        m_configuration->deprecatedApi()->readEntry("PowerKadu", itemName).split('\t', QString::SkipEmptyParts));
+    QList<QRegularExpression> result = toRegularExpressionList(
+        m_configuration->deprecatedApi()->readEntry("PowerKadu", itemName).split('\t', Qt::SkipEmptyParts));
 
     if (!result.empty())
         return result;
@@ -94,7 +94,7 @@ QList<QRegExp> CenzorConfiguration::loadRegExpList(const QString &itemName, cons
 
     QTextStream stream(&file);
     while (!stream.atEnd())
-        result += QRegExp(stream.readLine());
+        result += QRegularExpression(stream.readLine());
     file.close();
 
     return result;
@@ -105,9 +105,9 @@ void CenzorConfiguration::configurationUpdated()
     Enabled = m_configuration->deprecatedApi()->readBoolEntry("PowerKadu", "enable_cenzor");
     Admonition = normalizeHtml(HtmlString{m_configuration->deprecatedApi()->readEntry(
         "PowerKadu", "admonition_content_cenzor", "Cenzor: Watch your mouth!! <nonono>")});
-    SwearList = loadRegExpList(
+    SwearList = loadRegularExpressionList(
         "cenzor swearwords", m_pathsProvider->dataPath() + QStringLiteral("plugins/data/cenzor/cenzor_words.conf"));
-    ExclusionList = loadRegExpList(
+    ExclusionList = loadRegularExpressionList(
         "cenzor exclusions", m_pathsProvider->dataPath() + QStringLiteral("plugins/data/cenzor/cenzor_words_ok.conf"));
 }
 

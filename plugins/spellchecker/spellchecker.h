@@ -43,8 +43,10 @@ class Suggester;
 struct AspellSpeller;
 struct AspellConfig;
 #elif defined(HAVE_ENCHANT)
-typedef struct str_enchant_broker EnchantBroker;
-typedef struct str_enchant_dict EnchantDict;
+// These used to be forward declared with enchant 1.x's internal struct names, which enchant 2.x
+// spells differently -- and a wrong guess conflicts with the real declarations. Including the
+// header keeps the names wherever upstream puts them.
+#include <enchant.h>
 #endif
 
 class SpellChecker : public QObject

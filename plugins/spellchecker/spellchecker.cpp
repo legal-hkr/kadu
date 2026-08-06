@@ -21,6 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QLabel>
@@ -345,7 +346,10 @@ bool SpellChecker::checkWord(const QString &word)
     if (MyCheckers.isEmpty())
         return true;
 
-    if (!word.contains(QRegExp("\\D")))
+    // \D is the complement of \d, which PCRE2 restricts to ASCII digits unless told otherwise.
+    static const QRegularExpression nonDigit{
+        QStringLiteral("\\D"), QRegularExpression::UseUnicodePropertiesOption};
+    if (!word.contains(nonDigit))
         isWordValid = true;
     else
         for (Checkers::const_iterator it = MyCheckers.constBegin(); it != MyCheckers.constEnd(); ++it)

@@ -68,7 +68,7 @@ void FirewallConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigur
     QWidget *secure = new QWidget(secureGroupBox->widget());
     QGridLayout *secureLayout = new QGridLayout(secure);
     secureLayout->setSpacing(5);
-    secureLayout->setMargin(5);
+    secureLayout->setContentsMargins(5, 5, 5, 5);
 
     AllList = new QListWidget(secure);
     QPushButton *moveToSecureList = new QPushButton(tr("Move to 'Secured'"), secure);
@@ -114,7 +114,7 @@ void FirewallConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigur
     QWidget *question = new QWidget(questionGroupBox->widget());
     QFormLayout *questionLayout = new QFormLayout(question);
     questionLayout->setSpacing(5);
-    questionLayout->setMargin(5);
+    questionLayout->setContentsMargins(5, 5, 5, 5);
 
     QuestionEdit = new QTextEdit(question);
     QuestionEdit->setAcceptRichText(false);

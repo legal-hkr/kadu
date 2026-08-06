@@ -21,9 +21,10 @@
 #pragma once
 
 #include <QtCore/QDateTime>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <injeqt/injeqt.h>
 
 #include "chat/chat-manager.h"
@@ -87,9 +88,11 @@ private:
     Contact LastContact;
 
     unsigned int FloodMessages;
-    QTime LastMsg;
-    QTime LastNotify;
-    QRegExp pattern;
+    // QTime lost start()/elapsed()/restart() in Qt6; measuring intervals is what
+    // QElapsedTimer is for.
+    QElapsedTimer LastMsg;
+    QElapsedTimer LastNotify;
+    QRegularExpression pattern;
 
     bool CheckFloodingEmoticons;
     bool EmoticonsAllowKnown;
