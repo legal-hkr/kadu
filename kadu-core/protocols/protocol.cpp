@@ -34,7 +34,6 @@
 #include "core/session-service.h"
 #include "icons/icons-manager.h"
 #include "icons/kadu-icon.h"
-#include "misc/kadu-logging.h"
 #include "plugin/plugin-injected-factory.h"
 #include "protocols/protocol-factory.h"
 #include "protocols/protocol-state-machine.h"
@@ -130,11 +129,6 @@ void Protocol::prepareStateMachine()
     // listening -- which is the normal order when a status container restores from the
     // configuration file before the protocol's plugin is even loaded. If the status is still
     // disconnected here, nothing is replayed and the machine waits for a push that may never come.
-    qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id()
-                                << "state machine started, pending status is"
-                                << (CurrentStatus.isDisconnected() ? "disconnected, nothing to replay"
-                                                                   : "connected, replaying it");
-
     if (!CurrentStatus.isDisconnected())
         emit stateMachineChangeStatus();
 }
@@ -182,14 +176,7 @@ void Protocol::setStatus(Status status, StatusChangeSource source)
     // no login attempt, no error, and no password prompt either, because the prompt is raised by
     // the state machine and the machine is never asked to move.
     if (SourceStatusChanger == source && !account().hasPassword())
-    {
-        qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id()
-                                    << "ignoring status change from a status changer: no stored password";
         return;
-    }
-
-    qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id() << "status change accepted,"
-                                << (SourceUser == source ? "from user" : "from status changer");
 
     LoginStatus = protocolFactory()->adaptStatus(status);
     doSetStatus(LoginStatus);
@@ -197,10 +184,6 @@ void Protocol::setStatus(Status status, StatusChangeSource source)
 
 void Protocol::doSetStatus(Status status)
 {
-    qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id() << "applying status,"
-                                << (status.isDisconnected() ? "disconnected: asking the machine to log out"
-                                                            : "connected: asking the machine to log in");
-
     CurrentStatus = status;
 
     if (!CurrentStatus.isDisconnected())

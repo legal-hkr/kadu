@@ -19,7 +19,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "misc/kadu-logging.h"
 #include "status/status-changer.h"
 #include "status/status-container-manager.h"
 
@@ -92,25 +91,15 @@ void StatusChangerManager::statusChanged(StatusContainer *container, StatusChang
         return;
     }
 
-    if (!Statuses.contains(container))
+    if (Statuses.contains(container))
     {
-        qCDebug(KADU_STATUS_CHANGE) << container->statusContainerName() << "has no status to apply";
-        return;
+        Status status = Statuses.value(container);
+        for (int i = 0; i < StatusChangers.count(); i++)
+            StatusChangers.at(i)->changeStatus(container, status);
+
+        // A container already holding the target status is left alone. That is what keeps the
+        // status widget reading "available" for an account whose protocol never actually got there.
+        if (SourceUser == source || container->status() != status)
+            container->setStatus(status, source);
     }
-
-    Status status = Statuses.value(container);
-    for (int i = 0; i < StatusChangers.count(); i++)
-        StatusChangers.at(i)->changeStatus(container, status);
-
-    // A container already holding the target status is left alone. That is what keeps the status
-    // widget reading "available" for an account whose protocol never actually got there.
-    if (SourceUser != source && container->status() == status)
-    {
-        qCDebug(KADU_STATUS_CHANGE) << container->statusContainerName()
-                                    << "already holds the target status, not pushing it down";
-        return;
-    }
-
-    qCDebug(KADU_STATUS_CHANGE) << container->statusContainerName() << "pushing status down";
-    container->setStatus(status, source);
 }

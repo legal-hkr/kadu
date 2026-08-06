@@ -223,8 +223,6 @@ private slots:
     INJEQT_SET void setNetworkManager(NetworkManager *networkManager);
     INJEQT_INIT void init();
 
-    void printConfiguration();
-
 public:
     explicit ProtocolStateMachine(Protocol *protocol);
     virtual ~ProtocolStateMachine();

@@ -16,12 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
-#include <QtCore/QStringList>
-
-#include "accounts/account.h"
-#include "misc/kadu-logging.h"
 #include "network/network-manager.h"
 #include "protocols/protocol.h"
 
@@ -68,16 +64,6 @@ void ProtocolStateMachine::init()
     PasswordRequiredState = new QState(this);
     WaitForSslErrorResult = new QState(this);
 
-    connect(LoggingOutState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(LoggedOutOnlineState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(LoggedOutOfflineState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(WantToLogInState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(LoggingInState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(LoggingInDelayState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(LoggingInMaybeOnlineState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(LoggedInState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(PasswordRequiredState, SIGNAL(entered()), this, SLOT(printConfiguration()));
-    connect(WaitForSslErrorResult, SIGNAL(entered()), this, SLOT(printConfiguration()));
 
     connect(LoggingOutState, SIGNAL(entered()), this, SIGNAL(loggingOutStateEntered()));
     connect(LoggedOutOnlineState, SIGNAL(entered()), this, SIGNAL(loggedOutOnlineStateEntered()));
@@ -159,38 +145,6 @@ void ProtocolStateMachine::init()
         setInitialState(LoggedOutOfflineState);
 
     start();
-}
-
-/**
- * @short Helper method printing current machine configuration to debug output.
- */
-void ProtocolStateMachine::printConfiguration()
-{
-    QStringList states;
-
-    if (configuration().contains(LoggingOutState))
-        states.append("logging-out");
-    if (configuration().contains(LoggedOutOnlineState))
-        states.append("logged-out-online");
-    if (configuration().contains(LoggedOutOfflineState))
-        states.append("logged-out-offline");
-    if (configuration().contains(WantToLogInState))
-        states.append("want-to-log-in");
-    if (configuration().contains(PasswordRequiredState))
-        states.append("password-required");
-    if (configuration().contains(LoggingInState))
-        states.append("logging-in");
-    if (configuration().contains(LoggingInDelayState))
-        states.append("logging-in-delay");
-    if (configuration().contains(LoggingInMaybeOnlineState))
-        states.append("logging-in-maybe-online");
-    if (configuration().contains(LoggedInState))
-        states.append("logged-in");
-    if (configuration().contains(WaitForSslErrorResult))
-        states.append("wait-for-ssl-error-result");
-
-    qCDebug(KADU_PROTOCOL_STATE) << CurrentProtocol->account().protocolName() << CurrentProtocol->account().id()
-                                 << "->" << states.join(QStringLiteral(", "));
 }
 
 /**

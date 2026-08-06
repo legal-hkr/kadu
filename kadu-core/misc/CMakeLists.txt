@@ -5,7 +5,6 @@ set (misc_SRCS
 	date-time.cpp
 	date-time-parser-tags.cpp
 	error.cpp
-	kadu-logging.cpp
 	misc.cpp
 	paths-provider.cpp
 	remove-script-dom-visitor.cpp

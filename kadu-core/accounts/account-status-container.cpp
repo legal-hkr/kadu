@@ -22,7 +22,6 @@
 #include "configuration/configuration.h"
 #include "configuration/deprecated-configuration-api.h"
 #include "icons/kadu-icon.h"
-#include "misc/kadu-logging.h"
 #include "protocols/protocol-factory.h"
 #include "protocols/protocol.h"
 
@@ -56,7 +55,6 @@ void AccountStatusContainer::setStatus(Status newStatus, StatusChangeSource sour
         // StatusChangerManager only pushes a status down when it changes, and it has not changed.
         // The account then sat in the logged-out-online state -- not connected, never retrying, and
         // saying nothing, while the status widget kept reporting the identity as available.
-        qCDebug(KADU_STATUS_CHANGE) << Account->Id << "has no protocol handler yet, holding the status back";
         PendingStatus = newStatus;
         PendingStatusSource = source;
         HasPendingStatus = true;
@@ -71,7 +69,6 @@ void AccountStatusContainer::applyPendingStatus()
     if (!HasPendingStatus || !Account->ProtocolHandler)
         return;
 
-    qCDebug(KADU_STATUS_CHANGE) << Account->Id << "protocol handler is up, delivering the held back status";
     HasPendingStatus = false;
     Account->ProtocolHandler->setStatus(PendingStatus, PendingStatusSource);
 }
