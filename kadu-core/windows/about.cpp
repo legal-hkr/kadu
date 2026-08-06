@@ -23,6 +23,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include <QtCore/QFile>
 #include <QtCore/QString>
 #include <QtCore/QTextStream>
@@ -180,17 +181,22 @@ void About::init()
     QString changelog = (loadFile("ChangeLog")).toHtmlEscaped();
     changelog.replace('\n', "<br/>");
     // #bug_no -> Redmine URL
-    changelog = QRegExp("#(\\d+)").replaceIn(changelog, "<a href=\"http://www.kadu.im/redmine/issues/\\1\">#\\1</a>");
+    changelog.replace(
+        QRegularExpression{QStringLiteral("#(\\d+)"), QRegularExpression::UseUnicodePropertiesOption},
+        QStringLiteral("<a href=\"http://www.kadu.im/redmine/issues/\\1\">#\\1</a>"));
     // bold headers with green "+++"
-    changelog = QRegExp("(^|<br/>)\\+\\+\\+([^<]*)<br/>")
-                    .replaceIn(changelog, "\\1<b><span style=\"color:green;\">+++</span>\\2</b><br/>");
+    changelog.replace(
+        QRegularExpression{QStringLiteral("(^|<br/>)\\+\\+\\+([^<]*)<br/>")},
+        QStringLiteral("\\1<b><span style=\"color:green;\">+++</span>\\2</b><br/>"));
     // bold subsystem names preceded by nice green bullets instead of "*"
-    changelog = QRegExp("<br/>\\* ([^:<]*):")
-                    .replaceIn(changelog, "<br/><b><span style=\"color:green;\">&#8226;</span> \\1</b>:");
+    changelog.replace(
+        QRegularExpression{QStringLiteral("<br/>\\* ([^:<]*):")},
+        QStringLiteral("<br/><b><span style=\"color:green;\">&#8226;</span> \\1</b>:"));
     // green bullets also when no subsystem name
     changelog.replace("<br/>* ", "<br/><b><span style=\"color:green;\">&#8226;</span></b> ");
     // authors in italics
-    changelog = QRegExp("\\(([^\\)]+)\\)<br/>").replaceIn(changelog, "<i>(\\1)</i><br/>");
+    changelog.replace(
+        QRegularExpression{QStringLiteral("\\(([^\\)]+)\\)<br/>")}, QStringLiteral("<i>(\\1)</i><br/>"));
     tb_changelog->setHtml(changelog);
     connect(tb_changelog, SIGNAL(anchorClicked(const QUrl &)), this, SLOT(openUrl(const QUrl &)));
 
@@ -230,7 +236,7 @@ void About::init()
         new ConfigFileVariantWrapper(m_configuration, "General", "AboutGeometry"), QRect(0, 50, 480, 380), this);
 
     QString authors = loadFile("AUTHORS.html");
-    authors = QRegExp("[\\[\\]]").removeIn(authors);
+    authors.remove(QRegularExpression{QStringLiteral("[\\[\\]]")});
     // convert the email addresses
     authors.replace(" (at) ", "@");
     authors.replace(" (dot) ", ".");
@@ -266,7 +272,7 @@ QString About::loadFile(const QString &name)
     QString data = str.readAll();
     file.close();
 
-    data = QRegExp("\r\n?").replaceIn(data, QStringLiteral("\n"));
+    data.replace(QRegularExpression{QStringLiteral("\r\n?")}, QStringLiteral("\n"));
 
     return data;
 }

@@ -22,7 +22,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtCore5Compat/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QSettings>
@@ -192,9 +192,9 @@ QString Themes::themePath(const QString &theme) const
     if (ThemesPaths.isEmpty())
         return "Custom";
 
-    QRegExp r("(/" + t + "/)$");
+    QRegularExpression r{"(/" + QRegularExpression::escape(t) + "/)$"};
     for (auto const &theme : ThemesPaths)
-        if (-1 != r.indexIn(theme))
+        if (theme.contains(r))
             return theme;
 
     return "Custom";

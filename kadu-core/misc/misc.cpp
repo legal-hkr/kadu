@@ -26,7 +26,7 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QProcess>
-#include <QtCore5Compat/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QUrl>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QApplication>
@@ -48,8 +48,8 @@
 
 QString replacedNewLine(const QString &text, const QString &newLineText)
 {
-    static const QRegExp newLineRegExp("(\r\n|\r|\n)");
-    return newLineRegExp.replaceIn(text, newLineText);
+    static const QRegularExpression newLineRegExp{QStringLiteral("(\r\n|\r|\n)")};
+    return QString{text}.replace(newLineRegExp, newLineText);
 }
 
 QRect properGeometry(const QRect &rect)

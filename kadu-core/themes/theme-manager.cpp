@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtCore5Compat/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QStringList>
@@ -77,7 +77,9 @@ void ThemeManager::setCurrentTheme(const QString &themeName)
     // compatibility with pre-0.12 versions
     QString fixedName = themeName;
     // custom themes had two trailing slashes and QDir::dirName() was returning empty string
-    fixedName = QRegExp("/*$").replaceIn(fixedName, QString());
+    // PCRE2 follows Perl and lets $ match before a trailing newline, which QRegExp did not;
+    // \z anchors at the true end. Verified to reproduce the old results exactly.
+    fixedName.remove(QRegularExpression{QStringLiteral("/+\\z")});
     if (QFileInfo(fixedName).isAbsolute())
         fixedName = QDir(fixedName).dirName();
 
