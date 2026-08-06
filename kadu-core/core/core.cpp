@@ -267,6 +267,7 @@ void Core::createDefaultConfiguration()
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowAvatars", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "Look", "IconTheme", IconThemeManager::defaultTheme());
+    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UseSystemIcons", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowGroupAll", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowBold", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowDesc", true);

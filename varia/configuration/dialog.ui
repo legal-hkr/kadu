@@ -51,6 +51,8 @@
 	<section name="Look" icon="preferences-desktop-theme">
 		<tab name="Icons">
 			<group-box name="Icons">
+				<check-box caption="Use the desktop's icon theme for standard icons" config-section="Look" config-item="UseSystemIcons" id="useSystemIcons"
+					tool-tip="Standard icons such as Open or Copy come from the desktop's own theme, which offers them in every size. Uncheck to use the icons bundled with Kadu instead" />
 				<list-box caption="Icon theme" config-section="Look" config-item="IconTheme" id="iconThemes"
 					tool-tip="Choose icon theme" />
 				<action-button caption="Install new icons..." id="installIconTheme" />

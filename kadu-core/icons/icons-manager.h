@@ -46,10 +46,24 @@ public:
         EmptyAllowed
     };
 
+    /**
+     * @short Whether a size other than the requested one may be returned.
+     *
+     * Themes are not obliged to carry every icon in every size, so by default the nearest size on
+     * offer is used. Pass ExactSizeOnly when a specific file is wanted and a substitute would be
+     * wrong, as when collecting the sizes of one multi-size icon.
+     */
+    enum SizeMatch
+    {
+        AnySize,
+        ExactSizeOnly
+    };
+
     Q_INVOKABLE explicit IconsManager(QObject *parent = nullptr);
     virtual ~IconsManager();
 
-    QString iconPath(const KaduIcon &icon, AllowEmpty allowEmpty = EmptyNotAllowed) const;
+    QString iconPath(
+        const KaduIcon &icon, AllowEmpty allowEmpty = EmptyNotAllowed, SizeMatch sizeMatch = AnySize) const;
     QIcon iconByPath(const QString &themePath, const QString &path, AllowEmpty allowEmpty = EmptyNotAllowed);
     QIcon iconByPath(const KaduIcon &icon);
 
@@ -67,6 +81,8 @@ private:
     QPointer<IconThemeManager> m_iconThemeManager;
 
     QHash<QString, QIcon> IconCache;
+
+    bool UseSystemIcons;
 
     void clearCache();
 
