@@ -81,6 +81,7 @@ public slots:
     void clearMessages();
     void contactActivityChanged(const Contact &contact, ChatState state);
     void updateAtBottom();
+    void updatePageBackground();
 
     void pageUp();
     void pageDown();

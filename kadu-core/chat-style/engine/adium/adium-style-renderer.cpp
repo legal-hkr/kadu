@@ -91,18 +91,22 @@ void AdiumStyleRenderer::init()
     // Relative references inside the style are resolved by the <base> element the Adium template
     // carries, but the document still needs a local origin of its own -- otherwise QtWebEngine
     // refuses every file:// resource while reporting a successful load.
+    // Connected before the load is started: setHtml() is asynchronous, and hooking the signal
+    // afterwards is a race that only happens to work.
+    connect(&configuration().page(), &QWebEnginePage::loadFinished, this, &AdiumStyleRenderer::pageLoaded);
     configuration().page().setHtml(
         preprocessStyleBaseHtml(configuration().useTransparency()),
         QUrl::fromLocalFile(m_style->baseHref()));
-    connect(&configuration().page(), SIGNAL(loadFinished(bool)), this, SLOT(pageLoaded()));
 }
 
 void AdiumStyleRenderer::pageLoaded()
 {
     configuration().page().runJavaScript(configuration().javaScript());
-    configuration().page().runJavaScript("initStyle()");
 
-    setReady();
+    // runJavaScript() is asynchronous, so readiness has to be announced from the callback of the
+    // last script. Declaring it right after the calls would let the view start appending messages
+    // through functions the document has not defined yet.
+    configuration().page().runJavaScript(QStringLiteral("initStyle()"), [this](const QVariant &) { setReady(); });
 }
 
 void AdiumStyleRenderer::removeFirstMessage()

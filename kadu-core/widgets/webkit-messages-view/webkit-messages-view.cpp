@@ -114,9 +114,7 @@ void WebkitMessagesView::init()
 
     setPalette(p);
 
-    // QWebEnginePage has no palette; a transparent page background is what QPalette::Base achieved.
-    page()->setBackgroundColor(Qt::transparent);
-    setAttribute(Qt::WA_OpaquePaintEvent, false);
+    updatePageBackground();
 
     // Messages are written by other people. Neutering XMLHttpRequest keeps rendered content from
     // reaching the network. Injected as a script so it covers every document, not just this one.
@@ -152,10 +150,11 @@ void WebkitMessagesView::resizeEvent(QResizeEvent *e)
 
 void WebkitMessagesView::updateAtBottom()
 {
-    // QtWebEngine exposes no scroll bars; the equivalent is how much of the content is still below
-    // the viewport. A pixel of slack absorbs fractional scroll positions.
-    auto const viewportHeight = page()->contentsSize().height() - page()->scrollPosition().y();
-    m_atBottom = viewportHeight <= height() + 1;
+    // QtWebEngine exposes no scroll bars; what is left below the viewport takes their place.
+    // Contents size and scroll position are reported in CSS pixels and can be fractional, all the
+    // more so on a fractionally scaled display, so the comparison needs a little slack.
+    auto const belowViewport = page()->contentsSize().height() - page()->scrollPosition().y();
+    m_atBottom = belowViewport <= height() + 2;
 }
 
 void WebkitMessagesView::connectChat()
@@ -332,13 +331,33 @@ void WebkitMessagesView::forceScrollToBottom()
 {
     // No scroll bar API in QtWebEngine; scrolling is done from the document itself.
     page()->runJavaScript(QStringLiteral("window.scrollTo(0, document.body.scrollHeight);"));
-    updateAtBottom();
+
+    // Deliberately not updateAtBottom(): runJavaScript() is asynchronous, so it would read the
+    // position from before the scroll and, with the content having just grown, conclude the view
+    // is no longer at the bottom -- stopping the next message from scrolling it. Going to the
+    // bottom is what this method means, so the flag simply says so.
+    m_atBottom = true;
 }
 
 void WebkitMessagesView::configurationUpdated()
 {
+    updatePageBackground();
     setUserFont(m_chatConfigurationHolder->chatFont().toString(), m_chatConfigurationHolder->forceCustomChatFont());
     refreshView();
+}
+
+void WebkitMessagesView::updatePageBackground()
+{
+    // QWebEnginePage has no palette, so the page background stands in for QPalette::Base.
+    //
+    // Asking for a transparent one makes QtWebEngine composite every repaint against whatever is
+    // behind the widget, which shows as flicker while scrolling. It is only worth that when
+    // transparency is actually in use -- the same condition the renderer is given.
+    auto const transparent =
+        m_chatConfigurationHolder->useTransparency() && supportTransparency() && isCompositingEnabled();
+
+    page()->setBackgroundColor(transparent ? QColor{Qt::transparent} : palette().color(QPalette::Base));
+    setAttribute(Qt::WA_OpaquePaintEvent, !transparent);
 }
 
 void WebkitMessagesView::compositingEnabled()
