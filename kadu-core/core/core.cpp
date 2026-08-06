@@ -217,7 +217,7 @@ void Core::createDefaultConfiguration()
     QFont chatFont = qApp->font();
 #ifdef Q_OS_WIN
     // On Windows default app font is often "MS Shell Dlg 2", and the default sans
-    // family (Arial, at least in Qt 4.8) is better. Though, on X11 the default
+    // family (Arial, at least in Qt 4.8) is better. Though, on Unix the default
     // sans family is the same while most users will have some nice default app
     // font, like DejaVu, Ubuntu (the font, not the distro) or alike.
     chatFont.setStyleHint(QFont::SansSerif);
