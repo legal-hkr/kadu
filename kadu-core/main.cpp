@@ -190,6 +190,13 @@ int main(int argc, char *argv[]) try
 
     QApplication application{argc, argv};
     application.setApplicationName("Kadu");
+
+    // The name of the desktop entry is how a Wayland compositor recognises which application a
+    // window belongs to -- for its icon, for window rules, and for restoring a session. Qt guesses
+    // it from the executable's name when it is not told, which happens to be right here and would
+    // stop being right the moment the program were started through a wrapper.
+    application.setDesktopFileName(QStringLiteral("kadu"));
+
     application.setQuitOnLastWindowClosed(false);
 
     auto executionArgumentsParser = ExecutionArgumentsParser{};
