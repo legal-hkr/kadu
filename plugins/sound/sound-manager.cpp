@@ -29,7 +29,8 @@
 #include "configuration/deprecated-configuration-api.h"
 #include "themes.h"
 
-#include <QtMultimedia/QSound>
+#include <QtCore/QUrl>
+#include <QtMultimedia/QSoundEffect>
 
 SoundManager::SoundManager(QObject *parent) : QObject{parent}, m_mute{false}
 {
@@ -91,7 +92,7 @@ QObject *SoundManager::playFile(const QString &soundFile, bool force, bool stopC
     if (stopCurrentlyPlaying)
         stopSound();
 
-    if (m_playingSound && !m_playingSound->isFinished())
+    if (m_playingSound && m_playingSound->isPlaying())
         return nullptr;
 
     if (m_player)
@@ -100,8 +101,10 @@ QObject *SoundManager::playFile(const QString &soundFile, bool force, bool stopC
         return m_soundObject;
     }
 
-    m_playingSound->deleteLater();
-    m_playingSound = new QSound{soundFile};
+    if (m_playingSound)
+        m_playingSound->deleteLater();
+    m_playingSound = new QSoundEffect{this};
+    m_playingSound->setSource(QUrl::fromLocalFile(soundFile));
     m_playingSound->play();
     m_soundObject = m_playingSound;
     return m_soundObject;

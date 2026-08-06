@@ -30,7 +30,7 @@ class Configuration;
 class SoundPlayer;
 class SoundThemeManager;
 
-class QSound;
+class QSoundEffect;
 
 class SOUNDAPI SoundManager : public QObject
 {
@@ -55,7 +55,9 @@ private:
     QPointer<Configuration> m_configuration;
     QPointer<SoundThemeManager> m_soundThemeManager;
     QPointer<SoundPlayer> m_player;
-    QPointer<QSound> m_playingSound;
+    // QSound is gone in Qt6; QSoundEffect is its counterpart and, like QSound, plays
+    // uncompressed WAV only -- which is what the bundled sound themes are.
+    QPointer<QSoundEffect> m_playingSound;
     QPointer<QObject> m_soundObject;
 
     bool m_mute;

@@ -213,8 +213,11 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 		target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE Qt6::DBus)
 	endif ()
 	if (KADU_PLUGIN_ADDITIONAL_QT_MODULES)
-		# Plugins name bare modules (e.g. "StateMachine"); map them onto Qt6:: targets.
+		# Plugins name bare modules (e.g. "StateMachine"); map them onto Qt6:: targets. They are
+		# looked up here rather than alongside the modules every plugin needs, so that a module
+		# wanted by one plugin does not become a requirement for building any of them.
 		foreach (_qt_module ${KADU_PLUGIN_ADDITIONAL_QT_MODULES})
+			find_package (Qt6 6.2 REQUIRED COMPONENTS ${_qt_module})
 			target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE Qt6::${_qt_module})
 		endforeach ()
 	endif ()

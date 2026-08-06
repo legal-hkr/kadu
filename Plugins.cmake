@@ -1,8 +1,6 @@
 set (DEFAULT_PLUGINS
 
 # protocols
-	# Facebook Chat protocol support
-	facebook_protocol
 	# GaduGadu protocol support
 	gadu_protocol
 	# Jabber/XMPP protocol support
@@ -77,8 +75,6 @@ set (DEFAULT_PLUGINS
 	simpleview
 	# Single window mode
 	single_window
-	# Sms gateway support
-	sms
 	# Spellchecking in chat window
 	spellchecker
 	# Tabbed chat dialog

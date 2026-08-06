@@ -1,9 +1,0 @@
-[Module]
-DisplayName=SMS support
-DisplayName[pl]=Obsługa SMS'ów
-Description=Allows sending text messages to polish GSM networks
-Description[pl]=Umożliwia wysyłanie SMS'ów do polskich sieci
-Author=Kadu Team
-Dependencies=history
-LoadByDefault=true
-Version=core
