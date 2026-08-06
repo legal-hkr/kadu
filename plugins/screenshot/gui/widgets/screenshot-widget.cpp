@@ -74,7 +74,9 @@ void ScreenshotWidget::setPixmap(QPixmap pixmap)
 {
     CropWidget->setPixmap(pixmap);
 
-    resize(pixmap.size());
+    // The window is measured in logical units; the picture counts real pixels, and on a magnified
+    // screen there are more of those than the screen is wide.
+    resize(pixmap.deviceIndependentSize().toSize());
 }
 
 void ScreenshotWidget::keyPressEvent(QKeyEvent *event)

@@ -21,6 +21,7 @@
 #include "portal-screenshot.moc"
 
 #include <QtCore/QFile>
+#include <QtGui/QGuiApplication>
 #include <QtCore/QUrl>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusMessage>
@@ -112,6 +113,12 @@ void PortalScreenshot::response(uint code, const QVariantMap &results)
 
     QPixmap screenshot;
     auto const loaded = screenshot.load(fileName);
+
+    // The portal hands back the screen in its real pixels. Left at a ratio of one, a picture of a
+    // magnified screen is treated as though every pixel were a logical unit, so it appears at twice
+    // the size and only its top left quarter fits on the screen it came from.
+    if (loaded)
+        screenshot.setDevicePixelRatio(qApp->devicePixelRatio());
 
     // The file belongs to us from here on, and nothing else will remove it.
     QFile::remove(fileName);
