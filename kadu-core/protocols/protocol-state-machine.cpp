@@ -18,13 +18,28 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QLoggingCategory>
 #include <QtCore/QStringList>
 
+#include "accounts/account.h"
 #include "network/network-manager.h"
 #include "protocols/protocol.h"
 
 #include "protocol-state-machine.h"
 #include "protocol-state-machine.moc"
+
+/**
+ * @short Logging category for protocol state machine transitions, off by default.
+ *
+ * Every state entry is announced here. Several of the states this machine can settle in are
+ * terminal in practice -- logged-out-online is only left on a status change, and both it and
+ * password-required are reached without anything being said to the user -- so an account that
+ * quietly stops connecting looks identical from the outside to one that never tried. Turn this
+ * on to tell those apart:
+ *
+ *     QT_LOGGING_RULES="kadu.protocol.state.debug=true" kadu
+ */
+Q_LOGGING_CATEGORY(KADU_PROTOCOL_STATE, "kadu.protocol.state", QtWarningMsg)
 
 /**
  * @short Creates new ProtocolStateMachine associated with given protocol handler.
@@ -184,6 +199,9 @@ void ProtocolStateMachine::printConfiguration()
         states.append("logging-in-maybe-online");
     if (configuration().contains(LoggedInState))
         states.append("logged-in");
+
+    qCDebug(KADU_PROTOCOL_STATE) << CurrentProtocol->account().protocolName() << CurrentProtocol->account().id()
+                                 << "->" << states.join(QStringLiteral(", "));
 }
 
 /**
