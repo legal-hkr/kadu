@@ -26,18 +26,23 @@
 #include <QtGui/QIconEngine>
 
 /**
- * @short Icon engine that scales down from a larger file rather than up from a smaller one.
+ * @short Icon engine that reads the file it needs for every size it is asked for.
  *
- * QIcon's own engine never returns a pixmap larger than the one asked for, so a request that falls
- * between the sizes a theme ships is answered with the smaller file and the caller enlarges it.
- * Asking for sixteen units on a screen magnified twice needs thirty-two pixels and gets them
- * exactly; asking for twenty-two needs forty-four and gets a thirty-two pixel image stretched by
- * more than a third. That is why the status button and the tray looked coarse while the same icons
- * in a menu did not.
+ * QIcon's own engine keeps the files it has already loaded and prefers to answer from them. A
+ * request it cannot satisfy from what is loaded, and that is larger than what is loaded, is met by
+ * declaring a smaller device pixel ratio on the image it has -- so the image still covers the right
+ * area, made of too few pixels, and the caller enlarges it.
  *
- * This engine picks the smallest file that has at least the pixels asked for, and only falls back
- * to the largest one when nothing is big enough. A size the theme provides exactly is still used
- * as it is, so hand-drawn small icons keep their detail.
+ * That only shows when one icon serves several sizes, which is exactly what IconsManager's cache
+ * arranges: one icon per path, handed to everyone. A menu asks for sixteen units first and loads
+ * the thirty-two pixel file; the status button and the tray then ask for twenty-two, need
+ * forty-four pixels, and are given those thirty-two stretched by three eighths. Asked in the other
+ * order, both are sharp.
+ *
+ * This engine holds file names rather than loaded images and picks, for each request, the smallest
+ * file with at least the pixels needed, scaling it down. Nothing is carried over from an earlier
+ * request, so the order in which sizes are asked for stops mattering. A size the theme provides
+ * exactly is used as it is, so hand-drawn small icons keep their detail.
  */
 class KADUAPI KaduIconEngine : public QIconEngine
 {
