@@ -140,7 +140,10 @@ void JabberOutgoingFileTransferHandler::stateChanged(QXmppTransferJob::State sta
         transfer().setTransferStatus(FileTransferStatus::Transfer);
         break;
     case QXmppTransferJob::State::FinishedState:
-        transfer().setTransferStatus(FileTransferStatus::Finished);
+        // Same omission as on the receiving side: only rejection, an error and the destructor
+        // released the source file, so a transfer that succeeded held it open for the rest of
+        // the session.
+        cleanup(FileTransferStatus::Finished);
         break;
     }
 }

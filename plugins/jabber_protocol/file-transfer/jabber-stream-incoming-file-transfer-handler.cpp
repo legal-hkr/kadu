@@ -109,7 +109,12 @@ void JabberStreamIncomingFileTransferHandler::stateChanged(QXmppTransferJob::Sta
         transfer().setTransferStatus(FileTransferStatus::Transfer);
         break;
     case QXmppTransferJob::State::FinishedState:
-        transfer().setTransferStatus(FileTransferStatus::Finished);
+        // Closing the destination is what puts the file on disk. FileTransferManager opens it and
+        // hands it over, and nothing else ever closes it; only rejection, an error and this
+        // object's destructor went through cleanup(). A transfer that simply succeeded therefore
+        // left its bytes sitting in QFile's write buffer, and the saved file stayed empty until
+        // Kadu exited.
+        cleanup(FileTransferStatus::Finished);
         break;
     }
 }
