@@ -233,8 +233,20 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 	)
 
 	if (NOT WIN32)
+		# KADU_INSTALL_LIB_DIR is relative to the install prefix, and handing it to INSTALL_RPATH
+		# as it stands produced a relative RUNPATH such as "lib64/kadu". The loader resolves those
+		# against the process's working directory rather than the library's own location, so
+		# starting Kadu from a directory someone else can write to lets them supply libkadu -- which
+		# is what scanelf reports as a possible security problem. kadu-core already spells the path
+		# out for the executable; plugins were left behind.
+		if (IS_ABSOLUTE "${KADU_INSTALL_LIB_DIR}")
+			set (kadu_plugin_install_full_lib_dir "${KADU_INSTALL_LIB_DIR}")
+		else ()
+			set (kadu_plugin_install_full_lib_dir "${CMAKE_INSTALL_PREFIX}/${KADU_INSTALL_LIB_DIR}")
+		endif ()
+
 		set_target_properties (${KADU_PLUGIN_NAME} PROPERTIES
-			INSTALL_RPATH "${KADU_INSTALL_LIB_DIR}/kadu"
+			INSTALL_RPATH "${kadu_plugin_install_full_lib_dir}/kadu"
 			BUILD_WITH_INSTALL_RPATH TRUE
 		)
 	endif ()
