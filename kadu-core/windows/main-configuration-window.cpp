@@ -343,7 +343,11 @@ void MainConfigurationWindow::setIconThemes()
     QList<QIcon> icons;
     for (auto const &theme : m_iconThemeManager->themes())
     {
-        QPixmap combinedIcon(iconPaths.count() * 36, 36);
+        // The strip is composed at the resolution of the sharpest screen and then told its ratio,
+        // so the theme preview is not an enlarged small image where the display is magnified.
+        auto const ratio = qApp->devicePixelRatio();
+        QPixmap combinedIcon((QSizeF{iconPaths.count() * 36.0, 36.0} * ratio).toSize());
+        combinedIcon.setDevicePixelRatio(ratio);
         combinedIcon.fill(Qt::transparent);
 
         QPainter iconPainter(&combinedIcon);
