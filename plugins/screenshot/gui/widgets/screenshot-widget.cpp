@@ -24,12 +24,8 @@
 #include <QtCore/QTimer>
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QHBoxLayout>
 #if defined(Q_OS_UNIX)
-#include <QtX11Extras/QX11Info>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
 #endif
 
 #include "configuration/configuration.h"
@@ -44,25 +40,16 @@
 ScreenshotWidget::ScreenshotWidget(QWidget *parent)
         : QWidget(
               parent,
-              Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint |
-                  Qt::X11BypassWindowManagerHint),
+              Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint),
           ShotMode(ShotModeStandard)
 {
     setWindowRole("kadu-screenshot");
 
     setFocusPolicy(Qt::StrongFocus);
-#if defined(Q_OS_UNIX)
-    // set always-on-top and force taskbar and pager skipping
-    Atom win_state = XInternAtom(QX11Info::display(), "_NET_WM_STATE", False);
-    Atom win_state_setting[] = {XInternAtom(QX11Info::display(), "_NET_WM_STATE_ABOVE", False),
-                                XInternAtom(QX11Info::display(), "_NET_WM_STATE_SKIP_TASKBAR", False),
-                                XInternAtom(QX11Info::display(), "_NET_WM_STATE_SKIP_PAGER", False)};
-    XChangeProperty(
-        QX11Info::display(), window()->winId(), win_state, XA_ATOM, 32, PropModeReplace,
-        (unsigned char *)&win_state_setting, 3);
-    // prevent compositing suspension on KDE4
+    // Staying above other windows and keeping out of the taskbar used to be set by writing window
+    // manager properties directly. Qt::WindowStaysOnTopHint above says the same thing in the only
+    // way a Wayland client can, and it is the compositor's to honour or refuse.
     setAttribute(Qt::WA_TranslucentBackground, true);
-#endif
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);

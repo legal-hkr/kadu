@@ -55,7 +55,7 @@ QString ScreenShotSaver::createScreenshotPath()
     return QDir::cleanPath(QString("%1/%2%3.%4")
                                .arg(dir.absolutePath())
                                .arg(m_screenShotConfiguration->fileNamePrefix())
-                               .arg(QString::number(QDateTime::currentDateTime().toTime_t()))
+                               .arg(QString::number(QDateTime::currentDateTime().toSecsSinceEpoch()))
                                .arg(m_screenShotConfiguration->screenshotFileNameExtension().toLower()));
 }
 

@@ -77,6 +77,7 @@ private slots:
 
     void screenshotTaken(QPixmap screenshot, bool needsCrop);
     void screenshotNotTaken();
+    void screenshotFailed(const QString &errorMessage);
 
     void screenshotReady(QPixmap pixmap);
 
