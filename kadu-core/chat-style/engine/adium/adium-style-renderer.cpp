@@ -47,6 +47,7 @@
 
 #include <QtCore/QRegularExpression>
 #include <QtCore/QFile>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QTextDocument>
 #include <QtWebEngineCore/QWebEnginePage>
 
@@ -296,11 +297,16 @@ QString AdiumStyleRenderer::replaceKeywords(
         result.replace(
             QString("%service%"),
             (message.messageChat().chatAccount().protocolHandler()->protocolFactory()->displayName()).toHtmlEscaped());
-        // Replace protocolIcon (sender statusIcon). TODO:
+        // Replace protocolIcon (sender statusIcon). The page is rendered at the screen's own
+        // resolution, so hand it a file with that many pixels rather than the one the factory
+        // names -- otherwise the icon is the only enlarged thing among sharp text.
+        auto senderStatusIcon = message.messageChat().chatAccount().protocolHandler()->protocolFactory()->icon();
+        auto const iconSize = qRound(senderStatusIcon.size().section('x', 0, 0).toInt() * qApp->devicePixelRatio());
+        if (iconSize > 0)
+            senderStatusIcon.setSize(QStringLiteral("%1x%1").arg(iconSize));
+
         result.replace(
-            QString("%senderStatusIcon%"),
-            (m_iconsManager->iconPath(
-                message.messageChat().chatAccount().protocolHandler()->protocolFactory()->icon())).toHtmlEscaped());
+            QString("%senderStatusIcon%"), (m_iconsManager->iconPath(senderStatusIcon)).toHtmlEscaped());
     }
     else
     {
