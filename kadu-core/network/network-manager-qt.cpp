@@ -19,22 +19,51 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QDebug>
 #include <QtCore/QSysInfo>
 #include <QtNetwork/QNetworkInformation>
 
 #include "network-manager-qt.h"
 #include "network-manager-qt.moc"
 
+namespace
+{
+/**
+ * @short Whether a reachability value should stop Kadu from using the network.
+ *
+ * Only an explicit Disconnected counts as offline. Unknown means the backend cannot tell, and
+ * Local and Site mean it sees a network but has not confirmed a route to the internet -- which is
+ * what a NetworkManager backend reports whenever its connectivity check is disabled or blocked,
+ * and that is common. Treating those as offline tears down a connection that works perfectly
+ * well: the protocol finds out whether it can reach its servers by trying.
+ */
+bool isReachable(QNetworkInformation::Reachability reachability)
+{
+    return reachability != QNetworkInformation::Reachability::Disconnected;
+}
+}
+
 NetworkManagerQt::NetworkManagerQt(QObject *parent) : NetworkManager{parent}
 {
     HasReachabilityBackend = QNetworkInformation::loadDefaultBackend() && QNetworkInformation::instance();
 
-    if (HasReachabilityBackend)
-        connect(
-            QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this,
-            [this](QNetworkInformation::Reachability reachability) {
-                onlineStateChanged(reachability == QNetworkInformation::Reachability::Online);
-            });
+    if (!HasReachabilityBackend)
+    {
+        qDebug("network: no QNetworkInformation backend, assuming the network is available");
+        return;
+    }
+
+    auto *information = QNetworkInformation::instance();
+    qDebug(
+        "network: QNetworkInformation backend \"%s\", reachability %d",
+        qPrintable(information->backendName()), int(information->reachability()));
+
+    connect(
+        information, &QNetworkInformation::reachabilityChanged, this,
+        [this](QNetworkInformation::Reachability reachability) {
+            qDebug("network: reachability changed to %d, online=%d", int(reachability), int(isReachable(reachability)));
+            onlineStateChanged(isReachable(reachability));
+        });
 }
 
 NetworkManagerQt::~NetworkManagerQt()
@@ -45,7 +74,7 @@ bool NetworkManagerQt::isOnline()
 {
     if (!HasReachabilityBackend)
         return true;
-    return QNetworkInformation::instance()->reachability() == QNetworkInformation::Reachability::Online;
+    return isReachable(QNetworkInformation::instance()->reachability());
 }
 
 void NetworkManagerQt::forceOnline()
