@@ -295,6 +295,8 @@ void AccountShared::protocolRegistered(ProtocolFactory *factory)
     if (protocolHandler() && protocolHandler()->rosterService() && protocolHandler()->rosterService()->tasks())
         protocolHandler()->rosterService()->tasks()->addTasks(loadRosterTasks());
 
+    // The handler exists now, so a status set while it did not can finally be delivered.
+    MyStatusContainer->applyPendingStatus();
     MyStatusContainer->triggerStatusUpdated();
 
     emit updated();
