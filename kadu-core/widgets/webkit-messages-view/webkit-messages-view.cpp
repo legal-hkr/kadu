@@ -129,6 +129,7 @@ void WebkitMessagesView::init()
     page()->scripts().insert(blockXhr);
 
     updateScrollBarStyle();
+    updateEmoticonStyle();
 
     connect(page(), &QWebEnginePage::contentsSizeChanged, this, &WebkitMessagesView::scrollToBottom);
 
@@ -400,6 +401,58 @@ void WebkitMessagesView::updateScrollBarStyle()
 
     // The page already loaded keeps the sheet it was given, so it is replaced there too.
     page()->runJavaScript(scrollBarStyle.sourceCode());
+}
+
+void WebkitMessagesView::updateEmoticonStyle()
+{
+    // Emoticons are small bitmaps drawn pixel by pixel, and they come in one resolution only. The
+    // page had been left to scale them by whatever the screen's is, smoothly: measured against the
+    // engine in use, a twenty pixel emoticon whose file holds a hundred and three colours reached
+    // the screen carrying five hundred, none of the extra ones its own.
+    //
+    // So the size is stated instead of inherited: zoom multiplies the image's own size, and asking
+    // for two screen pixels per pixel of the file leaves the emoticon the same size it was on a
+    // screen scaled by two, while on one scaled by one and a half it grows by a third and stops
+    // being resampled. Either way it is drawn at a whole number of screen pixels per file pixel,
+    // which is what image-rendering: pixelated needs in order to look deliberate rather than ragged.
+    //
+    // Below a scale of one there is nothing to correct -- the image is already drawn one for one --
+    // and doubling it there would only make it bigger for no gain, so that case is left alone.
+    //
+    // The ratio is read in the page rather than passed in from here, because it is the page that
+    // knows it, and it is read again on resize, which is what the engine reports when a window is
+    // moved to a screen of another scale.
+    QWebEngineScript emoticonStyle;
+    emoticonStyle.setName(QStringLiteral("kadu-emoticon-style"));
+    emoticonStyle.setInjectionPoint(QWebEngineScript::DocumentReady);
+    emoticonStyle.setWorldId(QWebEngineScript::MainWorld);
+    emoticonStyle.setRunsOnSubFrames(false);
+    emoticonStyle.setSourceCode(QStringLiteral(
+        "(function() {"
+        "  var id = 'kadu-emoticon-style';"
+        "  var apply = function() {"
+        "    var previous = document.getElementById(id);"
+        "    if (previous) previous.remove();"
+        "    var ratio = window.devicePixelRatio;"
+        "    var zoom = ratio > 1 ? 2 / ratio : 1;"
+        "    var sheet = document.createElement('style');"
+        "    sheet.id = id;"
+        "    sheet.textContent = 'img[emoticon], img.emoticon"
+        " { zoom: ' + zoom + '; image-rendering: pixelated; }';"
+        "    document.head.appendChild(sheet);"
+        "  };"
+        "  if (window.kaduEmoticonStyle)"
+        "    window.removeEventListener('resize', window.kaduEmoticonStyle);"
+        "  window.kaduEmoticonStyle = apply;"
+        "  window.addEventListener('resize', apply);"
+        "  apply();"
+        "})();"));
+
+    for (auto const &existing : page()->scripts().find(QStringLiteral("kadu-emoticon-style")))
+        page()->scripts().remove(existing);
+    page()->scripts().insert(emoticonStyle);
+
+    page()->runJavaScript(emoticonStyle.sourceCode());
 }
 
 void WebkitMessagesView::updatePageBackground()
