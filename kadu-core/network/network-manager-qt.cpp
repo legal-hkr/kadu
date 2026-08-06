@@ -19,7 +19,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtCore/QDebug>
 #include <QtCore/QSysInfo>
 #include <QtNetwork/QNetworkInformation>
 
@@ -48,22 +47,11 @@ NetworkManagerQt::NetworkManagerQt(QObject *parent) : NetworkManager{parent}
     HasReachabilityBackend = QNetworkInformation::loadDefaultBackend() && QNetworkInformation::instance();
 
     if (!HasReachabilityBackend)
-    {
-        qDebug("network: no QNetworkInformation backend, assuming the network is available");
         return;
-    }
-
-    auto *information = QNetworkInformation::instance();
-    qDebug(
-        "network: QNetworkInformation backend \"%s\", reachability %d",
-        qPrintable(information->backendName()), int(information->reachability()));
 
     connect(
-        information, &QNetworkInformation::reachabilityChanged, this,
-        [this](QNetworkInformation::Reachability reachability) {
-            qDebug("network: reachability changed to %d, online=%d", int(reachability), int(isReachable(reachability)));
-            onlineStateChanged(isReachable(reachability));
-        });
+        QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this,
+        [this](QNetworkInformation::Reachability reachability) { onlineStateChanged(isReachable(reachability)); });
 }
 
 NetworkManagerQt::~NetworkManagerQt()
