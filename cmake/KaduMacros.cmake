@@ -22,13 +22,9 @@ endif ()
 
 # libraries
 # TODO: support cmake parameters for this
-# Core5Compat provides QRegExp and QTextCodec, still used across the tree.
-# Dropping it means migrating to QRegularExpression and QStringConverter, which
-# is a separate piece of work.
 find_package (Qt6 6.2 REQUIRED COMPONENTS
 	Concurrent
 	Core
-	Core5Compat
 	StateMachine
 	DBus
 	Gui
@@ -210,7 +206,7 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 	endif ()
 
 	target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE
-		Qt6::Core Qt6::Core5Compat Qt6::StateMachine Qt6::Gui Qt6::Network
+		Qt6::Core Qt6::StateMachine Qt6::Gui Qt6::Network
 		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::WebEngineWidgets Qt6::Widgets Qt6::Xml
 	)
 	if (UNIX AND NOT APPLE)

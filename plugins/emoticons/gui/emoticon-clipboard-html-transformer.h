@@ -22,7 +22,7 @@
 #include "gui/services/clipboard-html-transformer.h"
 
 #include <QtCore/QObject>
-#include <QtCore5Compat/QRegExp>
+#include <QtCore/QRegularExpression>
 
 /**
  * @addtogroup Emoticons
@@ -38,7 +38,7 @@ class EmoticonClipboardHtmlTransformer : public QObject, public ClipboardHtmlTra
 {
     Q_OBJECT
 
-    QRegExp EmoticonRegularExpression;
+    QRegularExpression EmoticonRegularExpression;
 
 public:
     Q_INVOKABLE EmoticonClipboardHtmlTransformer(QObject *parent = nullptr);

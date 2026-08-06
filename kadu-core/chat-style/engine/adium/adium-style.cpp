@@ -23,7 +23,6 @@
 #include "misc/paths-provider.h"
 
 #include <QtCore/QDir>
-#include <QtCore5Compat/QTextCodec>
 #include <QtCore/QTextStream>
 #include <QtXml/QDomNode>
 

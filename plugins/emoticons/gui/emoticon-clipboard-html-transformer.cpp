@@ -34,7 +34,5 @@ EmoticonClipboardHtmlTransformer::~EmoticonClipboardHtmlTransformer()
 
 QString EmoticonClipboardHtmlTransformer::transform(const QString &clipboardHtml)
 {
-    // Core5Compat restores QRegExp but not the QString overloads that took one; QRegExp offers the
-    // inverted form instead.
-    return EmoticonRegularExpression.replaceIn(clipboardHtml, QStringLiteral("\\1"));
+    return QString{clipboardHtml}.replace(EmoticonRegularExpression, QStringLiteral("\\1"));
 }

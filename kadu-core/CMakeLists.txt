@@ -175,11 +175,8 @@ if (FAST_LINKING)
 	endif ()
 endif ()
 
-# Core5Compat is still required: 58 files use QRegExp and a few use QTextCodec.
-# Migrating those to QRegularExpression and QStringConverter is a separate piece
-# of work, unrelated to the web engine.
 target_link_libraries (libkadu LINK_PRIVATE
-		Qt6::Core Qt6::Core5Compat Qt6::StateMachine Qt6::Gui Qt6::Network
+		Qt6::Core Qt6::StateMachine Qt6::Gui Qt6::Network
 		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::WebEngineWidgets Qt6::Widgets Qt6::Xml
 )
 if (UNIX AND NOT APPLE)
@@ -194,7 +191,7 @@ target_link_libraries (libkadu LINK_PRIVATE ${ADDITIONAL_LIBKADU_LIBRARIES})
 
 add_executable (kadu WIN32 ${main_SRCS})
 kadu_set_flags (kadu)
-target_link_libraries (kadu LINK_PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
+target_link_libraries (kadu LINK_PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
 target_link_libraries (kadu LINK_PRIVATE libkadu ${ADDITIONAL_LIBRARIES})
 
 if (NOT IS_ABSOLUTE "${KADU_INSTALL_LIB_DIR}")
@@ -221,7 +218,7 @@ endif ()
 if (WIN32)
 	add_executable (kadu_c ${main_SRCS})
 	kadu_set_flags (kadu_c)
-	target_link_libraries (kadu_c LINK_PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
+	target_link_libraries (kadu_c LINK_PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Xml)
 	target_link_libraries (kadu_c LINK_PRIVATE libkadu ${ADDITIONAL_LIBRARIES})
 
 	# Do not link against qtmain on Windows

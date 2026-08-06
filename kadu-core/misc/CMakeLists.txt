@@ -1,4 +1,5 @@
 set (misc_SRCS
+	cp1250.cpp
 	change-notifier.cpp
 	change-notifier-lock.cpp
 	date-time.cpp

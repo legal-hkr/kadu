@@ -30,12 +30,12 @@
 #include "contacts/contact-manager.h"
 #include "contacts/contact-storage.h"
 #include "contacts/contact.h"
+#include "misc/cp1250.h"
 #include "misc/misc.h"
 #include "protocols/protocol.h"
 
 #include <QtCore/QStringList>
 #include <QtCore/QIODevice>
-#include <QtCore5Compat/QTextCodec>
 #include <QtCore/QTextStream>
 
 GaduListHelper::GaduListHelper(QObject *parent) : QObject{parent}
@@ -134,11 +134,10 @@ BuddyList GaduListHelper::streamPre70ToBuddyList(const QString &firstLine, Accou
 {
     BuddyList result;
 
-    // Qt6's QTextStream has no codec support and QStringConverter does not know
-    // CP1250, so decode what is left of the device explicitly through Core5Compat
-    // and read the rest of this legacy list from the decoded text instead.
-    auto const codec = QTextCodec::codecForName("CP1250");
-    auto decoded = (codec && content.device()) ? codec->toUnicode(content.device()->readAll()) : content.readAll();
+    // QTextStream lost codec support in Qt6 and QStringConverter does not know CP1250, so what is
+    // left of the device is decoded explicitly and the rest of this legacy list is read from the
+    // decoded text.
+    auto decoded = content.device() ? cp1250ToUnicode(content.device()->readAll()) : content.readAll();
     QTextStream cp1250Content{&decoded, QIODevice::ReadOnly};
 
     if (firstLine.isEmpty())

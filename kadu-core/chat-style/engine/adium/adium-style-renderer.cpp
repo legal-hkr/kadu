@@ -45,7 +45,7 @@
 #include "protocols/protocol.h"
 #include "protocols/services/chat-image.h"
 
-#include <QtCore5Compat/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QFile>
 #include <QtGui/QTextDocument>
 #include <QtWebEngineCore/QWebEnginePage>
@@ -235,12 +235,17 @@ QString AdiumStyleRenderer::replaceKeywords(const QString &styleHref, const QStr
         (printDateTime(m_chatConfigurationHolder->niceDateFormat(), QDateTime::currentDateTime())).toHtmlEscaped());
 
     // TODO 0.10.0: get real time!!!
-    QRegExp timeRegExp("%timeOpened\\{([^}]*)\\}%");
+    static const QRegularExpression timeOpenedRegExp{QStringLiteral("%timeOpened\\{([^}]*)\\}%")};
     int pos = 0;
-    while ((pos = timeRegExp.indexIn(result, pos)) != -1)
+    QRegularExpressionMatch timeOpenedMatch;
+    while ((timeOpenedMatch = timeOpenedRegExp.match(result, pos)).hasMatch())
+    {
+        pos = timeOpenedMatch.capturedStart();
         result.replace(
-            pos, timeRegExp.cap(0).length(), (AdiumTimeFormatter::convertTimeDate(
-                                                 m_systemInfo, timeRegExp.cap(1), QDateTime::currentDateTime())).toHtmlEscaped());
+            pos, timeOpenedMatch.capturedLength(),
+            (AdiumTimeFormatter::convertTimeDate(m_systemInfo, timeOpenedMatch.captured(1), QDateTime::currentDateTime()))
+                .toHtmlEscaped());
+    }
 
     QString photoIncoming;
     QString photoOutgoing;
@@ -304,21 +309,29 @@ QString AdiumStyleRenderer::replaceKeywords(
     QDateTime time = message.sendDate().isNull() ? message.receiveDate() : message.sendDate();
     result.replace(QString("%time%"), (printDateTime(m_chatConfigurationHolder->niceDateFormat(), time)).toHtmlEscaped());
     // Look for %time{X}%
-    QRegExp timeRegExp("%time\\{([^}]*)\\}%");
+    static const QRegularExpression timeRegExp{QStringLiteral("%time\\{([^}]*)\\}%")};
     int pos = 0;
-    while ((pos = timeRegExp.indexIn(result, pos)) != -1)
+    QRegularExpressionMatch timeMatch;
+    while ((timeMatch = timeRegExp.match(result, pos)).hasMatch())
+    {
+        pos = timeMatch.capturedStart();
         result.replace(
-            pos, timeRegExp.cap(0).length(),
-            (AdiumTimeFormatter::convertTimeDate(m_systemInfo, timeRegExp.cap(1), time)).toHtmlEscaped());
+            pos, timeMatch.capturedLength(),
+            (AdiumTimeFormatter::convertTimeDate(m_systemInfo, timeMatch.captured(1), time)).toHtmlEscaped());
+    }
 
     result.replace("%shortTime%", (printDateTime(m_chatConfigurationHolder->niceDateFormat(), time)).toHtmlEscaped());
 
     // Look for %textbackgroundcolor{X}%
     // TODO: highlight background color: use the X value.
-    QRegExp textBackgroundRegExp("%textbackgroundcolor\\{([^}]*)\\}%");
+    static const QRegularExpression textBackgroundRegExp{QStringLiteral("%textbackgroundcolor\\{([^}]*)\\}%")};
     int textPos = 0;
-    while ((textPos = textBackgroundRegExp.indexIn(result, textPos)) != -1)
-        result.replace(textPos, textBackgroundRegExp.cap(0).length(), "inherit");
+    QRegularExpressionMatch textBackgroundMatch;
+    while ((textBackgroundMatch = textBackgroundRegExp.match(result, textPos)).hasMatch())
+    {
+        textPos = textBackgroundMatch.capturedStart();
+        result.replace(textPos, textBackgroundMatch.capturedLength(), "inherit");
+    }
 
     // Replace userIconPath
     QString photoPath;
@@ -353,19 +366,24 @@ QString AdiumStyleRenderer::replaceKeywords(
 
     // Replace contact's color
     QString lightColorName;
-    QRegExp senderColorRegExp("%senderColor(?:\\{([^}]*)\\})?%");
+    static const QRegularExpression senderColorRegExp{QStringLiteral("%senderColor(?:\\{([^}]*)\\})?%")};
     textPos = 0;
-    while ((textPos = senderColorRegExp.indexIn(result, textPos)) != -1)
+    QRegularExpressionMatch senderColorMatch;
+    while ((senderColorMatch = senderColorRegExp.match(result, textPos)).hasMatch())
     {
+        textPos = senderColorMatch.capturedStart();
+
         int light = 100;
         bool doLight = false;
-        if (senderColorRegExp.captureCount() >= 1)
-            light = senderColorRegExp.cap(1).toInt(&doLight);
+        // The group is optional, so it may not have participated; captured(1) is then null and
+        // toInt() reports failure, which is what selects the unlightened colour.
+        light = senderColorMatch.captured(1).toInt(&doLight);
 
         if (doLight && lightColorName.isNull())
             lightColorName = QColor(nickColor).lighter(light).name();
 
-        result.replace(textPos, senderColorRegExp.cap(0).length(), (doLight ? lightColorName : nickColor).toHtmlEscaped());
+        result.replace(
+            textPos, senderColorMatch.capturedLength(), (doLight ? lightColorName : nickColor).toHtmlEscaped());
     }
 
     auto messageText = m_messageHtmlRendererService ? m_messageHtmlRendererService.data()->renderMessage(message)
