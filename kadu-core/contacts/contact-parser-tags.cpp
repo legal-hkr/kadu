@@ -23,6 +23,8 @@
 #include "contact-parser-tags.h"
 #include "contact-parser-tags.moc"
 
+#include <QtGui/QGuiApplication>
+
 #include "accounts/account.h"
 #include "icons/icons-manager.h"
 #include "icons/kadu-icon.h"
@@ -66,6 +68,29 @@ void ContactParserTags::setTalkableConverter(TalkableConverter *talkableConverte
     m_talkableConverter = talkableConverter;
 }
 
+namespace
+{
+/**
+ * @short Returns the icon at the resolution the screen has, for a tag placed in rich text.
+ *
+ * Every reader of these tags -- the tooltip, the information panel syntaxes, the contact grid --
+ * sizes the image itself at sixteen units. Qt's rich text engine takes an image's pixel count for
+ * that many logical units, so on a magnified screen a sixteen pixel file is enlarged to fill the
+ * sixteen units it is given. Handing it a file with as many pixels as the screen will draw leaves
+ * the size on screen unchanged and the image sharp.
+ */
+KaduIcon atScreenResolution(KaduIcon icon)
+{
+    auto const requested = icon.size().section('x', 0, 0).toInt();
+    if (requested <= 0)
+        return icon;
+
+    auto const scaled = qRound(requested * qApp->devicePixelRatio());
+    icon.setSize(QStringLiteral("%1x%1").arg(scaled));
+    return icon;
+}
+}
+
 void ContactParserTags::init()
 {
     m_parser->registerTag("avatarPath", [this](Talkable talkable) {
@@ -77,16 +102,16 @@ void ContactParserTags::init()
     });
     m_parser->registerTag("statusIconPath", [this](Talkable talkable) {
         if (m_talkableConverter->toBuddy(talkable).isBlocked())
-            return PathsProvider::webKitPath(m_iconsManager->iconPath(KaduIcon{"kadu_icons/blocked", "16x16"}));
+            return PathsProvider::webKitPath(m_iconsManager->iconPath(atScreenResolution(KaduIcon{"kadu_icons/blocked", "16x16"})));
 
         if (m_talkableConverter->toContact(talkable).isBlocking())
-            return PathsProvider::webKitPath(m_iconsManager->iconPath(KaduIcon{"kadu_icons/blocking", "16x16"}));
+            return PathsProvider::webKitPath(m_iconsManager->iconPath(atScreenResolution(KaduIcon{"kadu_icons/blocking", "16x16"})));
 
         auto status = m_talkableConverter->toStatus(talkable);
         auto account = m_talkableConverter->toAccount(talkable);
         if (auto protocol = account.protocolHandler())
             return PathsProvider::webKitPath(
-                m_iconsManager->iconPath(m_statusTypeManager->statusIcon(protocol->statusPixmapPath(), status)));
+                m_iconsManager->iconPath(atScreenResolution(m_statusTypeManager->statusIcon(protocol->statusPixmapPath(), status))));
         else
             return PathsProvider::webKitPath(
                 m_iconsManager->iconPath(m_statusContainerManager->statusIcon(Status{status.type()})));
