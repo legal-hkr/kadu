@@ -126,6 +126,15 @@ KaduIcon Protocol::icon()
 
 void Protocol::prepareStateMachine()
 {
+    // Runs once the state machine has started, to replay a status that arrived before it was
+    // listening -- which is the normal order when a status container restores from the
+    // configuration file before the protocol's plugin is even loaded. If the status is still
+    // disconnected here, nothing is replayed and the machine waits for a push that may never come.
+    qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id()
+                                << "state machine started, pending status is"
+                                << (CurrentStatus.isDisconnected() ? "disconnected, nothing to replay"
+                                                                   : "connected, replaying it");
+
     if (!CurrentStatus.isDisconnected())
         emit stateMachineChangeStatus();
 }
@@ -188,6 +197,10 @@ void Protocol::setStatus(Status status, StatusChangeSource source)
 
 void Protocol::doSetStatus(Status status)
 {
+    qCDebug(KADU_STATUS_CHANGE) << CurrentAccount.protocolName() << CurrentAccount.id() << "applying status,"
+                                << (status.isDisconnected() ? "disconnected: asking the machine to log out"
+                                                            : "connected: asking the machine to log in");
+
     CurrentStatus = status;
 
     if (!CurrentStatus.isDisconnected())
