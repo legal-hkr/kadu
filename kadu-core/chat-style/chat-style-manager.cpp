@@ -196,10 +196,10 @@ QString ChatStyleManager::fixedStyleName(QString styleName)
 {
     if (!AvailableStyles.contains(styleName))
     {
-        styleName = "Satin";
+        styleName = "kadu";
         if (!AvailableStyles.contains(styleName))
         {
-            styleName = "kadu";
+            styleName = "Satin";
             if (!AvailableStyles.contains(styleName))
             {
                 // Falling back to the first available style dereferenced begin() without

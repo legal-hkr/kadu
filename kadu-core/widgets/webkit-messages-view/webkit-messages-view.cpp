@@ -128,6 +128,8 @@ void WebkitMessagesView::init()
                        "XMLHttpRequest.prototype.send = function() { return false; };"));
     page()->scripts().insert(blockXhr);
 
+    updateScrollBarStyle();
+
     connect(page(), &QWebEnginePage::contentsSizeChanged, this, &WebkitMessagesView::scrollToBottom);
 
     // QtWebEngine renders into a native child widget, so mouse and wheel events never reach this
@@ -341,9 +343,63 @@ void WebkitMessagesView::forceScrollToBottom()
 
 void WebkitMessagesView::configurationUpdated()
 {
+    updateScrollBarStyle();
     updatePageBackground();
     setUserFont(m_chatConfigurationHolder->chatFont().toString(), m_chatConfigurationHolder->forceCustomChatFont());
     refreshView();
+}
+
+void WebkitMessagesView::updateScrollBarStyle()
+{
+    // The page is drawn by a browser engine, which draws its own scroll bar and knows nothing of
+    // the application's colours -- so on a dark theme the conversation had a bright bar down its
+    // side. Measured against the engine in use: color-scheme alone darkens the page but leaves the
+    // bar as it was, and only the ::-webkit-scrollbar rules reach it.
+    auto const &colours = palette();
+    auto const track = colours.color(QPalette::Base);
+    auto const thumb = colours.color(QPalette::Mid);
+    auto const thumbHover = colours.color(QPalette::Dark);
+
+    auto const style = QStringLiteral(
+                           "::-webkit-scrollbar { width: 12px; height: 12px; }"
+                           "::-webkit-scrollbar-track { background: %1; }"
+                           "::-webkit-scrollbar-thumb { background: %2; border-radius: 6px;"
+                           " border: 3px solid %1; }"
+                           "::-webkit-scrollbar-thumb:hover { background: %3; }"
+                           "::-webkit-scrollbar-corner { background: %1; }")
+                           .arg(track.name(), thumb.name(), thumbHover.name());
+
+    // Embedded the way the style renderers do it: escaped, then quoted.
+    auto quoted = style;
+    quoted.replace('\\', QStringLiteral("\\\\"));
+    quoted.replace('\'', QStringLiteral("\\'"));
+    quoted = QStringLiteral("'") + quoted + QStringLiteral("'");
+
+    // Inserted as a script rather than into the styles' own sheets: the appearance belongs to the
+    // application, not to the chat style, and every style gets it this way.
+    QWebEngineScript scrollBarStyle;
+    scrollBarStyle.setName(QStringLiteral("kadu-scrollbar-style"));
+    scrollBarStyle.setInjectionPoint(QWebEngineScript::DocumentReady);
+    scrollBarStyle.setWorldId(QWebEngineScript::MainWorld);
+    scrollBarStyle.setRunsOnSubFrames(false);
+    scrollBarStyle.setSourceCode(
+        QStringLiteral("(function() {"
+                       "  var id = 'kadu-scrollbar-style';"
+                       "  var previous = document.getElementById(id);"
+                       "  if (previous) previous.remove();"
+                       "  var sheet = document.createElement('style');"
+                       "  sheet.id = id;"
+                       "  sheet.textContent = %1;"
+                       "  document.head.appendChild(sheet);"
+                       "})();")
+            .arg(quoted));
+
+    for (auto const &existing : page()->scripts().find(QStringLiteral("kadu-scrollbar-style")))
+        page()->scripts().remove(existing);
+    page()->scripts().insert(scrollBarStyle);
+
+    // The page already loaded keeps the sheet it was given, so it is replaced there too.
+    page()->runJavaScript(scrollBarStyle.sourceCode());
 }
 
 void WebkitMessagesView::updatePageBackground()

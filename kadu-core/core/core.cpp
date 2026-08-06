@@ -273,7 +273,7 @@ void Core::createDefaultConfiguration()
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowInfoPanel", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowMultilineDesc", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowStatusButton", true);
-    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "Style", "Satin");
+    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "Style", "kadu");
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxBackgroundDisplayStyle", "Stretched");
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxTransparency", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxAlpha", 0);
