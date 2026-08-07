@@ -232,10 +232,15 @@ void TalkablePainter::computeIconRect()
     // stretched the icon into it a second time.
     IconRect.setSize(paintedIcon.deviceIndependentSize().toSize() + QSize(HFrameMargin, 0));
 
+    // Centring works in the same units as the rectangle above. QPixmap::height() counts device
+    // pixels, so on a magnified screen it subtracted twice the icon's real height and pushed it
+    // above the middle, while the comparison below could never be true.
+    auto const iconHeight = paintedIcon.deviceIndependentSize().toSize().height();
+
     if (!Configuration->alignTop())
-        IconRect.moveTop(ItemRect.top() + (ItemRect.height() - paintedIcon.height()) / 2);
-    else if (fontMetrics().lineSpacing() > paintedIcon.height())
-        IconRect.moveTop(ItemRect.top() + (fontMetrics().lineSpacing() - paintedIcon.height()) / 2);
+        IconRect.moveTop(ItemRect.top() + (ItemRect.height() - iconHeight) / 2);
+    else if (fontMetrics().lineSpacing() > iconHeight)
+        IconRect.moveTop(ItemRect.top() + (fontMetrics().lineSpacing() - iconHeight) / 2);
 }
 
 void TalkablePainter::computeAvatarRect()
