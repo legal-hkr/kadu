@@ -321,7 +321,11 @@ void WebkitMessagesView::contactActivityChanged(const Contact &contact, ChatStat
 void WebkitMessagesView::scrollToTop()
 {
     page()->runJavaScript(QStringLiteral("window.scrollTo(0, 0);"));
-    updateAtBottom();
+
+    // Not updateAtBottom(), for the reason forceScrollToBottom() gives below: runJavaScript() is
+    // asynchronous, so the position it read would be the one from before the scroll. Coming from
+    // the bottom that leaves the flag set, and the next message drags the view straight back down.
+    m_atBottom = false;
 }
 
 void WebkitMessagesView::scrollToBottom()
