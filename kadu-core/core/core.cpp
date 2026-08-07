@@ -205,7 +205,6 @@ void Core::createDefaultConfiguration()
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "General", "StartupStatusInvisibleWhenLastWasOffline", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("General", "UserBoxHeight", 300);
-    m_injector.get<Configuration>()->deprecatedApi()->addVariable("General", "WindowActivationMethod", 0);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "General", "MainConfiguration_Geometry", "50, 50, 790, 580");
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
@@ -218,7 +217,7 @@ void Core::createDefaultConfiguration()
     QFont chatFont = qApp->font();
 #ifdef Q_OS_WIN
     // On Windows default app font is often "MS Shell Dlg 2", and the default sans
-    // family (Arial, at least in Qt 4.8) is better. Though, on X11 the default
+    // family (Arial, at least in Qt 4.8) is better. Though, on Unix the default
     // sans family is the same while most users will have some nice default app
     // font, like DejaVu, Ubuntu (the font, not the distro) or alike.
     chatFont.setStyleHint(QFont::SansSerif);
@@ -267,13 +266,14 @@ void Core::createDefaultConfiguration()
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowAvatars", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "Look", "IconTheme", IconThemeManager::defaultTheme());
+    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UseSystemIcons", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowGroupAll", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowBold", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowDesc", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowInfoPanel", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowMultilineDesc", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ShowStatusButton", true);
-    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "Style", "Satin");
+    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "Style", "kadu");
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxBackgroundDisplayStyle", "Stretched");
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxTransparency", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxAlpha", 0);

@@ -4,6 +4,7 @@
  * Copyright 2012 Piotr Dąbrowski (ultr@ultr.pl)
  * Copyright 2012, 2013, 2014 Bartosz Brachaczek (b.brachaczek@gmail.com)
  * Copyright 2011, 2013, 2014 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
+ * Copyright 2026 Kadu Qt6 port
  * %kadu copyright end%
  *
  * This program is free software; you can redistribute it and/or
@@ -21,149 +22,91 @@
  */
 
 #include <QtCore/QTimer>
-#include <QtGui/QKeyEvent>
-#include <QtGui/QPixmap>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QStyle>
-#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
 
-#include "icons/icons-manager.h"
-#include "icons/kadu-icon.h"
-#include "pixmap-grabber.h"
+#include "portal-screenshot.h"
 #include "widgets/chat-widget/chat-widget.h"
 
 #include "screenshot-taker.h"
 #include "screenshot-taker.moc"
 
+namespace
+{
+// Long enough for a window that has just been hidden to be gone from the screen before the picture
+// is taken. The compositor decides when that has happened and tells nobody, so this is a wait, not
+// a synchronisation.
+constexpr int HideDelayMsec = 1000;
+}
+
 ScreenshotTaker::ScreenshotTaker(ChatWidget *chatWidget)
-        : QWidget(chatWidget->window(), Qt::Window), CurrentChatWidget(chatWidget), Dragging(false)
+        : QObject(chatWidget), CurrentChatWidget(chatWidget), Screenshot(nullptr), ChatWindowHidden(false), NeedsCrop(true)
 {
 }
 
 ScreenshotTaker::~ScreenshotTaker()
 {
-}
-
-void ScreenshotTaker::setIconsManager(IconsManager *iconsManager)
-{
-    m_iconsManager = iconsManager;
+    restoreChatWindow();
 }
 
 void ScreenshotTaker::init()
 {
-    setWindowRole("kadu-screenshot-taker");
-    setWindowModality(Qt::WindowModal);
-    setAttribute(Qt::WA_DeleteOnClose);
-    setMouseTracking(true);
-    setWindowTitle(tr("Window Shot"));
-    setWindowIcon(qApp->windowIcon());   // don't use status icon from the chat window!
+    Screenshot = new PortalScreenshot{this};
 
-    createLayout();
-    connect(CancelButton, SIGNAL(clicked()), this, SLOT(close()));
-    setFixedSize(sizeHint());
-}
-
-void ScreenshotTaker::createLayout()
-{
-    QVBoxLayout *layout = new QVBoxLayout(this);
-
-    // label
-
-    layout->addWidget(new QLabel(tr("Drag this icon onto the desired window"), this));
-
-    // icon
-
-    QHBoxLayout *iconLayout = new QHBoxLayout();
-    iconLayout->addStretch();
-    IconLabel = new QLabel(this);
-    IconLabel->setAlignment(Qt::AlignCenter);
-    IconLabel->setPixmap(
-        m_iconsManager->iconByPath(KaduIcon("external_modules/screenshot-camera-photo")).pixmap(32, 32));
-    iconLayout->addWidget(IconLabel);
-    iconLayout->addStretch();
-
-    layout->addLayout(iconLayout);
-
-    // spacing
-
-    layout->addSpacing(24);
-
-    // cancel button
-
-    QHBoxLayout *cancelLayout = new QHBoxLayout();
-    cancelLayout->addStretch();
-    CancelButton = new QPushButton(this);
-    CancelButton->setText(tr("Cancel"));
-    CancelButton->setIcon(qApp->style()->standardIcon(QStyle::SP_DialogCancelButton));
-    cancelLayout->addWidget(CancelButton);
-    cancelLayout->addStretch();
-
-    layout->addLayout(cancelLayout);
+    connect(Screenshot, &PortalScreenshot::taken, this, &ScreenshotTaker::portalTaken);
+    connect(Screenshot, &PortalScreenshot::failed, this, &ScreenshotTaker::portalFailed);
 }
 
 void ScreenshotTaker::takeStandardShot()
 {
-    CurrentChatWidget->update();
-    QTimer::singleShot(1000, this, SLOT(takeShot()));
+    request(false, true);
 }
 
 void ScreenshotTaker::takeShotWithChatWindowHidden()
 {
     CurrentChatWidget->window()->hide();
-    QTimer::singleShot(1000, this, SLOT(takeShot()));
+    ChatWindowHidden = true;
+
+    QTimer::singleShot(HideDelayMsec, this, [this] { request(false, true); });
 }
 
 void ScreenshotTaker::takeWindowShot()
 {
-    show();
+    // The desktop's own tool offers whatever it offers -- a window, an area, a whole screen -- and
+    // what comes back is already what the user chose, so Kadu does not crop it afterwards.
+    request(true, false);
 }
 
-void ScreenshotTaker::closeEvent(QCloseEvent *e)
+void ScreenshotTaker::request(bool interactive, bool needsCrop)
 {
-    emit screenshotNotTaken();
+    // Remembered rather than passed through the portal, which answers with a picture and nothing
+    // else.
+    NeedsCrop = needsCrop;
 
-    CurrentChatWidget->window()->show();
-
-    QWidget::closeEvent(e);
+    Screenshot->take(interactive);
 }
 
-void ScreenshotTaker::mousePressEvent(QMouseEvent *e)
+void ScreenshotTaker::portalTaken(QPixmap screenshot)
 {
-    if (childAt(e->pos()) != IconLabel)
+    restoreChatWindow();
+
+    emit screenshotTaken(screenshot, NeedsCrop);
+}
+
+void ScreenshotTaker::portalFailed(const QString &errorMessage)
+{
+    restoreChatWindow();
+
+    if (errorMessage.isEmpty())
+        emit screenshotNotTaken();
+    else
+        emit screenshotFailed(errorMessage);
+}
+
+void ScreenshotTaker::restoreChatWindow()
+{
+    if (!ChatWindowHidden)
         return;
 
-    Dragging = true;
-
-    setCursor(m_iconsManager->iconByPath(KaduIcon("external_modules/screenshot-camera-photo")).pixmap(32, 32));
-}
-
-void ScreenshotTaker::mouseReleaseEvent(QMouseEvent *e)
-{
-    Q_UNUSED(e)
-
-    if (!Dragging)
-        return;
-
-    Dragging = false;
-
-    setCursor(Qt::ArrowCursor);
-
-    QPixmap pixmap = PixmapGrabber::grabCurrent();
-
-    close();
-
-    emit screenshotTaken(pixmap, false);
-}
-
-void ScreenshotTaker::takeShot()
-{
-    QPixmap pixmap = QPixmap::grabWindow(QApplication::desktop()->winId());
-
-    hide();
+    ChatWindowHidden = false;
     CurrentChatWidget->window()->show();
-
-    emit screenshotTaken(pixmap, true);
 }

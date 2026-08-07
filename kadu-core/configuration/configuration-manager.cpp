@@ -61,7 +61,7 @@ void ConfigurationManager::init()
 
     importConfiguration();
 
-    m_uuid = m_configuration->api()->rootElement().attribute("uuid");
+    m_uuid = QUuid{m_configuration->api()->rootElement().attribute("uuid")};
     if (m_uuid.isNull())
         m_uuid = QUuid::createUuid();
 }

@@ -103,7 +103,7 @@ public:
      * First Kadu data path relative to the binary is taken from the configuration
      * written at compilation time, and then absolute canonical path is constructed from it.
      *
-     * Default data path is $CMAKE_INSTALL_FULL_DATADIR/kadu on X11 and
+     * Default data path is $CMAKE_INSTALL_FULL_DATADIR/kadu on Unix and
      * $CMAKE_INSTALL_PREFIX on Windows. It can be overwritten by
      * KADU_INSTALL_DATA_DIR CMake argument.
      */
@@ -123,7 +123,7 @@ public:
      * written at compilation time, and then absolute canonical path is constructed from it.
      *
      * Default library path for plugins is $CMAKE_INSTALL_FULL_LIBDIR/kadu/plugins
-     * on X11 and $CMAKE_INSTALL_PREFIX/plugins on Windows. It can be overwritten by
+     * on Unix and $CMAKE_INSTALL_PREFIX/plugins on Windows. It can be overwritten by
      * KADU_INSTALL_PLUGINS_LIB_DIR CMake argument.
      */
     const QString &pluginsLibPath() const
@@ -139,7 +139,7 @@ public:
      *
      * Path construction at init:
      * Absolute path to the current user profile is constructed at init. By default it is
-     * $HOME/.kadu on X11, $HOME/Library/Kadu on Mac OS X, and %AppData%/Kadu on Windows.
+     * $HOME/.kadu on Unix, $HOME/Library/Kadu on Mac OS X, and %AppData%/Kadu on Windows.
      * If this path does not exist yet, it is craeted and 0700 (or equivalent on Windwow)
      * permissions are set.
      *
@@ -156,7 +156,7 @@ public:
      * in directory returned by the dataPath() method exists, it is treated as relative to
      * the path returned by the dataPath() method.
      *
-     * If CONFIG_DIR is used and a middle directory named "kadu" on X11 or "Kadu" on Windows
+     * If CONFIG_DIR is used and a middle directory named "kadu" on Unix or "Kadu" on Windows
      * and Mac OS X exists, this directory is used as the current user profile for compatibility
      * with Kadu 0.6.5 and older.
      */

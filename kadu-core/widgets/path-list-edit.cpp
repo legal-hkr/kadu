@@ -100,7 +100,7 @@ void PathListEditWindow::init()
 void PathListEditWindow::createGui()
 {
     QGridLayout *Layout = new QGridLayout(this);
-    Layout->setMargin(5);
+    Layout->setContentsMargins(5, 5, 5, 5);
     Layout->setSpacing(5);
 
     PathListWidget = new QListWidget(this);

@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "configuration/configuration-aware-object.h"
 
 #include <QtCore/QPointer>

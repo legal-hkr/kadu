@@ -81,6 +81,9 @@ public slots:
     void clearMessages();
     void contactActivityChanged(const Contact &contact, ChatState state);
     void updateAtBottom();
+    void updateEmoticonStyle();
+    void updatePageBackground();
+    void updateScrollBarStyle();
 
     void pageUp();
     void pageDown();
@@ -93,9 +96,7 @@ signals:
 
 protected:
     virtual void configurationUpdated() override;
-    virtual void mouseReleaseEvent(QMouseEvent *e) override;
     virtual void resizeEvent(QResizeEvent *e) override;
-    virtual void wheelEvent(QWheelEvent *e) override;
 
     virtual void compositingEnabled() override;
     virtual void compositingDisabled() override;

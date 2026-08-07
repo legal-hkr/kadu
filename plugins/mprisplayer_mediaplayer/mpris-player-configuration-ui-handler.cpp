@@ -116,10 +116,8 @@ void MPRISPlayerConfigurationUiHandler::mainConfigurationWindowApplied()
 void MPRISPlayerConfigurationUiHandler::loadPlayersListFromFile()
 {
     QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    userPlayersSettings.setIniCodec("ISO8859-2");
 
     QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    globalPlayersSettings.setIniCodec("ISO8859-2");
 
     QStringList globalSections = globalPlayersSettings.childGroups();
     QStringList userSections = userPlayersSettings.childGroups();
@@ -175,7 +173,6 @@ void MPRISPlayerConfigurationUiHandler::addPlayer()
 
     QString oldPlayerName = m_configuration->deprecatedApi()->readEntry("MPRISPlayer", "Player");
     QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    userPlayersSettings.setIniCodec("ISO8859-2");
 
     userPlayersSettings.setValue(newPlayer + "/player", newPlayer);
     userPlayersSettings.setValue(newPlayer + "/service", newService);
@@ -210,9 +207,7 @@ void MPRISPlayerConfigurationUiHandler::editPlayer()
         return;
 
     QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    globalPlayersSettings.setIniCodec("ISO8859-2");
     QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    userPlayersSettings.setIniCodec("ISO8859-2");
     QStringList sections = globalPlayersSettings.childGroups();
 
     if (!sections.contains(oldPlayer))
@@ -244,9 +239,7 @@ void MPRISPlayerConfigurationUiHandler::delPlayer()
     QString playerToRemove = PlayersBox->currentText();
 
     QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    globalPlayersSettings.setIniCodec("ISO8859-2");
     QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    userPlayersSettings.setIniCodec("ISO8859-2");
 
     QStringList sections = globalPlayersSettings.childGroups();
 

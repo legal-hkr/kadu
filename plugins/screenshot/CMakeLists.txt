@@ -1,6 +1,6 @@
 project (screenshot)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.16)
 
 find_package (Kadu REQUIRED CONFIG)
 
@@ -14,7 +14,7 @@ set (SOURCES
 	gui/widgets/crop-image-widget.cpp
 	gui/widgets/screenshot-tool-box.cpp
 	gui/widgets/screenshot-widget.cpp
-	pixmap-grabber.cpp
+	portal-screenshot.cpp
 	screen-shot-saver.cpp
 	screenshot-module.cpp
 	screenshot-notification-service.cpp
@@ -29,16 +29,8 @@ set (CONFIGURATION_FILES
 )
 
 if (UNIX AND NOT APPLE)
-	set (PLUGIN_ADDITIONAL_QT_MODULES X11Extras)
-	find_package (X11 REQUIRED COMPONENTS X11 Xext Xshape)
-	if (X11_Xshape_FOUND)
-		message (STATUS "Found required X11 libraries: ${X11_X11_LIB};${X11_Xext_LIB}")
-	else ()
-		message (SEND_ERROR "Could NOT find X11 Xshape")
-	endif ()
-
-	include_directories (${X11_INCLUDE_DIR})
-	list (APPEND LIBRARIES ${X11_X11_LIB} ${X11_Xext_LIB})
+	# The screen belongs to the compositor; it is reached over D-Bus through the desktop portal.
+	set (PLUGIN_ADDITIONAL_QT_MODULES DBus)
 endif ()
 
 if (WIN32)

@@ -83,7 +83,7 @@ void LineEditWithClearButton::updateClearButton()
     const int buttonWidth = ClearButton->sizeHint().width();
     const QSize newButtonSize(buttonWidth, geom.height());
     const QFontMetrics fm(font());
-    const int em = fm.width("m");
+    const int em = fm.horizontalAdvance("m");
 
     // make sure we have enough room for the clear button
     // no point in showing it if we can't also see a few characters
@@ -123,7 +123,7 @@ bool LineEditWithClearButton::canShowClearButton()
 
 void LineEditWithClearButton::mousePressEvent(QMouseEvent *e)
 {
-    if ((e->button() == Qt::LeftButton || e->button() == Qt::MidButton) && ClearButton)
+    if ((e->button() == Qt::LeftButton || e->button() == Qt::MiddleButton) && ClearButton)
         ClickInClear = ClearButton->underMouse();
     QLineEdit::mousePressEvent(e);
 }

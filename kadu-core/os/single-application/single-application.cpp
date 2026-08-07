@@ -29,7 +29,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDataStream>
 #include <QtCore/QDir>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <memory>
@@ -95,7 +95,7 @@ QString SingleApplication::normalizedPrefix(bool useOnlyLastSection, const QStri
     if (useOnlyLastSection)
         result = result.section(QLatin1Char{'/'}, -1);
 
-    result.remove(QRegExp{"[^a-zA-Z]"});
+    result.remove(QRegularExpression{QStringLiteral("[^a-zA-Z]")});
     result.truncate(24);
 
     return result;

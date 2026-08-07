@@ -29,7 +29,7 @@ ShowAboutWindowAction::ShowAboutWindowAction(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           ActionDescription(parent)
 {
-    setIcon(KaduIcon{"kadu_icons/about-kadu"});
+    setIcon(KaduIcon{"help-about"});
     setName(QStringLiteral("aboutAction"));
     setText(tr("A&bout Kadu"));
     setType(ActionDescription::TypeMainMenu);

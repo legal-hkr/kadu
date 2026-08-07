@@ -55,7 +55,7 @@ PluginMetadataReader::readPluginMetadata(const QString &pluginName, const QStrin
 
     auto const lang = m_configuration->deprecatedApi()->readEntry("General", "Language");
     QSettings file{filePath, QSettings::IniFormat};
-    file.setIniCodec("UTF-8");
+    // Qt6 dropped QSettings::setIniCodec(); INI files are read as UTF-8 by default.
 
     auto result = PluginMetadata{};
     result.name = pluginName;
@@ -67,8 +67,8 @@ PluginMetadataReader::readPluginMetadata(const QString &pluginName, const QStrin
     result.version = file.value("Module/Version").toString() == "core" ? m_versionService->version()
                                                                        : file.value("Module/Version").toString();
     result.provides = file.value("Module/Provides").toString();
-    result.dependencies = file.value("Module/Dependencies").toString().split(' ', QString::SkipEmptyParts);
-    result.replaces = file.value("Module/Replaces").toString().split(' ', QString::SkipEmptyParts);
+    result.dependencies = file.value("Module/Dependencies").toString().split(' ', Qt::SkipEmptyParts);
+    result.replaces = file.value("Module/Replaces").toString().split(' ', Qt::SkipEmptyParts);
     result.loadByDefault = file.value("Module/LoadByDefault").toBool();
     result.internal = file.value("Module/Internal").toBool();
 

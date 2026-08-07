@@ -21,7 +21,8 @@
 #pragma once
 
 #include <QtCore/QPointer>
-#include <QtCore/QStateMachine>
+#include <QtStateMachine/QStateMachine>
+#include <QtStateMachine/QState>
 #include <QtCore/QTimer>
 #include <injeqt/injeqt.h>
 
@@ -221,8 +222,6 @@ class ProtocolStateMachine : public QStateMachine
 private slots:
     INJEQT_SET void setNetworkManager(NetworkManager *networkManager);
     INJEQT_INIT void init();
-
-    void printConfiguration();
 
 public:
     explicit ProtocolStateMachine(Protocol *protocol);

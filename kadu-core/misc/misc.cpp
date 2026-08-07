@@ -26,11 +26,12 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QProcess>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QUrl>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <assert.h>
 
 #include "accounts/account-manager.h"
@@ -47,14 +48,17 @@
 
 QString replacedNewLine(const QString &text, const QString &newLineText)
 {
-    static const QRegExp newLineRegExp("(\r\n|\r|\n)");
-    return QString(text).replace(newLineRegExp, newLineText);
+    static const QRegularExpression newLineRegExp{QStringLiteral("(\r\n|\r|\n)")};
+    return QString{text}.replace(newLineRegExp, newLineText);
 }
 
 QRect properGeometry(const QRect &rect)
 {
     QRect geometry(rect.normalized());
-    QRect availableGeometry = QApplication::desktop()->availableGeometry(geometry.center());
+    auto screen = QGuiApplication::screenAt(geometry.center());
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    QRect availableGeometry = screen->availableGeometry();
 
     // correct size
     if (geometry.width() > availableGeometry.width())
@@ -97,7 +101,7 @@ QString pwHash(const QString &text)
 QList<int> stringToIntList(const QString &in)
 {
     QList<int> out;
-    for (auto const &it : in.split(';', QString::SkipEmptyParts))
+    for (auto const &it : in.split(';', Qt::SkipEmptyParts))
         out.append(it.toInt());
     return out;
 }
@@ -117,7 +121,7 @@ QRect stringToRect(const QString &value, const QRect *def)
     int l, t, w, h;
     bool ok;
 
-    stringlist = value.split(',', QString::SkipEmptyParts);
+    stringlist = value.split(',', Qt::SkipEmptyParts);
     if (stringlist.count() != 4)
         return rect;
     l = stringlist.at(0).toInt(&ok);

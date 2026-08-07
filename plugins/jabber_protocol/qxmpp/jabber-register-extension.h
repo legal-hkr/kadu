@@ -20,7 +20,7 @@
 #pragma once
 
 #include <QtCore/QSet>
-#include <qxmpp/QXmppClientExtension.h>
+#include <QXmppQt6/QXmppClientExtension.h>
 
 class QXmppRegisterIq;
 

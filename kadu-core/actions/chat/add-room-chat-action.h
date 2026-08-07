@@ -25,7 +25,7 @@
 #include "injeqt-type-roles.h"
 
 #include <QtCore/QPointer>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <injeqt/injeqt.h>
 
 class AccountManager;

@@ -43,6 +43,7 @@
 #include "status/status-type.h"
 #include "talkable/talkable-converter.h"
 
+#include <QtCore/QRegularExpression>
 #include <QtCore/QFileInfo>
 #include <QtCore/QProcess>
 #include <QtCore/QStack>
@@ -181,7 +182,7 @@ QString Parser::executeCmd(const QString &cmd)
 {
     QString s(cmd);
     // TODO: check if Qt escapes these
-    s.remove(QRegExp("`|>|<"));
+    s.remove(QRegularExpression{QStringLiteral("`|>|<")});
 
     QProcess executor;
     executor.start(s);
@@ -230,7 +231,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
     Buddy buddy = m_talkableConverter->toBuddy(talkable);
     Contact contact = m_talkableConverter->toContact(talkable);
 
-    switch (s.at(idx).toAscii())
+    switch (s.at(idx).toLatin1())
     {
     // 'o' does not work so we should just ignore it
     // see bug #2199
@@ -290,7 +291,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
         {
             QString description = contact.currentStatus().description();
             if (escape == ParserEscape::HtmlEscape)
-                description = Qt::escape(description);
+                description = (description).toHtmlEscaped();
 
             pe.setContent(description);
 
@@ -298,7 +299,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
             {
                 QString content = pe.decodedContent();
                 content.replace('\n', QStringLiteral("<br/>"));
-                content.replace(QRegExp("\\s\\s"), QString(" &nbsp;"));
+                content.replace(QRegularExpression{QStringLiteral("\\s\\s")}, QStringLiteral(" &nbsp;"));
                 pe.setContent(content);
             }
         }
@@ -331,7 +332,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
 
         QString nickName = chat ? m_chatDataExtractor->data(chat, Qt::DisplayRole).toString() : buddy.nickName();
         if (escape == ParserEscape::HtmlEscape)
-            nickName = Qt::escape(nickName);
+            nickName = (nickName).toHtmlEscaped();
 
         pe.setContent(nickName);
 
@@ -343,7 +344,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
 
         QString display = chat ? m_chatDataExtractor->data(chat, Qt::DisplayRole).toString() : buddy.display();
         if (escape == ParserEscape::HtmlEscape)
-            display = Qt::escape(display);
+            display = (display).toHtmlEscaped();
 
         pe.setContent(display);
 
@@ -355,7 +356,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
 
         QString firstName = buddy.firstName();
         if (escape == ParserEscape::HtmlEscape)
-            firstName = Qt::escape(firstName);
+            firstName = (firstName).toHtmlEscaped();
 
         pe.setContent(firstName);
 
@@ -367,7 +368,7 @@ ParserToken Parser::parsePercentSyntax(const QString &s, int &idx, const Talkabl
 
         QString lastName = buddy.lastName();
         if (escape == ParserEscape::HtmlEscape)
-            lastName = Qt::escape(lastName);
+            lastName = (lastName).toHtmlEscaped();
 
         pe.setContent(lastName);
 

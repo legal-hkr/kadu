@@ -39,7 +39,7 @@ QString printDateTime(bool niceDateFormat, const QDateTime &datetime)
     QDateTime current_date;
     int delta;
 
-    current_date.setTime_t(static_cast<uint>(time(NULL)));
+    current_date.setSecsSinceEpoch(static_cast<qint64>(time(NULL)));
     //	current_date.setTime(QTime(0, 0));
 
     delta = datetime.daysTo(current_date);

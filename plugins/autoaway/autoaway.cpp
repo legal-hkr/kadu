@@ -94,7 +94,8 @@ void Autoaway::init()
 
 AutoawayStatusChanger::ChangeStatusTo Autoaway::changeStatusTo()
 {
-    m_idleTime = m_idle->secondsIdle();
+    if (!updateIdleTime())
+        return AutoawayStatusChanger::NoChangeStatus;
 
     if (m_idleTime >= m_autoDisconnectTime && m_autoDisconnectEnabled)
         return AutoawayStatusChanger::ChangeStatusToOffline;
@@ -122,9 +123,29 @@ QString Autoaway::descriptionAddon() const
     return m_descriptionAddon;
 }
 
+bool Autoaway::updateIdleTime()
+{
+    // Idle::secondsIdle() answers -1 when it cannot tell: no XScreenSaver extension, or a query
+    // that failed -- which is what happens under Wayland. Assigned straight into an unsigned
+    // member that became 4294967295, every threshold below compared true and the status went away
+    // the moment Kadu started. An unknown idle time has to mean "leave the status alone".
+    auto const secondsIdle = m_idle->secondsIdle();
+    if (secondsIdle < 0)
+        return false;
+
+    m_idleTime = static_cast<unsigned int>(secondsIdle);
+    return true;
+}
+
 void Autoaway::checkIdleTime()
 {
-    m_idleTime = m_idle->secondsIdle();
+    if (!updateIdleTime())
+    {
+        m_timer->setInterval(m_checkInterval * 1000);
+        m_timer->setSingleShot(true);
+        m_timer->start();
+        return;
+    }
 
     if (m_refreshStatusInterval > 0 && m_idleTime >= m_refreshStatusTime)
     {

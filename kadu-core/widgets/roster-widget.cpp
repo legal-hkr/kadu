@@ -89,7 +89,7 @@ void RosterWidget::init()
 void RosterWidget::createGui()
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
     GroupBar = m_injectedFactory->makeInjected<GroupTabBar>(this);

@@ -50,7 +50,7 @@ void FilteredTreeView::setInjectedFactory(InjectedFactory *injectedFactory)
 void FilteredTreeView::init()
 {
     Layout = new QVBoxLayout(this);
-    Layout->setMargin(0);
+    Layout->setContentsMargins(0, 0, 0, 0);
     Layout->setSpacing(0);
 
     NameFilterWidget = m_injectedFactory->makeInjected<FilterWidget>(this);

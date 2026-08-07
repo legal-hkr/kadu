@@ -17,6 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
+
 #include "execution-arguments-parser.h"
 
 #include "execution-arguments/execution-arguments.h"
@@ -47,7 +49,11 @@ ExecutionArguments ExecutionArgumentsParser::parse(const QStringList &arguments)
         }
         else if (*it == QStringLiteral("--config-dir") && (it + 1) != arguments.constEnd())
             profileDirectory = *(++it);
-        else if (QRegExp("^[a-zA-Z]+:(/){0,3}.+").exactMatch(*it))
+        else if (QRegularExpression{
+                     QRegularExpression::anchoredPattern(QStringLiteral("^[a-zA-Z]+:(/){0,3}.+")),
+                     QRegularExpression::UseUnicodePropertiesOption}
+                     .match(*it)
+                     .hasMatch())
             openIds.append(*it);
         else if (*it == QStringLiteral("--open-uuid") && (it + 1) != arguments.constEnd())
             openUuid = *(++it);

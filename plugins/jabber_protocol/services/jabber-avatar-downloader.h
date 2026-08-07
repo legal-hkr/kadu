@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "avatars/contact-avatar-id.h"
 
 #include <QtCore/QPointer>

@@ -23,6 +23,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include <QtCore/QFile>
 #include <QtCore/QString>
 #include <QtCore/QTextStream>
@@ -151,7 +152,7 @@ void About::init()
     tb_thanks->setReadOnly(true);
     tb_thanks->setFrameStyle(QFrame::NoFrame);
     tb_thanks->viewport()->setAutoFillBackground(false);
-    QString thanks = Qt::escape(loadFile("THANKS"));
+    QString thanks = (loadFile("THANKS")).toHtmlEscaped();
     thanks.prepend("<b>");
     thanks.replace("\n\n", QStringLiteral("</b><br/><br/>"));
     thanks.replace("\n", "<br/>");
@@ -177,19 +178,25 @@ void About::init()
     tb_changelog->setOpenLinks(false);
     tb_changelog->setFrameStyle(QFrame::NoFrame);
     tb_changelog->viewport()->setAutoFillBackground(false);
-    QString changelog = Qt::escape(loadFile("ChangeLog"));
+    QString changelog = (loadFile("ChangeLog")).toHtmlEscaped();
     changelog.replace('\n', "<br/>");
     // #bug_no -> Redmine URL
-    changelog.replace(QRegExp("#(\\d+)"), "<a href=\"http://www.kadu.im/redmine/issues/\\1\">#\\1</a>");
+    changelog.replace(
+        QRegularExpression{QStringLiteral("#(\\d+)"), QRegularExpression::UseUnicodePropertiesOption},
+        QStringLiteral("<a href=\"http://www.kadu.im/redmine/issues/\\1\">#\\1</a>"));
     // bold headers with green "+++"
     changelog.replace(
-        QRegExp("(^|<br/>)\\+\\+\\+([^<]*)<br/>"), "\\1<b><span style=\"color:green;\">+++</span>\\2</b><br/>");
+        QRegularExpression{QStringLiteral("(^|<br/>)\\+\\+\\+([^<]*)<br/>")},
+        QStringLiteral("\\1<b><span style=\"color:green;\">+++</span>\\2</b><br/>"));
     // bold subsystem names preceded by nice green bullets instead of "*"
-    changelog.replace(QRegExp("<br/>\\* ([^:<]*):"), "<br/><b><span style=\"color:green;\">&#8226;</span> \\1</b>:");
+    changelog.replace(
+        QRegularExpression{QStringLiteral("<br/>\\* ([^:<]*):")},
+        QStringLiteral("<br/><b><span style=\"color:green;\">&#8226;</span> \\1</b>:"));
     // green bullets also when no subsystem name
     changelog.replace("<br/>* ", "<br/><b><span style=\"color:green;\">&#8226;</span></b> ");
     // authors in italics
-    changelog.replace(QRegExp("\\(([^\\)]+)\\)<br/>"), "<i>(\\1)</i><br/>");
+    changelog.replace(
+        QRegularExpression{QStringLiteral("\\(([^\\)]+)\\)<br/>")}, QStringLiteral("<i>(\\1)</i><br/>"));
     tb_changelog->setHtml(changelog);
     connect(tb_changelog, SIGNAL(anchorClicked(const QUrl &)), this, SLOT(openUrl(const QUrl &)));
 
@@ -229,7 +236,7 @@ void About::init()
         new ConfigFileVariantWrapper(m_configuration, "General", "AboutGeometry"), QRect(0, 50, 480, 380), this);
 
     QString authors = loadFile("AUTHORS.html");
-    authors.remove(QRegExp("[\\[\\]]"));
+    authors.remove(QRegularExpression{QStringLiteral("[\\[\\]]")});
     // convert the email addresses
     authors.replace(" (at) ", "@");
     authors.replace(" (dot) ", ".");
@@ -261,11 +268,11 @@ QString About::loadFile(const QString &name)
         return QString();
 
     QTextStream str(&file);
-    str.setCodec("UTF-8");
+    str.setEncoding(QStringConverter::Utf8);
     QString data = str.readAll();
     file.close();
 
-    data.replace(QRegExp("\r\n?"), QStringLiteral("\n"));
+    data.replace(QRegularExpression{QStringLiteral("\r\n?")}, QStringLiteral("\n"));
 
     return data;
 }

@@ -114,7 +114,7 @@ void GroupEditWindow::createGui()
 
     auto iconWidget = new QWidget{mainWidget};
     auto iconLayout = new QHBoxLayout{iconWidget};
-    iconLayout->setMargin(0);
+    iconLayout->setContentsMargins(0, 0, 0, 0);
     iconLayout->addWidget(m_iconCheckBox);
     iconLayout->addWidget(m_selectIconButton);
     iconLayout->addStretch(100);

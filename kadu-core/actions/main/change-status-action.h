@@ -23,7 +23,7 @@
 #include "actions/action-description.h"
 #include "injeqt-type-roles.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <injeqt/injeqt.h>
 
 class ChangeStatusAction : public ActionDescription

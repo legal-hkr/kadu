@@ -112,7 +112,7 @@ void FileTransferWindow::createGui()
 
     m_transfersLayout = new QVBoxLayout{m_innerFrame.get()};
     m_transfersLayout->setDirection(QBoxLayout::Up);
-    m_transfersLayout->setMargin(0);
+    m_transfersLayout->setContentsMargins(0, 0, 0, 0);
     m_transfersLayout->setSpacing(0);
 
     m_scrollView->setWidget(m_innerFrame.get());

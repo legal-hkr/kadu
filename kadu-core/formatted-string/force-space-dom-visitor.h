@@ -36,5 +36,5 @@ public:
     explicit ForceSpaceDomVisitor();
     virtual ~ForceSpaceDomVisitor();
 
-    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, QRegExp regExp) const override;
+    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, const QRegularExpressionMatch &match) const override;
 };

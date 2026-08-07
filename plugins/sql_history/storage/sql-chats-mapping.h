@@ -67,7 +67,7 @@ class SqlChatsMapping : public QObject
     QPointer<ChatStorage> m_chatStorage;
 
     const QSqlDatabase &Database;
-    mutable QMutex Mutex;
+    mutable QRecursiveMutex Mutex;
     SqlAccountsMapping *AccountsMapping;
     SqlContactsMapping *ContactsMapping;
     QMap<int, Chat> ChatMapping;

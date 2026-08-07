@@ -29,7 +29,7 @@
 
 StandardUrlHandler::StandardUrlHandler()
 {
-    UrlRegExp = QRegExp("\\b(http://|https://|www\\.|ftp://)([^\\s]*)");
+    UrlRegExp = QRegularExpression{QStringLiteral("\\b(http://|https://|www\\.|ftp://)([^\\s]*)"), QRegularExpression::UseUnicodePropertiesOption};
 }
 
 StandardUrlHandler::~StandardUrlHandler()
@@ -38,7 +38,9 @@ StandardUrlHandler::~StandardUrlHandler()
 
 bool StandardUrlHandler::isUrlValid(const QByteArray &url)
 {
-    return UrlRegExp.exactMatch(QString::fromUtf8(url));
+    return QRegularExpression{QRegularExpression::anchoredPattern(UrlRegExp.pattern()), UrlRegExp.patternOptions()}
+        .match(QString::fromUtf8(url))
+        .hasMatch();
 }
 
 void StandardUrlHandler::openUrl(UrlOpener *urlOpener, const QByteArray &url, bool disableMenu)

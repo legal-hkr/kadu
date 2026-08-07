@@ -56,7 +56,7 @@ public:
 
     virtual QSize sizeHint() const
     {
-        return ButtonPixmap.size();
+        return ButtonPixmap.deviceIndependentSize().toSize();
     }
 
     void setAnimationsEnabled(bool animationsEnabled);

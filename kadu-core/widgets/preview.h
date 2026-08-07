@@ -27,6 +27,9 @@
 #include <injeqt/injeqt.h>
 
 class BuddyDummyFactory;
+class QHBoxLayout;
+
+class InjectedFactory;
 class KaduWebView;
 class Parser;
 
@@ -48,11 +51,15 @@ signals:
 
 private:
     QPointer<BuddyDummyFactory> m_buddyDummyFactory;
+    QPointer<InjectedFactory> m_injectedFactory;
     QPointer<Parser> m_parser;
 
     KaduWebView *m_webView;
+    QHBoxLayout *m_layout;
 
 private slots:
     INJEQT_SET void setBuddyDummyFactory(BuddyDummyFactory *buddyDummyFactory);
+    INJEQT_SET void setInjectedFactory(InjectedFactory *injectedFactory);
     INJEQT_SET void setParser(Parser *parser);
+    INJEQT_INIT void init();
 };

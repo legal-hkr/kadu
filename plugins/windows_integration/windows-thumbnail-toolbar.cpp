@@ -23,7 +23,7 @@
 #include "status/status-container.h"
 #include "status/status-setter.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QWidget>
 
 #ifdef Q_OS_WIN

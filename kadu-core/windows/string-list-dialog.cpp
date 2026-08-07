@@ -35,7 +35,7 @@ StringListDialog::StringListDialog(QString message, QString okButtonTitle, QStri
     setAttribute(Qt::WA_DeleteOnClose);
 
     auto layout = new QVBoxLayout{this};
-    layout->setMargin(8);
+    layout->setContentsMargins(8, 8, 8, 8);
 
     auto messageLabel = new QLabel{std::move(message)};
     messageLabel->setWordWrap(true);

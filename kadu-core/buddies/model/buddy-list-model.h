@@ -60,6 +60,8 @@ class KADUAPI BuddyListModel : public QAbstractItemModel, public KaduAbstractMod
 {
     Q_OBJECT
 
+    QHash<int, QByteArray> m_roleNames;
+
 public:
     /**
      * @short Create new BuddyListModel.
@@ -192,6 +194,10 @@ public:
      *
      * See @link BuddyListMimeDataHelper @endlink for more info on buddy list mime types.
      */
+    // Qt6 removed setRoleNames(); the role names are supplied by overriding
+    // roleNames() instead.
+    virtual QHash<int, QByteArray> roleNames() const override;
+
     virtual QStringList mimeTypes() const override;
 
     /**

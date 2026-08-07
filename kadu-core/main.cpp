@@ -66,6 +66,8 @@
 #include "talkable/talkable-module.h"
 #include "task/task-module.h"
 #include "themes/themes-module.h"
+#include "web/kadu-image-scheme-handler.h"
+#include "web/web-module.h"
 #include "widgets/chat-widget/chat-widget-module.h"
 #include "windows/chat-window/chat-window-module.h"
 
@@ -116,20 +118,25 @@ static void printBacktrace(const QString &header)
     fflush(stderr);
 }
 
-static void kaduQtMessageHandler(QtMsgType type, const char *msg)
+// qInstallMessageHandler() hands the handler a QMessageLogContext and a QString
+// rather than the plain char* the Qt4-era signature took.
+static void kaduQtMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
+    Q_UNUSED(context)
+
+    auto const messageData = message.toLocal8Bit();
+    auto const msg = messageData.constData();
+
     switch (type)
     {
     case QtDebugMsg:
         fprintf(stderr, "Debug: %s\n", msg);
         fflush(stderr);
         break;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     case QtInfoMsg:
         fprintf(stderr, "Info: %s\n", msg);
         fflush(stderr);
         break;
-#endif
     case QtWarningMsg:
         fprintf(stderr, "\033[34mWarning: %s\033[0m\n", msg);
         fflush(stderr);
@@ -177,8 +184,19 @@ int main(int argc, char *argv[]) try
 {
     WSAHandler wsaHandler;
 
+    // Has to happen before QApplication: QtWebEngine reads the scheme registry while starting up
+    // and ignores anything registered afterwards.
+    KaduImageSchemeHandler::registerScheme();
+
     QApplication application{argc, argv};
     application.setApplicationName("Kadu");
+
+    // The name of the desktop entry is how a Wayland compositor recognises which application a
+    // window belongs to -- for its icon, for window rules, and for restoring a session. Qt guesses
+    // it from the executable's name when it is not told, which happens to be right here and would
+    // stop being right the moment the program were started through a wrapper.
+    application.setDesktopFileName(QStringLiteral("kadu"));
+
     application.setQuitOnLastWindowClosed(false);
 
     auto executionArgumentsParser = ExecutionArgumentsParser{};
@@ -233,6 +251,7 @@ int main(int argc, char *argv[]) try
     modules.emplace_back(std::make_unique<TalkableModule>());
     modules.emplace_back(std::make_unique<TaskModule>());
     modules.emplace_back(std::make_unique<ThemesModule>());
+    modules.emplace_back(std::make_unique<WebModule>());
 
     auto injector = injeqt::injector{std::move(modules)};
 
@@ -243,7 +262,7 @@ int main(int argc, char *argv[]) try
 
 #ifndef Q_OS_WIN
         // Qt version is better on win32
-        qInstallMsgHandler(kaduQtMessageHandler);
+        qInstallMessageHandler(kaduQtMessageHandler);
 #endif
 
         Core core{std::move(injector)};

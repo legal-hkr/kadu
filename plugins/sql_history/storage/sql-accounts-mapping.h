@@ -113,7 +113,7 @@ private:
     QPointer<AccountManager> m_accountManager;
 
     const QSqlDatabase &Database;
-    mutable QMutex Mutex;
+    mutable QRecursiveMutex Mutex;
     QMap<int, Account> AccountMapping;
 
     /**

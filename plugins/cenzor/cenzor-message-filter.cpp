@@ -78,13 +78,13 @@ bool CenzorMessageFilter::acceptMessage(const Message &message)
 
 bool CenzorMessageFilter::shouldIgnore(const QString &message)
 {
-    QStringList words = message.split(' ', QString::SkipEmptyParts);
+    QStringList words = message.split(' ', Qt::SkipEmptyParts);
 
     for (const QString &word : words)
     {
         QString lowerWord = word.toLower();
-        for (const QRegExp &swear : m_cenzorConfiguration->swearList())
-            if ((swear.indexIn(lowerWord) >= 0) && (!isExclusion(lowerWord)))
+        for (auto const &swear : m_cenzorConfiguration->swearList())
+            if (swear.match(lowerWord).hasMatch() && !isExclusion(lowerWord))
                 return true;
     }
 
@@ -93,8 +93,8 @@ bool CenzorMessageFilter::shouldIgnore(const QString &message)
 
 bool CenzorMessageFilter::isExclusion(const QString &word)
 {
-    for (const QRegExp &exclusion : m_cenzorConfiguration->exclusionList())
-        if (exclusion.indexIn(word) >= 0)
+    for (auto const &exclusion : m_cenzorConfiguration->exclusionList())
+        if (exclusion.match(word).hasMatch())
             return true;
 
     return false;

@@ -22,7 +22,8 @@
 #include "window-manager.moc"
 
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QWidget>
 
 WindowManager::WindowManager(QObject *parent) : QObject{parent}
@@ -36,7 +37,8 @@ WindowManager::~WindowManager()
 void WindowManager::moveToWorkspaceCenter(QWidget *window)
 {
     const QSize windowSizeHint = window->sizeHint();
-    const QRect workspaceGeometry = qApp->desktop()->availableGeometry(window);
+    auto const workspaceScreen = window->screen() ? window->screen() : QGuiApplication::primaryScreen();
+    const QRect workspaceGeometry = workspaceScreen->availableGeometry();
 
     int xPosition = (workspaceGeometry.width() - windowSizeHint.width()) / 2;
     int yPosition = (workspaceGeometry.height() - windowSizeHint.height()) / 2;
@@ -53,7 +55,8 @@ void WindowManager::moveToPosition(QWidget *window, const QPoint &position)
 void WindowManager::ensureWholeVisible(QWidget *window)
 {
     const QSize windowSizeHint = window->sizeHint();
-    const QRect workspaceGeometry = qApp->desktop()->availableGeometry(window);
+    auto const workspaceScreen = window->screen() ? window->screen() : QGuiApplication::primaryScreen();
+    const QRect workspaceGeometry = workspaceScreen->availableGeometry();
 
     QPoint windowPosition = window->geometry().topLeft();
     if (windowPosition.x() < workspaceGeometry.left())

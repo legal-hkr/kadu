@@ -59,7 +59,7 @@ void BuddyOptionsConfigurationWidget::createGui()
     groupBox->setTitle(tr("General"));
 
     auto groupBoxLayout = new QVBoxLayout{groupBox};
-    groupBoxLayout->setMargin(0);
+    groupBoxLayout->setContentsMargins(0, 0, 0, 0);
     groupBoxLayout->setSpacing(4);
 
     auto internalWidget = new QWidget{groupBox};

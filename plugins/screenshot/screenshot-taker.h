@@ -1,9 +1,9 @@
 /*
  * %kadu copyright begin%
- * Copyright 2011 Piotr Galiszewski (piotr.galiszewski@kadu.im)
- * Copyright 2012 Piotr Dąbrowski (ultr@ultr.pl)
- * Copyright 2012, 2014 Bartosz Brachaczek (b.brachaczek@gmail.com)
- * Copyright 2011, 2013, 2014 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
+ * Copyright 2010, 2011 Piotr Galiszewski (piotr.galiszewski@kadu.im)
+ * Copyright 2011, 2012, 2013, 2014 Bartosz Brachaczek (b.brachaczek@gmail.com)
+ * Copyright 2011, 2012, 2013, 2014 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
+ * Copyright 2026 Kadu Qt6 port
  * %kadu copyright end%
  *
  * This program is free software; you can redistribute it and/or
@@ -23,42 +23,39 @@
 #ifndef SCREENSHOT_TAKER_H
 #define SCREENSHOT_TAKER_H
 
-#include <QtCore/QPointer>
+#include <QtCore/QObject>
 #include <QtGui/QPixmap>
-#include <QtWidgets/QWidget>
 #include <injeqt/injeqt.h>
 
-class QLabel;
-class QPushButton;
-
 class ChatWidget;
-class IconsManager;
+class PortalScreenshot;
 
-class ScreenshotTaker : public QWidget
+/**
+ * @short Obtains a screenshot for a chat window.
+ *
+ * The three modes used to be three ways of reading the screen directly. Only the first two remain
+ * ours to arrange: hiding the chat window before the picture is taken is a decision about Kadu's
+ * own windows. Choosing a window or an area belongs to the desktop now, since a Wayland client
+ * cannot see anyone else's window to point at it.
+ */
+class ScreenshotTaker : public QObject
 {
     Q_OBJECT
 
-    QPointer<IconsManager> m_iconsManager;
-
     ChatWidget *CurrentChatWidget;
+    PortalScreenshot *Screenshot;
 
-    QLabel *IconLabel;
-    QPushButton *CancelButton;
+    bool ChatWindowHidden;
+    bool NeedsCrop;
 
-    bool Dragging;
-
-    void createLayout();
+    void request(bool interactive, bool needsCrop);
+    void restoreChatWindow();
 
 private slots:
-    INJEQT_SET void setIconsManager(IconsManager *iconsManager);
     INJEQT_INIT void init();
 
-    void takeShot();
-
-protected:
-    virtual void closeEvent(QCloseEvent *e);
-    virtual void mousePressEvent(QMouseEvent *e);
-    virtual void mouseReleaseEvent(QMouseEvent *e);
+    void portalTaken(QPixmap screenshot);
+    void portalFailed(const QString &errorMessage);
 
 public:
     explicit ScreenshotTaker(ChatWidget *chatWidget);
@@ -72,6 +69,7 @@ public slots:
 signals:
     void screenshotTaken(QPixmap screenshot, bool needsCrop);
     void screenshotNotTaken();
+    void screenshotFailed(const QString &errorMessage);
 };
 
 #endif   // SCREENSHOT_TAKER_H

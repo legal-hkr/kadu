@@ -24,7 +24,8 @@
 #include "injeqt-type-roles.h"
 
 #include <QtCore/QPointer>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
+#include <QtGui/QActionGroup>
 #include <injeqt/injeqt.h>
 
 class Actions;

@@ -20,9 +20,9 @@
 #include "chat-style-renderer-configuration.h"
 
 ChatStyleRendererConfiguration::ChatStyleRendererConfiguration(
-    Chat chat, QWebFrame &webFrame, QString javaScript, bool useTransparency)
+    Chat chat, QWebEnginePage &page, QString javaScript, bool useTransparency)
         : m_chat{std::move(chat)},
-          m_webFrame(webFrame), m_javaScript{std::move(javaScript)}, m_useTransparency{useTransparency}
+          m_page(page), m_javaScript{std::move(javaScript)}, m_useTransparency{useTransparency}
 {
 }
 
@@ -31,9 +31,9 @@ Chat ChatStyleRendererConfiguration::chat() const
     return m_chat;
 }
 
-QWebFrame &ChatStyleRendererConfiguration::webFrame() const
+QWebEnginePage &ChatStyleRendererConfiguration::page() const
 {
-    return m_webFrame;
+    return m_page;
 }
 
 QString ChatStyleRendererConfiguration::javaScript() const
@@ -50,7 +50,7 @@ bool operator==(const ChatStyleRendererConfiguration &left, const ChatStyleRende
 {
     if (left.useTransparency() != right.useTransparency())
         return false;
-    if (std::addressof(left.webFrame()) != std::addressof(right.webFrame()))
+    if (std::addressof(left.page()) != std::addressof(right.page()))
         return false;
     if (left.chat() != right.chat())
         return false;

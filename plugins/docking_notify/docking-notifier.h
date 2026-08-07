@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QtCore/QObject>
 #include "chat/chat.h"
 #include "notification/notifier.h"
 #include "windows/main-configuration-window.h"

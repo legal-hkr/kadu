@@ -29,7 +29,8 @@
 #include "network/proxy/network-proxy-manager.h"
 #include "windows/proxy-edit-window-service.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
+#include <QtGui/QActionGroup>
 #include <QtWidgets/QMenu>
 
 DefaultProxyAction::DefaultProxyAction(QObject *parent) : ActionDescription(parent)

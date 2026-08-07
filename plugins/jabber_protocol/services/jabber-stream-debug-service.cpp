@@ -20,10 +20,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include "jabber-stream-debug-service.h"
 #include "jabber-stream-debug-service.moc"
 
-#include <qxmpp/QXmppClient.h>
+#include <QXmppQt6/QXmppClient.h>
 
 JabberStreamDebugService::JabberStreamDebugService(QXmppClient *m_client, QObject *parent) : QObject{parent}
 {
@@ -41,8 +42,10 @@ JabberStreamDebugService::~JabberStreamDebugService()
 QString JabberStreamDebugService::filterPrivateData(const QString &streamData)
 {
     QString result = streamData;
-    return result.replace(QRegExp("<password>[^<]*</password>\n"), "<password>[Filtered]</password>\n")
-        .replace(QRegExp("<digest>[^<]*</digest>\n"), "<digest>[Filtered]</digest>\n");
+    static const QRegularExpression password{QStringLiteral("<password>[^<]*</password>\n")};
+    static const QRegularExpression digest{QStringLiteral("<digest>[^<]*</digest>\n")};
+    return result.replace(password, QStringLiteral("<password>[Filtered]</password>\n"))
+        .replace(digest, QStringLiteral("<digest>[Filtered]</digest>\n"));
 }
 
 void JabberStreamDebugService::message(QXmppLogger::MessageType type, const QString &message)

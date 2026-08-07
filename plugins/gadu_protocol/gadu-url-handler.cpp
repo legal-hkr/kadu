@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 
@@ -41,7 +42,8 @@
 
 GaduUrlHandler::GaduUrlHandler(QObject *parent) : QObject{parent}
 {
-    m_gaduRegExp = QRegExp("\\bgg:(/){0,3}[0-9]{1,12}\\b");
+    m_gaduRegExp = QRegularExpression{
+        QStringLiteral("\\bgg:(/){0,3}[0-9]{1,12}\\b"), QRegularExpression::UseUnicodePropertiesOption};
 }
 
 GaduUrlHandler::~GaduUrlHandler()
@@ -80,7 +82,10 @@ void GaduUrlHandler::setIconsManager(IconsManager *iconsManager)
 
 bool GaduUrlHandler::isUrlValid(const QByteArray &url)
 {
-    return m_gaduRegExp.exactMatch(QString::fromUtf8(url));
+    return QRegularExpression{
+               QRegularExpression::anchoredPattern(m_gaduRegExp.pattern()), m_gaduRegExp.patternOptions()}
+        .match(QString::fromUtf8(url))
+        .hasMatch();
 }
 
 void GaduUrlHandler::openUrl(UrlOpener *urlOpener, const QByteArray &url, bool disableMenu)
@@ -95,7 +100,7 @@ void GaduUrlHandler::openUrl(UrlOpener *urlOpener, const QByteArray &url, bool d
     if (gaduId.startsWith(QStringLiteral("gg:")))
     {
         gaduId.remove(0, 3);
-        gaduId.remove(QRegExp("/*"));
+        gaduId.remove(QRegularExpression{QStringLiteral("/")});
     }
 
     if (gaduAccounts.count() == 1 || disableMenu)

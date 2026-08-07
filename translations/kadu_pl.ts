@@ -166,6 +166,14 @@
         <translation>Zezwól na stosowanie zmiennych w opisie</translation>
     </message>
     <message>
+        <source>Use the desktop&apos;s icon theme for standard icons</source>
+        <translation>Używaj systemowego zestawu ikon dla ikon standardowych</translation>
+    </message>
+    <message>
+        <source>Standard icons such as Open or Copy come from the desktop&apos;s own theme, which offers them in every size. Uncheck to use the icons bundled with Kadu instead</source>
+        <translation>Ikony standardowe, takie jak Otwórz czy Kopiuj, pochodzą z zestawu pulpitu, który ma je w każdym rozmiarze. Odznacz, aby używać ikon dołączonych do Kadu</translation>
+    </message>
+    <message>
         <source>Icon theme</source>
         <translation>Zestaw ikon</translation>
     </message>

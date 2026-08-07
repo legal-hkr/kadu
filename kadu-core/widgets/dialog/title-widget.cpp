@@ -36,7 +36,7 @@ TitleWidget::TitleWidget(QWidget *parent) : QWidget(parent)
 
     QGridLayout *headerLayout = new QGridLayout(titleFrame);
     headerLayout->setColumnStretch(0, 1);
-    headerLayout->setMargin(6);
+    headerLayout->setContentsMargins(6, 6, 6, 6);
 
     textLabel = new QLabel(titleFrame);
     textLabel->setVisible(false);
@@ -60,7 +60,7 @@ TitleWidget::TitleWidget(QWidget *parent) : QWidget(parent)
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(titleFrame);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
 }
 

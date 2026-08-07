@@ -41,10 +41,15 @@ EmoticonSelectorButton::EmoticonSelectorButton(
     const Emoticon &emoticon, EmoticonPathProvider *pathProvider, QWidget *parent)
         : QLabel(parent), DisplayEmoticon(emoticon), PathProvider(pathProvider)
 {
+    // Eighteen units high, but that many device pixels rather than that many logical ones: on a
+    // magnified screen the shorter image was simply enlarged afterwards.
+    auto const ratio = devicePixelRatio();
     QPixmap p(DisplayEmoticon.staticFilePath());
-    setPixmap(p.scaledToHeight(18, Qt::SmoothTransformation));
+    p = p.scaledToHeight(qRound(18 * ratio), Qt::SmoothTransformation);
+    p.setDevicePixelRatio(ratio);
+    setPixmap(p);
     setMouseTracking(true);
-    setMargin(4);
+    setContentsMargins(4, 4, 4, 4);
     setFixedSize(sizeHint());
 }
 

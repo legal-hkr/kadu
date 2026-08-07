@@ -56,7 +56,7 @@ Action::~Action()
     if (menu())
     {
         delete menu();
-        setMenu(0);
+        setMenu(nullptr);
     }
 }
 

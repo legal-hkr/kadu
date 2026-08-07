@@ -51,7 +51,6 @@ class QCheckBox;
 class QFormLayout;
 class QLabel;
 class QLineEdit;
-class QRegExpValidator;
 
 class KADUAPI AddBuddyWindow : public QDialog, DesktopAwareObject
 {

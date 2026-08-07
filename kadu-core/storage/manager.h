@@ -60,12 +60,12 @@
 template <class Item>
 class Manager : public StorableObject
 {
-    QMutex Mutex;
+    QRecursiveMutex Mutex;
 
     QVector<Item> Items;
 
 protected:
-    Manager(QObject *parent) : StorableObject{parent}, Mutex{QMutex::Recursive}
+    Manager(QObject *parent) : StorableObject{parent}, Mutex{}
     {
         setState(StateNotLoaded);
     }
@@ -74,7 +74,7 @@ protected:
     {
     }
 
-    QMutex &mutex()
+    QRecursiveMutex &mutex()
     {
         return Mutex;
     }
@@ -170,7 +170,7 @@ protected:
         for (auto const &itemElement : itemElements)
         {
             auto storagePoint = std::make_shared<StoragePoint>(storage()->storage(), itemElement);
-            QUuid uuid = storagePoint->point().attribute("uuid");
+            QUuid uuid{storagePoint->point().attribute("uuid")};
             if (!uuid.isNull())
             {
                 Item item = loadStubFromStorage(storagePoint);

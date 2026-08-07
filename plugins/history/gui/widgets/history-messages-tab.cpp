@@ -22,7 +22,8 @@
 
 #include <QtCore/QScopedPointer>
 #include <QtGui/QKeyEvent>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
+#include <QtWebEngineCore/QWebEnginePage>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QTreeView>
@@ -104,11 +105,11 @@ void HistoryMessagesTab::createGui()
 {
     TimelinePopupMenu = new QMenu(this);
     TimelinePopupMenu->addAction(
-        m_iconsManager->iconByPath(KaduIcon("kadu_icons/clear-history")), tr("&Remove entries"), this,
+        m_iconsManager->iconByPath(KaduIcon("edit-clear-history")), tr("&Remove entries"), this,
         SLOT(removeEntries()));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setMargin(2);
+    layout->setContentsMargins(2, 2, 2, 2);
 
     Splitter = new QSplitter(Qt::Horizontal, this);
 
@@ -241,8 +242,14 @@ void HistoryMessagesTab::setTalkables(const QVector<Talkable> &talkables)
 {
     auto chatsBuddies = m_pluginInjectedFactory->makeUnique<ChatsBuddiesSplitter>(talkables);
 
-    ChatsModel->setChats(chatsBuddies->chats().toList().toVector());
-    BuddiesModel->setBuddyList(chatsBuddies->buddies().toList());
+    // QSet::toList() was removed in Qt6; build the containers from iterators.
+    auto const chats = chatsBuddies->chats();
+    auto const buddies = chatsBuddies->buddies();
+    ChatsModel->setChats(QVector<Chat>(chats.cbegin(), chats.cend()));
+    auto buddyList = BuddyList{};
+    for (auto const &buddy : buddies)
+        buddyList.append(buddy);
+    BuddiesModel->setBuddyList(buddyList);
 }
 
 void HistoryMessagesTab::futureTalkablesAvailable()
@@ -330,7 +337,7 @@ void HistoryMessagesTab::showTalkablePopupMenu()
 
     menu->addSeparator();
     menu->addAction(
-        m_iconsManager->iconByPath(KaduIcon("kadu_icons/clear-history")), ClearHistoryMenuItemTitle, this,
+        m_iconsManager->iconByPath(KaduIcon("edit-clear-history")), ClearHistoryMenuItemTitle, this,
         SLOT(clearTalkableHistory()));
 
     menu->exec(QCursor::pos());
@@ -386,7 +393,7 @@ void HistoryMessagesTab::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == QKeySequence::Copy && !TimelineView->messagesView()->selectedText().isEmpty())
         // Do not use triggerPageAction(), see bug #2345.
-        TimelineView->messagesView()->pageAction(QWebPage::Copy)->trigger();
+        TimelineView->messagesView()->page()->action(QWebEnginePage::Copy)->trigger();
     else
         QWidget::keyPressEvent(event);
 }

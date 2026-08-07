@@ -19,7 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 
 #include "misc/string-utils.h"
 #include "model/roles.h"
@@ -46,7 +46,7 @@ QVariant StatusWindowDescriptionProxyModel::data(const QModelIndex &index, int r
     // it'd be easier to type QString::fromUtf8(" \u21B5 ") but it doesn't work in MSVC...
     QChar arrow21b5[] = {QChar(' '), QChar(0xb5, 0x21), QChar(' '), QChar(0)};
     text = text.replace('\n', QString(arrow21b5));
-    text = text.replace(QRegExp(" +"), " ");
+    text = text.replace(QRegularExpression{QStringLiteral(" +")}, QStringLiteral(" "));
     text = text.trimmed();
     text = StringUtils::ellipsis(text, DESCRIPTION_SELECT_DISPLAY_MAX_LENGTH);
     return QVariant(text);

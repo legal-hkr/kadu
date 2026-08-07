@@ -19,7 +19,7 @@
 
 #include "kadu-chat-syntax.h"
 
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 
 KaduChatSyntax::KaduChatSyntax(const QString &syntax)
 {
@@ -30,11 +30,17 @@ void KaduChatSyntax::setSyntax(const QString &syntax)
 {
     Syntax = syntax;
     QString syntax2 = syntax;
-    QRegExp topRegexp("<kadu:top>(.*)</kadu:top>");
-    if (syntax2.contains(topRegexp))
+    // DotMatchesEverythingOption is not cosmetic here: a <kadu:top> section holds the style's
+    // JavaScript and spans many lines. QRegExp's dot covered newlines, PCRE2's does not, so
+    // without it every bundled .syntax style would quietly lose its scripts -- and with them the
+    // delivery receipts and the typing indicator -- while still loading successfully.
+    static const QRegularExpression topRegexp{
+        QStringLiteral("<kadu:top>(.*)</kadu:top>"), QRegularExpression::DotMatchesEverythingOption};
+    auto const topMatch = topRegexp.match(syntax2);
+    if (topMatch.hasMatch())
     {
-        Top = topRegexp.cap(1);
-        syntax2.remove(topRegexp);
+        Top = topMatch.captured(1);
+        syntax2.remove(topMatch.capturedStart(), topMatch.capturedLength());
     }
     else
         Top = QString();
@@ -42,5 +48,8 @@ void KaduChatSyntax::setSyntax(const QString &syntax)
     WithHeader.remove("<kadu:header>");
     WithHeader.remove("</kadu:header>");
     WithoutHeader = syntax2;
-    WithoutHeader.remove(QRegExp("<kadu:header>.*</kadu:header>"));
+    // Same reason as above: a header section spans lines.
+    static const QRegularExpression headerRegexp{
+        QStringLiteral("<kadu:header>.*</kadu:header>"), QRegularExpression::DotMatchesEverythingOption};
+    WithoutHeader.remove(headerRegexp);
 }

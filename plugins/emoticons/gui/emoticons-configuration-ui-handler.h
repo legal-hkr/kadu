@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "theme/emoticon-theme-manager.h"
 
 #include "configuration/gui/configuration-ui-handler.h"

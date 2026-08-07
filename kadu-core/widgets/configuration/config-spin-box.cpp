@@ -20,6 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QLabel>
 #include <QtXml/QDomElement>
@@ -126,9 +127,11 @@ void ConfigSpinBox::onValueChanged(int i)
     if (Suffix.contains("%n"))
     {
         suffix =
-            QCoreApplication::translate("@default", Suffix.toUtf8().constData(), 0, QCoreApplication::CodecForTr, i);
-        QRegExp rx(QString("^.*%1").arg(i));
-        rx.setMinimal(true);
+            // Qt6 dropped the codec argument from QCoreApplication::translate().
+            QCoreApplication::translate("@default", Suffix.toUtf8().constData(), nullptr, i);
+        // setMinimal() becomes InvertedGreedinessOption; the harness confirms both engines strip
+        // the same prefix.
+        QRegularExpression rx{QStringLiteral("^.*%1").arg(i), QRegularExpression::InvertedGreedinessOption};
         suffix.remove(rx);
     }
     setSuffix(suffix);

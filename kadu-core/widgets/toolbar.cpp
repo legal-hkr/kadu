@@ -23,6 +23,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
+#include <QtGui/QActionGroup>
 #include <QtCore/QMimeData>
 #include <QtCore/QTextStream>
 #include <QtGui/QContextMenuEvent>
@@ -750,7 +752,7 @@ QMenu *ToolBar::createContextMenu(QWidget *widget)
             }
         }
 
-        qSort(actions.begin(), actions.end(), actionTextLessThan);
+        std::sort(actions.begin(), actions.end(), actionTextLessThan);
         for (auto action : actions)
             actionsMenu->addAction(action);
 
@@ -1138,7 +1140,7 @@ bool ActionDrag::decode(QDropEvent *event, QString &actionName, Qt::ToolButtonSt
         return false;
 
     QTextStream stream(mimeData->data("application/x-kadu-action"), QIODevice::ReadOnly);
-    stream.setCodec("UTF-8");
+    stream.setEncoding(QStringConverter::Utf8);
 
     if (stream.atEnd())
         return false;

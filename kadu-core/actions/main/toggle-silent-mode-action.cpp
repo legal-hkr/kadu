@@ -28,7 +28,7 @@ ToggleSilentModeAction::ToggleSilentModeAction(QObject *parent)
           ActionDescription(parent)
 {
     setCheckable(true);
-    setIcon(KaduIcon{"kadu_icons/enable-notifications"});
+    setIcon(KaduIcon{"preferences-desktop-notification"});
     setName(QStringLiteral("silentModeAction"));
     setText(tr("Silent Mode"));
     setType(ActionDescription::TypeGlobal);

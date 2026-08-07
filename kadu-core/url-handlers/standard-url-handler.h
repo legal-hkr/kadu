@@ -23,13 +23,13 @@
 #ifndef STANDARD_URL_HANDLER_H
 #define STANDARD_URL_HANDLER_H
 
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 
 #include "url-handler.h"
 
 class StandardUrlHandler : public UrlHandler
 {
-    QRegExp UrlRegExp;
+    QRegularExpression UrlRegExp;
 
 public:
     StandardUrlHandler();
@@ -38,7 +38,7 @@ public:
     virtual bool isUrlValid(const QByteArray &url);
     virtual void openUrl(UrlOpener *urlOpener, const QByteArray &url, bool disableMenu = false);
 
-    const QRegExp &urlRegExp()
+    const QRegularExpression &urlRegExp()
     {
         return UrlRegExp;
     }

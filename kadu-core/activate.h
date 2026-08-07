@@ -11,11 +11,10 @@ bool KADUAPI _isActiveWindow(QWidget *window);
 void KADUAPI _activateWindow(Configuration *configuration, QWidget *window);
 
 /**
- * Returns true if passed widget's window is active or fully visible to the user
- * (i.e., it is on the active desktop, is not covered by any other window and is
- * placed within desktop borders).
+ * Returns true if passed widget's window is active or fully visible to the user.
  *
- * NOTE: It is currently supported only on X11. On other platforms it is equivalent to QWidget::isActiveWindow().
+ * NOTE: Whether a window is covered, shaded or on another desktop is knowledge a Wayland client is
+ * not given, so this is equivalent to QWidget::isActiveWindow().
  */
 bool KADUAPI _isWindowActiveOrFullyVisible(QWidget *window);
 

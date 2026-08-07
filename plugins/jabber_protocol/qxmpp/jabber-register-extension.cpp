@@ -21,8 +21,8 @@
 #include "jabber-register-extension.moc"
 
 #include <QtXml/QDomElement>
-#include <qxmpp/QXmppClient.h>
-#include <qxmpp/QXmppRegisterIq.h>
+#include <QXmppQt6/QXmppClient.h>
+#include <QXmppQt6/QXmppRegisterIq.h>
 
 JabberRegisterExtension::JabberRegisterExtension()
 {

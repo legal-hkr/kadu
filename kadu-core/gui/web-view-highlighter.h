@@ -23,6 +23,7 @@
 #define WEB_VIEW_HIGHLIGHTER_H
 
 #include <QtCore/QObject>
+#include <QtWebEngineCore/QWebEnginePage>
 
 #include "exports.h"
 
@@ -50,6 +51,11 @@ class KADUAPI WebViewHighlighter : public QObject
     QString HighlightString;
 
     WebkitMessagesView *chatMessagesView() const;
+
+    /**
+     * @short Run an asynchronous search and report the outcome through somethingFound().
+     */
+    void find(const QString &text, QWebEnginePage::FindFlags flags, bool updateAtBottom);
 
 public:
     /**

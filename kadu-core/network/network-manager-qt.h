@@ -25,7 +25,6 @@
 #include "exports.h"
 #include "network-manager.h"
 
-class QNetworkConfigurationManager;
 
 /**
  * @addtogroup Network
@@ -34,22 +33,22 @@ class QNetworkConfigurationManager;
 
 /**
  * @class NetworkManagerQt
- * @short Class responsible for network online-offline notifications using QNetworkConfigurationManager.
+ * @short Class responsible for network online-offline notifications using QNetworkInformation.
  * @see NetworkAwareObject
  *
  * This class provides information about network availability. To check if network is available use isOnline()
  * method. Any object can connect to online() and offline() signals to get real-time notifications.
  *
- * This class uses QNetworkConfigurationManager to get network availability information. This is only possible
- * when QNetworkConfigurationManager::capabilities() has flag QNetworkConfigurationManager::CanStartAndStopInterfaces.
- * Otherwise constant online state will be assumed.
+ * Qt6 removed the Bearer module together with QNetworkConfigurationManager; reachability now comes from
+ * QNetworkInformation. A backend is not guaranteed to be available on every platform, and when none loads
+ * a constant online state is assumed -- the same fallback the Qt5 code used when the configuration manager
+ * reported insufficient capabilities.
  */
 class KADUAPI NetworkManagerQt : public NetworkManager
 {
     Q_OBJECT
 
-    QNetworkConfigurationManager *ConfigurationManager;
-    bool HasValidCapabilities;
+    bool HasReachabilityBackend;
 
 public:
     Q_INVOKABLE explicit NetworkManagerQt(QObject *parent = nullptr);

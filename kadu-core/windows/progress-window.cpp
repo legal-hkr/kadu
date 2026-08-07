@@ -60,7 +60,7 @@ void ProgressWindow::setIconsManager(IconsManager *iconsManager)
 void ProgressWindow::createGui()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(12);
+    mainLayout->setContentsMargins(12, 12, 12, 12);
     mainLayout->setSpacing(16);
 
     QLabel *label = new QLabel(this);
@@ -69,7 +69,7 @@ void ProgressWindow::createGui()
 
     QWidget *progressWidget = new QWidget(this);
     QHBoxLayout *progressLayout = new QHBoxLayout(progressWidget);
-    progressLayout->setMargin(0);
+    progressLayout->setContentsMargins(0, 0, 0, 0);
 
     ProgressBar = new QProgressBar(this);
     ProgressBar->setMinimum(0);

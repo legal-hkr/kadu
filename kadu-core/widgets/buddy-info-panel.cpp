@@ -39,7 +39,9 @@
 #include "talkable/talkable-converter.h"
 #include "url-handlers/url-handler-manager.h"
 
-#include <QtWebKitWidgets/QWebFrame>
+#include <QtWebEngineCore/QWebEngineScript>
+#include <QtWebEngineCore/QWebEngineScriptCollection>
+#include <QtWebEngineCore/QWebEngineSettings>
 
 BuddyInfoPanel::BuddyInfoPanel(QWidget *parent) : KaduWebView(parent)
 {
@@ -82,14 +84,23 @@ void BuddyInfoPanel::setTalkableConverter(TalkableConverter *talkableConverter)
 
 void BuddyInfoPanel::init()
 {
-    QPalette p = palette();
-    p.setBrush(QPalette::Base, Qt::transparent);
-    page()->setPalette(p);
+    // QWebEnginePage has no palette; the page background is set directly and a transparent one
+    // lets the widget below show through, which is what the palette brush achieved before.
+    page()->setBackgroundColor(Qt::transparent);
     setAttribute(Qt::WA_OpaquePaintEvent, false);
 
-    page()->currentFrame()->evaluateJavaScript(
-        "XMLHttpRequest.prototype.open = function() { return false; };"
-        "XMLHttpRequest.prototype.send = function() { return false; };");
+    // The panel shows contact data that may contain remote references. Neutering XMLHttpRequest
+    // keeps it from reaching the network. As a script it applies to every document the panel
+    // loads, instead of only the one present when init() ran.
+    QWebEngineScript blockXhr;
+    blockXhr.setName(QStringLiteral("kadu-block-xhr"));
+    blockXhr.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    blockXhr.setWorldId(QWebEngineScript::MainWorld);
+    blockXhr.setRunsOnSubFrames(true);
+    blockXhr.setSourceCode(
+        QStringLiteral("XMLHttpRequest.prototype.open = function() { return false; };"
+                       "XMLHttpRequest.prototype.send = function() { return false; };"));
+    page()->scripts().insert(blockXhr);
 
     connect(m_avatars, &Avatars::updated, this, &BuddyInfoPanel::avatarUpdated);
     connect(m_buddyPreferredManager, SIGNAL(buddyUpdated(Buddy)), this, SLOT(buddyUpdated(Buddy)));
@@ -182,10 +193,11 @@ void BuddyInfoPanel::update()
     Syntax = Syntax.remove("file:///");
     displayItem(Item);
 
-    if (configuration()->deprecatedApi()->readBoolEntry("Look", "PanelVerticalScrollbar"))
-        page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
-    else
-        page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
+    // QtWebEngine has no per-frame scroll bar policy; the page-wide setting is the closest
+    // equivalent and covers this panel, which has no sub-frames.
+    page()->settings()->setAttribute(
+        QWebEngineSettings::ShowScrollBars,
+        configuration()->deprecatedApi()->readBoolEntry("Look", "PanelVerticalScrollbar"));
 }
 
 void BuddyInfoPanel::avatarUpdated(const AvatarId &id)
@@ -229,11 +241,16 @@ void BuddyInfoPanel::displayItem(Talkable item)
 
     if (item.isEmpty())
     {
-        setHtml("<body bgcolor=\"" + BackgroundColor + "\"></body>");
+        setHtml("<body bgcolor=\"" + BackgroundColor + "\"></body>", QUrl{QStringLiteral("file:///")});
         return;
     }
 
-    setHtml(m_domProcessorService->process(Template.arg(m_parser->parse(Syntax, item, ParserEscape::HtmlEscape))));
+    // The base URL is required: avatar paths are absolute and the syntax has "file:///" stripped
+    // from them, so they only resolve against a local base. Without it QtWebEngine refuses every
+    // local resource while still reporting a successful load.
+    setHtml(
+        m_domProcessorService->process(Template.arg(m_parser->parse(Syntax, item, ParserEscape::HtmlEscape))),
+        QUrl{QStringLiteral("file:///")});
 }
 
 void BuddyInfoPanel::setVisible(bool visible)

@@ -161,7 +161,7 @@ void AccountShared::load()
 
     Shared::load();
 
-    Identity identity = m_identityManager->byUuid(loadValue<QString>("Identity"));
+    Identity identity = m_identityManager->byUuid(QUuid{loadValue<QString>("Identity")});
     if (identity.isNull() && !m_identityManager->items().isEmpty())
         identity = m_identityManager->items().at(0);
     doSetAccountIdentity(identity);
@@ -177,7 +177,7 @@ void AccountShared::load()
 
     UseDefaultProxy = loadValue<bool>("UseDefaultProxy", true);
     if (!UseDefaultProxy)
-        Proxy = m_networkProxyManager->byUuid(loadValue<QString>("Proxy"));
+        Proxy = m_networkProxyManager->byUuid(QUuid{loadValue<QString>("Proxy")});
 
     PrivateStatus = loadValue<bool>("PrivateStatus", true);
 
@@ -295,6 +295,8 @@ void AccountShared::protocolRegistered(ProtocolFactory *factory)
     if (protocolHandler() && protocolHandler()->rosterService() && protocolHandler()->rosterService()->tasks())
         protocolHandler()->rosterService()->tasks()->addTasks(loadRosterTasks());
 
+    // The handler exists now, so a status set while it did not can finally be delivered.
+    MyStatusContainer->applyPendingStatus();
     MyStatusContainer->triggerStatusUpdated();
 
     emit updated();

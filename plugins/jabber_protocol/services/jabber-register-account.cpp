@@ -28,8 +28,8 @@
 #include "misc/memory.h"
 #include "plugin/plugin-injected-factory.h"
 
-#include <qxmpp/QXmppClient.h>
-#include <qxmpp/QXmppRegisterIq.h>
+#include <QXmppQt6/QXmppClient.h>
+#include <QXmppQt6/QXmppRegisterIq.h>
 
 JabberRegisterAccount::JabberRegisterAccount(Jid jid, QString password, QString email, QObject *parent)
         : QObject{parent}, m_jid{std::move(jid)},

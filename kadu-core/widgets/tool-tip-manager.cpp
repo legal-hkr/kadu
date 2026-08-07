@@ -26,7 +26,9 @@
 #include "widgets/tool-tip-widget.h"
 
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+#include <QtGui/QWindow>
 
 ToolTipManager::ToolTipManager(QObject *parent) : QObject{parent}
 {
@@ -41,17 +43,32 @@ void ToolTipManager::setInjectedFactory(InjectedFactory *injectedFactory)
     m_injectedFactory = injectedFactory;
 }
 
-void ToolTipManager::showToolTip(const QPoint &where, const Talkable &talkable)
+void ToolTipManager::showToolTip(const QPoint &where, const Talkable &talkable, QWidget *parent)
 {
     m_toolTipWidget = m_injectedFactory->makeNotOwned<ToolTipWidget>(talkable);
 
     auto pos = where + QPoint{5, 5};
     auto preferredSize = m_toolTipWidget->sizeHint();
-    auto desktopSize = QApplication::desktop()->screenGeometry(m_toolTipWidget).size();
+    auto screen = parent ? parent->screen() : m_toolTipWidget->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    auto desktopSize = screen->geometry().size();
     if (pos.x() + preferredSize.width() > desktopSize.width())
         pos.setX(pos.x() - preferredSize.width() - 10);
     if (pos.y() + preferredSize.height() > desktopSize.height())
         pos.setY(pos.y() - preferredSize.height() - 10);
+
+    // A popup is placed where it is asked for; a window is placed wherever the compositor likes.
+    // What makes it a popup is a transient parent -- something for the compositor to anchor it to.
+    // It must not become a child in Qt's ownership sense, though: not_owned_qptr owns it and
+    // insists, with an assertion, that nothing else does.
+    if (parent)
+    {
+        m_toolTipWidget->winId();
+        if (auto *handle = m_toolTipWidget->windowHandle())
+            if (auto *parentWindow = parent->window()->windowHandle())
+                handle->setTransientParent(parentWindow);
+    }
 
     m_toolTipWidget->move(pos);
     m_toolTipWidget->show();

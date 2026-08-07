@@ -22,13 +22,67 @@
 
 #include "parser/parser.h"
 
+#include <QtCore/QBuffer>
+#include <QtCore/QRegularExpression>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPixmap>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 
+namespace
+{
+/**
+ * @short Replaces the contact's picture with the same picture at the screen's resolution.
+ *
+ * Qt's rich text engine reads an image file and takes its pixel count for that many logical units,
+ * so on a magnified screen a picture is enlarged to fill the box it is given rather than drawn
+ * into it. An image carried in the markup itself is not read from disk, so it can be prepared at
+ * the pixel count the screen will actually draw while the box stays the size it was.
+ */
+QString withPictureAtScreenResolution(QString text, int boxSize)
+{
+    static const QRegularExpression pictureTag{
+        QStringLiteral("<img style=\"max-width:%1px; max-height:%1px;\" src=\"([^\"]*)\">").arg(boxSize)};
+
+    auto const match = pictureTag.match(text);
+    if (!match.hasMatch())
+        return text;
+
+    auto path = match.captured(1);
+    path.remove(QStringLiteral("file://"));
+
+    QPixmap picture{path};
+    if (picture.isNull())
+        return text;
+
+    auto const ratio = qApp->devicePixelRatio();
+    auto displaySize = picture.size();
+    displaySize.scale(QSize{boxSize, boxSize}, Qt::KeepAspectRatio);
+
+    picture = picture.scaled(
+        QSize{qRound(displaySize.width() * ratio), qRound(displaySize.height() * ratio)}, Qt::KeepAspectRatio,
+        Qt::SmoothTransformation);
+
+    QByteArray png;
+    QBuffer buffer{&png};
+    buffer.open(QIODevice::WriteOnly);
+    if (!picture.save(&buffer, "PNG"))
+        return text;
+
+    return text.replace(match.capturedStart(), match.capturedLength(),
+                        QStringLiteral("<img width=\"%1\" height=\"%2\" src=\"data:image/png;base64,%3\">")
+                            .arg(displaySize.width())
+                            .arg(displaySize.height())
+                            .arg(QString::fromLatin1(png.toBase64())));
+}
+}
+
 ToolTipWidget::ToolTipWidget(const Talkable &talkable, QWidget *parent)
-        : QFrame{parent,
-                 Qt::FramelessWindowHint | Qt::Tool | Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint |
-                     Qt::MSWindowsOwnDC},
+        // A tool window is a window in its own right, and a Wayland client may not say where its
+        // windows go -- measured on a live compositor, a tool window asked to appear at one corner
+        // was placed in the middle of the screen instead. A tooltip is a popup anchored to the
+        // widget it belongs to, which is placed where it is asked for, so that is what this is.
+        : QFrame{parent, Qt::FramelessWindowHint | Qt::ToolTip},
           m_talkable{talkable}
 {
     setObjectName(QStringLiteral("tool_tip"));
@@ -37,7 +91,7 @@ ToolTipWidget::ToolTipWidget(const Talkable &talkable, QWidget *parent)
         QStringLiteral("#tool_tip { border: 1px solid %1; }").arg(palette().window().color().darker().name()));
 
     auto layout = make_owned<QHBoxLayout>(this);
-    layout->setMargin(10);
+    layout->setContentsMargins(10, 10, 10, 10);
     layout->setSizeConstraint(QLayout::SetFixedSize);
 
     m_tipLabel = make_owned<QLabel>(this);
@@ -89,7 +143,7 @@ void ToolTipWidget::init()
     text = text.remove("file://");
 #endif
 
-    m_tipLabel->setText(text);
+    m_tipLabel->setText(withPictureAtScreenResolution(text, 64));
 
     setFixedSize(m_tipLabel->sizeHint() + QSize{2, 2});
 }

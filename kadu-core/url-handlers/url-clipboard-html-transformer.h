@@ -20,7 +20,7 @@
 #ifndef URL_CLIPBOARD_HTML_TRANSFORMER_H
 #define URL_CLIPBOARD_HTML_TRANSFORMER_H
 
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 
 #include "gui/services/clipboard-html-transformer.h"
 
@@ -35,7 +35,7 @@
  */
 class UrlClipboardHtmlTransformer : public ClipboardHtmlTransformer
 {
-    QRegExp UrlRegExp;
+    QRegularExpression UrlRegExp;
 
 public:
     UrlClipboardHtmlTransformer();

@@ -67,14 +67,14 @@ ConfigurationWidget::ConfigurationWidget(ConfigurationWindowDataManager *dataMan
         : QWidget(parent), DataManager(dataManager), CurrentSection(0)
 {
     QHBoxLayout *center_layout = new QHBoxLayout(this);
-    center_layout->setMargin(0);
+    center_layout->setContentsMargins(0, 0, 0, 0);
     center_layout->setSpacing(0);
 
     LeftWidget = new QWidget(this);
     LeftWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     LeftWidget->hide();
     QVBoxLayout *left_layout = new QVBoxLayout(LeftWidget);
-    left_layout->setMargin(0);
+    left_layout->setContentsMargins(0, 0, 0, 0);
     left_layout->setSpacing(0);
 
     ContainerWidget = new QWidget(this);
@@ -445,7 +445,7 @@ ConfigSection *ConfigurationWidget::configSection(const KaduIcon &icon, const QS
 
     QFontMetrics fontMetrics = SectionsListWidget->fontMetrics();
     // TODO: 48 = margins + scrollbar - get real scrollbar width
-    int width = fontMetrics.width(name) + 80;
+    int width = fontMetrics.horizontalAdvance(name) + 80;
 
     auto newConfigSection = m_injectedFactory->makeInjected<ConfigSection>(
         name, this, newConfigSectionListWidgetItem, ContainerWidget, icon);

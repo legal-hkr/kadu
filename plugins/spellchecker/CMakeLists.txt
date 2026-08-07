@@ -1,6 +1,6 @@
 project (spellchecker)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.16)
 
 find_package (Kadu REQUIRED CONFIG)
 
@@ -40,7 +40,9 @@ else ()
 
 	if (USE_ENCHANT)
 		find_package (PkgConfig)
-		pkg_search_module (ENCHANT enchant)
+		# enchant 2.x ships its pkg-config file as enchant-2; the old name only exists on
+		# systems still carrying the 1.x series.
+		pkg_search_module (ENCHANT enchant-2 enchant)
 
 		if (NOT ENCHANT_FOUND)
 			if (FORCE_ENGINE)

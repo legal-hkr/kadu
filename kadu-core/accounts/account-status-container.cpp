@@ -29,7 +29,8 @@
 #include "account-status-container.moc"
 
 AccountStatusContainer::AccountStatusContainer(AccountShared *account)
-        : StorableStatusContainer(account), Account(account)
+        : StorableStatusContainer(account), Account(account), PendingStatusSource(SourceStatusChanger),
+          HasPendingStatus(false)
 {
 }
 
@@ -46,9 +47,30 @@ void AccountStatusContainer::setStatus(Status newStatus, StatusChangeSource sour
 {
     if (Account->ProtocolHandler)
         Account->ProtocolHandler->setStatus(newStatus, source);
+    else
+    {
+        // The status this account belongs to is restored from the configuration file at startup,
+        // which happens before the protocol's plugin is necessarily loaded. Dropping the status
+        // here used to strand such an account for the whole session: nothing sends it again, because
+        // StatusChangerManager only pushes a status down when it changes, and it has not changed.
+        // The account then sat in the logged-out-online state -- not connected, never retrying, and
+        // saying nothing, while the status widget kept reporting the identity as available.
+        PendingStatus = newStatus;
+        PendingStatusSource = source;
+        HasPendingStatus = true;
+    }
 
     if (newStatus.isDisconnected() && !Account->rememberPassword())
         Account->setPassword("");
+}
+
+void AccountStatusContainer::applyPendingStatus()
+{
+    if (!HasPendingStatus || !Account->ProtocolHandler)
+        return;
+
+    HasPendingStatus = false;
+    Account->ProtocolHandler->setStatus(PendingStatus, PendingStatusSource);
 }
 
 Status AccountStatusContainer::status()

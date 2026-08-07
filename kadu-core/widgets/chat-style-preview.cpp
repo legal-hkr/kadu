@@ -41,7 +41,11 @@ ChatStylePreview::ChatStylePreview(QWidget *parent) : QFrame{parent}
 {
     setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     setFixedHeight(250);
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    // Expanding rather than Preferred: QWebEngineView derives its size hint from the rendered
+    // contents and reports 0x0 until something is loaded, which collapsed this frame to a couple
+    // of pixels. QWebView used to answer with the page's preferred size, so Preferred sufficed.
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 }
 
 ChatStylePreview::~ChatStylePreview()
@@ -93,6 +97,7 @@ void ChatStylePreview::init()
     auto layout = make_owned<QHBoxLayout>(this);
     layout->setContentsMargins(0, 0, 0, 0);
     m_view = preparePreview();
+    m_view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->addWidget(m_view.get());
 
     configurationUpdated();

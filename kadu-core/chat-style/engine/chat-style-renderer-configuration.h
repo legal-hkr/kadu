@@ -21,7 +21,7 @@
 
 #include "chat/chat.h"
 
-class QWebFrame;
+class QWebEnginePage;
 
 /**
  * @addtogroup ChatStyle
@@ -32,22 +32,23 @@ class QWebFrame;
  * @class ChatStyleRendererConfiguration
  * @short Configuration for ChatStyleRenderer.
  *
- * This class contains all data required to properlt set up ChatStyleRenderer. It is: chat, web frame used
+ * This class contains all data required to properlt set up ChatStyleRenderer. It is: chat, page used
  * to display chat messages, default javascript code and transparency setting.
  */
 class ChatStyleRendererConfiguration
 {
 public:
-    ChatStyleRendererConfiguration(Chat chat, QWebFrame &webFrame, QString javaScript, bool useTransparency);
+    ChatStyleRendererConfiguration(
+        Chat chat, QWebEnginePage &page, QString javaScript, bool useTransparency);
 
     Chat chat() const;
-    QWebFrame &webFrame() const;
+    QWebEnginePage &page() const;
     QString javaScript() const;
     bool useTransparency() const;
 
 private:
     Chat m_chat;
-    QWebFrame &m_webFrame;
+    QWebEnginePage &m_page;
     QString m_javaScript;
     bool m_useTransparency;
 };

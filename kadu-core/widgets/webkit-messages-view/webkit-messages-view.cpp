@@ -34,13 +34,15 @@
 #include "protocols/services/chat-image-service.h"
 #include "protocols/services/chat-service.h"
 #include "services/chat-image-request-service.h"
-#include "widgets/chat-view-network-access-manager.h"
 #include "widgets/webkit-messages-view/message-limit-policy.h"
 #include "widgets/webkit-messages-view/webkit-messages-view-handler-factory.h"
 #include "widgets/webkit-messages-view/webkit-messages-view-handler.h"
 
+#include <QtCore/QFile>
 #include <QtGui/QKeyEvent>
-#include <QtWebKitWidgets/QWebFrame>
+#include <QtWebEngineCore/QWebEnginePage>
+#include <QtWebEngineCore/QWebEngineScript>
+#include <QtWebEngineCore/QWebEngineScriptCollection>
 
 WebkitMessagesView::WebkitMessagesView(const Chat &chat, bool supportTransparency, QWidget *parent)
         : KaduWebView{parent}, m_chat{chat}, m_forcePruneDisabled{}, m_supportTransparency{supportTransparency},
@@ -95,17 +97,12 @@ void WebkitMessagesView::init()
         m_chatImageRequestService.data(), SIGNAL(chatImageStored(ChatImage, QString)), this,
         SLOT(chatImageStored(ChatImage, QString)));
 
-    auto oldManager = page()->networkAccessManager();
-    auto newManager = m_injectedFactory->makeOwned<ChatViewNetworkAccessManager>(oldManager, this);
-    page()->setNetworkAccessManager(newManager.get());
-
     // TODO: for me with empty styleSheet if has artifacts on scrollbars...
     // maybe Qt bug?
     setStyleSheet("QWidget { }");
     setFocusPolicy(Qt::NoFocus);
     setMinimumSize(QSize(100, 100));
-    settings()->setAttribute(QWebSettings::JavascriptEnabled, true);
-    settings()->setAttribute(QWebSettings::PluginsEnabled, true);
+    // JavaScript is enabled on the shared profile; plugins no longer exist in QtWebEngine.
 
     auto p = palette();
 
@@ -115,16 +112,31 @@ void WebkitMessagesView::init()
     p.setBrush(QPalette::Inactive, QPalette::Highlight, p.brush(QPalette::Active, QPalette::Highlight));
     p.setBrush(QPalette::Inactive, QPalette::HighlightedText, p.brush(QPalette::Active, QPalette::HighlightedText));
 
-    p.setBrush(QPalette::Base, Qt::transparent);
     setPalette(p);
 
-    setAttribute(Qt::WA_OpaquePaintEvent, false);
+    updatePageBackground();
 
-    page()->currentFrame()->evaluateJavaScript(
-        "XMLHttpRequest.prototype.open = function() { return false; };"
-        "XMLHttpRequest.prototype.send = function() { return false; };");
+    // Messages are written by other people. Neutering XMLHttpRequest keeps rendered content from
+    // reaching the network. Injected as a script so it covers every document, not just this one.
+    QWebEngineScript blockXhr;
+    blockXhr.setName(QStringLiteral("kadu-block-xhr"));
+    blockXhr.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    blockXhr.setWorldId(QWebEngineScript::MainWorld);
+    blockXhr.setRunsOnSubFrames(true);
+    blockXhr.setSourceCode(
+        QStringLiteral("XMLHttpRequest.prototype.open = function() { return false; };"
+                       "XMLHttpRequest.prototype.send = function() { return false; };"));
+    page()->scripts().insert(blockXhr);
 
-    connect(this->page()->mainFrame(), SIGNAL(contentsSizeChanged(const QSize &)), this, SLOT(scrollToBottom()));
+    updateScrollBarStyle();
+    updateEmoticonStyle();
+
+    connect(page(), &QWebEnginePage::contentsSizeChanged, this, &WebkitMessagesView::scrollToBottom);
+
+    // QtWebEngine renders into a native child widget, so mouse and wheel events never reach this
+    // widget. Tracking the scroll position directly is both simpler and more reliable than the
+    // event handlers this replaces.
+    connect(page(), &QWebEnginePage::scrollPositionChanged, this, &WebkitMessagesView::updateAtBottom);
     connect(m_chatStyleManager, SIGNAL(chatStyleConfigurationUpdated()), this, SLOT(chatStyleConfigurationUpdated()));
 
     configurationUpdated();
@@ -132,29 +144,20 @@ void WebkitMessagesView::init()
     refreshView();
 }
 
-void WebkitMessagesView::mouseReleaseEvent(QMouseEvent *e)
-{
-    updateAtBottom();
-    KaduWebView::mouseReleaseEvent(e);
-}
-
 void WebkitMessagesView::resizeEvent(QResizeEvent *e)
 {
-    QWebView::resizeEvent(e);
+    QWebEngineView::resizeEvent(e);
 
     scrollToBottom();
 }
 
-void WebkitMessagesView::wheelEvent(QWheelEvent *e)
-{
-    updateAtBottom();
-    QWebView::wheelEvent(e);
-}
-
 void WebkitMessagesView::updateAtBottom()
 {
-    m_atBottom =
-        page()->mainFrame()->scrollBarValue(Qt::Vertical) >= page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
+    // QtWebEngine exposes no scroll bars; what is left below the viewport takes their place.
+    // Contents size and scroll position are reported in CSS pixels and can be fractional, all the
+    // more so on a fractionally scaled display, so the comparison needs a little slack.
+    auto const belowViewport = page()->contentsSize().height() - page()->scrollPosition().y();
+    m_atBottom = belowViewport <= height() + 2;
 }
 
 void WebkitMessagesView::connectChat()
@@ -222,7 +225,7 @@ void WebkitMessagesView::refreshView()
 
     auto chatStyleRenderer = m_chatStyleRendererFactory->createChatStyleRenderer(rendererConfiguration());
     auto handler = m_webkitMessagesViewHandlerFactory.data()->createWebkitMessagesViewHandler(
-        std::move(chatStyleRenderer), page()->mainFrame());
+        std::move(chatStyleRenderer), page());
     setWebkitMessagesViewHandler(std::move(handler));
 }
 
@@ -231,20 +234,20 @@ ChatStyleRendererConfiguration WebkitMessagesView::rendererConfiguration()
     QFile file{m_pathsProvider->dataPath() + QStringLiteral("scripts/chat-scripts.js")};
     auto javaScript = file.open(QIODevice::ReadOnly | QIODevice::Text) ? file.readAll() : QString{};
     auto transparency = m_chatConfigurationHolder->useTransparency() && supportTransparency() && isCompositingEnabled();
-    return ChatStyleRendererConfiguration{chat(), *page()->mainFrame(), javaScript, transparency};
+    return ChatStyleRendererConfiguration{chat(), *page(), javaScript, transparency};
 }
 
 void WebkitMessagesView::setWebkitMessagesViewHandler(owned_qptr<WebkitMessagesViewHandler> handler)
 {
     ScopedUpdatesDisabler updatesDisabler{*this};
-    auto scrollBarPosition = page()->mainFrame()->scrollBarValue(Qt::Vertical);
+    auto scrollBarPosition = page()->scrollPosition().y();
 
     auto messages = m_handler ? m_handler->messages() : SortedMessages{};
     m_handler = std::move(handler);
     setForcePruneDisabled(m_forcePruneDisabled);
     m_handler->add(messages);
 
-    page()->mainFrame()->setScrollBarValue(Qt::Vertical, scrollBarPosition);
+    page()->runJavaScript(QStringLiteral("window.scrollTo(0, %1);").arg(scrollBarPosition));
 }
 
 void WebkitMessagesView::pageUp()
@@ -317,26 +320,157 @@ void WebkitMessagesView::contactActivityChanged(const Contact &contact, ChatStat
 
 void WebkitMessagesView::scrollToTop()
 {
-    page()->mainFrame()->setScrollBarValue(Qt::Vertical, 0);
-    updateAtBottom();
+    page()->runJavaScript(QStringLiteral("window.scrollTo(0, 0);"));
+
+    // Not updateAtBottom(), for the reason forceScrollToBottom() gives below: runJavaScript() is
+    // asynchronous, so the position it read would be the one from before the scroll. Coming from
+    // the bottom that leaves the flag set, and the next message drags the view straight back down.
+    m_atBottom = false;
 }
 
 void WebkitMessagesView::scrollToBottom()
 {
     if (m_atBottom)
-        page()->mainFrame()->setScrollBarValue(Qt::Vertical, page()->mainFrame()->scrollBarMaximum(Qt::Vertical));
+        forceScrollToBottom();
 }
 
 void WebkitMessagesView::forceScrollToBottom()
 {
-    page()->mainFrame()->setScrollBarValue(Qt::Vertical, page()->mainFrame()->scrollBarMaximum(Qt::Vertical));
-    updateAtBottom();
+    // No scroll bar API in QtWebEngine; scrolling is done from the document itself.
+    page()->runJavaScript(QStringLiteral("window.scrollTo(0, document.body.scrollHeight);"));
+
+    // Deliberately not updateAtBottom(): runJavaScript() is asynchronous, so it would read the
+    // position from before the scroll and, with the content having just grown, conclude the view
+    // is no longer at the bottom -- stopping the next message from scrolling it. Going to the
+    // bottom is what this method means, so the flag simply says so.
+    m_atBottom = true;
 }
 
 void WebkitMessagesView::configurationUpdated()
 {
+    updateScrollBarStyle();
+    updatePageBackground();
     setUserFont(m_chatConfigurationHolder->chatFont().toString(), m_chatConfigurationHolder->forceCustomChatFont());
     refreshView();
+}
+
+void WebkitMessagesView::updateScrollBarStyle()
+{
+    // The page is drawn by a browser engine, which draws its own scroll bar and knows nothing of
+    // the application's colours -- so on a dark theme the conversation had a bright bar down its
+    // side. Measured against the engine in use: color-scheme alone darkens the page but leaves the
+    // bar as it was, and only the ::-webkit-scrollbar rules reach it.
+    auto const &colours = palette();
+    auto const track = colours.color(QPalette::Base);
+    auto const thumb = colours.color(QPalette::Mid);
+    auto const thumbHover = colours.color(QPalette::Dark);
+
+    auto const style = QStringLiteral(
+                           "::-webkit-scrollbar { width: 12px; height: 12px; }"
+                           "::-webkit-scrollbar-track { background: %1; }"
+                           "::-webkit-scrollbar-thumb { background: %2; border-radius: 6px;"
+                           " border: 3px solid %1; }"
+                           "::-webkit-scrollbar-thumb:hover { background: %3; }"
+                           "::-webkit-scrollbar-corner { background: %1; }")
+                           .arg(track.name(), thumb.name(), thumbHover.name());
+
+    // Embedded the way the style renderers do it: escaped, then quoted.
+    auto quoted = style;
+    quoted.replace('\\', QStringLiteral("\\\\"));
+    quoted.replace('\'', QStringLiteral("\\'"));
+    quoted = QStringLiteral("'") + quoted + QStringLiteral("'");
+
+    // Inserted as a script rather than into the styles' own sheets: the appearance belongs to the
+    // application, not to the chat style, and every style gets it this way.
+    QWebEngineScript scrollBarStyle;
+    scrollBarStyle.setName(QStringLiteral("kadu-scrollbar-style"));
+    scrollBarStyle.setInjectionPoint(QWebEngineScript::DocumentReady);
+    scrollBarStyle.setWorldId(QWebEngineScript::MainWorld);
+    scrollBarStyle.setRunsOnSubFrames(false);
+    scrollBarStyle.setSourceCode(
+        QStringLiteral("(function() {"
+                       "  var id = 'kadu-scrollbar-style';"
+                       "  var previous = document.getElementById(id);"
+                       "  if (previous) previous.remove();"
+                       "  var sheet = document.createElement('style');"
+                       "  sheet.id = id;"
+                       "  sheet.textContent = %1;"
+                       "  document.head.appendChild(sheet);"
+                       "})();")
+            .arg(quoted));
+
+    for (auto const &existing : page()->scripts().find(QStringLiteral("kadu-scrollbar-style")))
+        page()->scripts().remove(existing);
+    page()->scripts().insert(scrollBarStyle);
+
+    // The page already loaded keeps the sheet it was given, so it is replaced there too.
+    page()->runJavaScript(scrollBarStyle.sourceCode());
+}
+
+void WebkitMessagesView::updateEmoticonStyle()
+{
+    // Emoticons are small bitmaps drawn pixel by pixel, and they come in one resolution only. The
+    // page had been left to scale them by whatever the screen's is, smoothly: measured against the
+    // engine in use, a twenty pixel emoticon whose file holds a hundred and three colours reached
+    // the screen carrying five hundred, none of the extra ones its own.
+    //
+    // So the size is stated instead of inherited: zoom multiplies the image's own size, and asking
+    // for two screen pixels per pixel of the file leaves the emoticon the same size it was on a
+    // screen scaled by two, while on one scaled by one and a half it grows by a third and stops
+    // being resampled. Either way it is drawn at a whole number of screen pixels per file pixel,
+    // which is what image-rendering: pixelated needs in order to look deliberate rather than ragged.
+    //
+    // Below a scale of one there is nothing to correct -- the image is already drawn one for one --
+    // and doubling it there would only make it bigger for no gain, so that case is left alone.
+    //
+    // The ratio is read in the page rather than passed in from here, because it is the page that
+    // knows it, and it is read again on resize, which is what the engine reports when a window is
+    // moved to a screen of another scale.
+    QWebEngineScript emoticonStyle;
+    emoticonStyle.setName(QStringLiteral("kadu-emoticon-style"));
+    emoticonStyle.setInjectionPoint(QWebEngineScript::DocumentReady);
+    emoticonStyle.setWorldId(QWebEngineScript::MainWorld);
+    emoticonStyle.setRunsOnSubFrames(false);
+    emoticonStyle.setSourceCode(QStringLiteral(
+        "(function() {"
+        "  var id = 'kadu-emoticon-style';"
+        "  var apply = function() {"
+        "    var previous = document.getElementById(id);"
+        "    if (previous) previous.remove();"
+        "    var ratio = window.devicePixelRatio;"
+        "    var zoom = ratio > 1 ? 2 / ratio : 1;"
+        "    var sheet = document.createElement('style');"
+        "    sheet.id = id;"
+        "    sheet.textContent = 'img[emoticon], img.emoticon"
+        " { zoom: ' + zoom + '; image-rendering: pixelated; }';"
+        "    document.head.appendChild(sheet);"
+        "  };"
+        "  if (window.kaduEmoticonStyle)"
+        "    window.removeEventListener('resize', window.kaduEmoticonStyle);"
+        "  window.kaduEmoticonStyle = apply;"
+        "  window.addEventListener('resize', apply);"
+        "  apply();"
+        "})();"));
+
+    for (auto const &existing : page()->scripts().find(QStringLiteral("kadu-emoticon-style")))
+        page()->scripts().remove(existing);
+    page()->scripts().insert(emoticonStyle);
+
+    page()->runJavaScript(emoticonStyle.sourceCode());
+}
+
+void WebkitMessagesView::updatePageBackground()
+{
+    // QWebEnginePage has no palette, so the page background stands in for QPalette::Base.
+    //
+    // Asking for a transparent one makes QtWebEngine composite every repaint against whatever is
+    // behind the widget, which shows as flicker while scrolling. It is only worth that when
+    // transparency is actually in use -- the same condition the renderer is given.
+    auto const transparent =
+        m_chatConfigurationHolder->useTransparency() && supportTransparency() && isCompositingEnabled();
+
+    page()->setBackgroundColor(transparent ? QColor{Qt::transparent} : palette().color(QPalette::Base));
+    setAttribute(Qt::WA_OpaquePaintEvent, !transparent);
 }
 
 void WebkitMessagesView::compositingEnabled()

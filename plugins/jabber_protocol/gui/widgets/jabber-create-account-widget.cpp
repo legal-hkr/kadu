@@ -106,7 +106,7 @@ void JabberCreateAccountWidget::createGui(bool showButtons)
     QWidget *jidWidget = new QWidget(this);
     QGridLayout *jidLayout = new QGridLayout(jidWidget);
     jidLayout->setSpacing(0);
-    jidLayout->setMargin(0);
+    jidLayout->setContentsMargins(0, 0, 0, 0);
     jidLayout->setColumnStretch(0, 2);
     jidLayout->setColumnStretch(2, 2);
 

@@ -29,6 +29,7 @@
 #include "html/html-conversion.h"
 #include "message/message-manager.h"
 
+#include <QtCore/QRegularExpression>
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 
@@ -108,7 +109,7 @@ int AntistringMessageFilter::points(const QString &message)
         result++;
 
     for (auto const &condition : m_antistringConfiguration->conditions())
-        if (message.indexOf(QRegExp(condition.first)) >= 0)
+        if (QRegularExpression{condition.first}.match(message).hasMatch())
             result += condition.second;
 
     return result;

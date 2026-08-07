@@ -108,8 +108,9 @@ void PluginDependencyHandlerTest::verifyDependencies(
     auto graphDependencies = graph.directDependencies(pluginName);
     auto graphDependents = graph.directDependents(pluginName);
 
-    QCOMPARE(graphDependencies.toList().toSet(), dependencies.toSet());
-    QCOMPARE(graphDependents.toList().toSet(), dependents.toSet());
+    auto const asSet = [](auto const &c) { return QSet<QString>(c.cbegin(), c.cend()); };
+    QCOMPARE(asSet(graphDependencies), asSet(dependencies));
+    QCOMPARE(asSet(graphDependents), asSet(dependents));
     QCOMPARE(graphDependencies.size(), dependencies.size());
     QCOMPARE(graphDependents.size(), dependents.size());
 }

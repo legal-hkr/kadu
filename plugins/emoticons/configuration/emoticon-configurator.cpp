@@ -70,6 +70,11 @@ void EmoticonConfigurator::init()
     ThemeManager.reset(m_pluginInjectedFactory->makeInjected<EmoticonThemeManager>());
 
     createDefaultConfiguration();
+
+    // The plugin object's init() calls configure() on this object, and injeqt does not order init
+    // methods across objects -- so that call may already have happened and returned early. Repeat
+    // it now that the theme manager exists.
+    configurationUpdated();
 }
 
 void EmoticonConfigurator::createDefaultConfiguration()
@@ -85,6 +90,10 @@ void EmoticonConfigurator::createDefaultConfiguration()
 
 void EmoticonConfigurator::configurationUpdated()
 {
+    // Reachable before init() has run; see the note there.
+    if (!ThemeManager)
+        return;
+
     if (!EmoticonExpanderProvider && !InsertAction)
         return;
 

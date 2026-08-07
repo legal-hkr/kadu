@@ -81,8 +81,8 @@ void MessageShared::load()
 
     Shared::load();
 
-    *MessageChat = m_chatManager->byUuid(loadValue<QString>("Chat"));
-    *MessageSender = m_contactManager->byUuid(loadValue<QString>("Sender"));
+    *MessageChat = m_chatManager->byUuid(QUuid{loadValue<QString>("Chat")});
+    *MessageSender = m_contactManager->byUuid(QUuid{loadValue<QString>("Sender")});
     Content = normalizeHtml(HtmlString{loadValue<QString>("Content")});
     ReceiveDate = loadValue<QDateTime>("ReceiveDate");
     SendDate = loadValue<QDateTime>("SendDate");

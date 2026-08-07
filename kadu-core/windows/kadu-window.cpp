@@ -287,7 +287,7 @@ void KaduWindow::createGui()
 {
     MainWidget = new QWidget(this);
     MainLayout = new QVBoxLayout(MainWidget);
-    MainLayout->setMargin(0);
+    MainLayout->setContentsMargins(0, 0, 0, 0);
     MainLayout->setSpacing(0);
 
     Split = new QSplitter(Qt::Vertical, MainWidget);
@@ -518,7 +518,7 @@ void KaduWindow::keyPressEvent(QKeyEvent *e)
     }
     else if (e->matches(QKeySequence::Copy) && !InfoPanel->selectedText().isEmpty())
         // Do not use triggerPageAction(), see bug #2345.
-        InfoPanel->pageAction(QWebPage::Copy)->trigger();
+        InfoPanel->page()->action(QWebEnginePage::Copy)->trigger();
 
     emit keyPressed(e);
 

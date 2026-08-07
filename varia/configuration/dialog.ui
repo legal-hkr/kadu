@@ -39,18 +39,14 @@
 				<check-box caption="Allow executing commands by parser" config-section="General" config-item="AllowExecutingFromParser" />
 				<check-box caption="Allow using variables in status" config-section="General" config-item="ParseStatus" id="parseStatus" />
 			</group-box>
-			<group-box name="Misc">
-				<combo-box caption="Select window activation method" config-section="General" config-item="WindowActivationMethod" id="windowActivationMethod" >
-					<item value="0" caption="Move the Window to the Active Desktop" />
-					<item value="1" caption="Switch Desktop Making the Window Visible" />
-				</combo-box>
-			</group-box>
 		</tab>
 	</section>
 
 	<section name="Look" icon="preferences-desktop-theme">
 		<tab name="Icons">
 			<group-box name="Icons">
+				<check-box caption="Use the desktop's icon theme for standard icons" config-section="Look" config-item="UseSystemIcons" id="useSystemIcons"
+					tool-tip="Standard icons such as Open or Copy come from the desktop's own theme, which offers them in every size. Uncheck to use the icons bundled with Kadu instead" />
 				<list-box caption="Icon theme" config-section="Look" config-item="IconTheme" id="iconThemes"
 					tool-tip="Choose icon theme" />
 				<action-button caption="Install new icons..." id="installIconTheme" />
@@ -192,7 +188,7 @@
 		</tab>
 	</section>
 
-	<section name="Notifications" icon="kadu_icons/section-notifications">
+	<section name="Notifications" icon="preferences-desktop-notification">
 		<tab name="Options">
 			<group-box name="Chat">
 				<check-box caption="Notify about chat events in chat window" config-section="Chat" config-item="ContactStateChats" id="contactStateChats" />
@@ -319,7 +315,7 @@
 	<section name="Extras" icon="image-loading">
 	</section>
 
-	<section name="Plugins" icon="kadu_icons/plugins">
+	<section name="Plugins" icon="preferences-plugin">
 	</section>
 
 </configuration-ui>

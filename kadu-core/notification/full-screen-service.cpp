@@ -19,9 +19,7 @@
 
 #include "full-screen-service.h"
 
-#if defined(Q_OS_UNIX)
-#include "notification/x11-screen-mode-checker.h"
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
 #include "notification/windows-screen-mode-checker.h"
 #else
 #include "notification/screen-mode-checker.h"
@@ -47,9 +45,10 @@ void FullScreenService::start()
     if (m_fullscreenChecker)
         return;
 
-#if defined(Q_OS_UNIX)
-    m_fullscreenChecker = not_owned_qptr<ScreenModeChecker>(new X11ScreenModeChecker{});
-#elif defined(Q_OS_WIN)
+    // Whether some other application is showing a fullscreen window is knowledge a Wayland client
+    // is not given, so notifications are no longer held back for it. The base checker answers "no
+    // fullscreen application" and says so through isDummy().
+#if defined(Q_OS_WIN)
     m_fullscreenChecker = not_owned_qptr<ScreenModeChecker>(new WindowsScreenModeChecker{});
 #else
     m_fullscreenChecker = not_owned_qptr<ScreenModeChecker>(new ScreenModeChecker{});

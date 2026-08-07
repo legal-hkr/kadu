@@ -1,6 +1,6 @@
 project (tabs)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.16)
 
 find_package (Kadu REQUIRED CONFIG)
 
@@ -19,10 +19,6 @@ set (SOURCES
 set (CONFIGURATION_FILES
 	configuration/tabs.ui
 )
-
-if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-	include_directories (${X11_X11_INCLUDE_PATH})
-endif ()
 
 kadu_plugin (tabs
 	PLUGIN_SOURCES ${SOURCES}

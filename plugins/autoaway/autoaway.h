@@ -84,6 +84,11 @@ private:
     bool m_statusChanged;
 
     unsigned int m_idleTime;
+
+    /**
+     * @short Refresh m_idleTime; false when the idle time cannot be determined.
+     */
+    bool updateIdleTime();
     unsigned int m_refreshStatusTime;
     unsigned int m_refreshStatusInterval;
 

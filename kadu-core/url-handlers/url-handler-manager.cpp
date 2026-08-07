@@ -111,12 +111,12 @@ void UrlHandlerManager::openUrl(const QByteArray &url, bool disableMenu)
     }
 }
 
-const QRegExp &UrlHandlerManager::mailRegExp()
+const QRegularExpression &UrlHandlerManager::mailRegExp()
 {
     return mailUrlHandler.mailRegExp();
 }
 
-const QRegExp &UrlHandlerManager::urlRegExp()
+const QRegularExpression &UrlHandlerManager::urlRegExp()
 {
     return standardUrlHandler.urlRegExp();
 }

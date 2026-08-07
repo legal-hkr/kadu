@@ -63,8 +63,9 @@
 #include "widgets/groups-combo-box.h"
 #include "widgets/select-talkable-combo-box.h"
 
+#include <QtCore/QRegularExpression>
 #include <QtCore/QSortFilterProxyModel>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
@@ -460,9 +461,10 @@ void AddBuddyWindow::validateMobileData()
 {
     Q_ASSERT(!MergeBuddy->isChecked());
 
-    static QRegExp mobileRegularExpression("[0-9]{3,12}");
+    static const QRegularExpression mobileRegularExpression{
+        QRegularExpression::anchoredPattern(QStringLiteral("[0-9]{3,12}"))};
 
-    if (!mobileRegularExpression.exactMatch(UserNameEdit->text()))
+    if (!mobileRegularExpression.match(UserNameEdit->text()).hasMatch())
     {
         if (!UserNameEdit->text().isEmpty())
             displayErrorMessage(tr("Entered mobile number is invalid"));
@@ -485,7 +487,10 @@ void AddBuddyWindow::validateEmailData()
 {
     Q_ASSERT(!MergeBuddy->isChecked());
 
-    if (!m_urlHandlerManager->mailRegExp().exactMatch(UserNameEdit->text()))
+    auto const &mailRegExp = m_urlHandlerManager->mailRegExp();
+    if (!QRegularExpression{QRegularExpression::anchoredPattern(mailRegExp.pattern()), mailRegExp.patternOptions()}
+             .match(UserNameEdit->text())
+             .hasMatch())
     {
         if (!UserNameEdit->text().isEmpty())
             displayErrorMessage(tr("Entered e-mail is invalid"));

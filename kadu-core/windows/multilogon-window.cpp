@@ -83,7 +83,7 @@ void MultilogonWindow::createGui()
     QHBoxLayout *selectAccountLayout = new QHBoxLayout(selectAccountWidget);
 
     selectAccountLayout->addWidget(new QLabel(tr("Account:"), selectAccountWidget));
-    selectAccountLayout->setMargin(0);
+    selectAccountLayout->setContentsMargins(0, 0, 0, 0);
 
     Accounts = m_injectedFactory->makeInjected<AccountsComboBox>(
         true, AccountsComboBox::NotVisibleWithOneRowSourceModel, selectAccountWidget);
@@ -100,7 +100,7 @@ void MultilogonWindow::createGui()
     SessionsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     SessionsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     SessionsTable->setSortingEnabled(true);
-    SessionsTable->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    SessionsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     SessionsTable->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(SessionsTable);
 

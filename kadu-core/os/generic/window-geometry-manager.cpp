@@ -41,10 +41,12 @@
  *
  */
 
+#include <QtCore/QIODevice>
 #include <QtCore/QVariant>
 #include <QtGui/QWindow>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QWidget>
 
 #include "misc/misc.h"
@@ -129,7 +131,8 @@ void WindowGeometryManager::saveGeometry()
     configuration.insert(
         NormalGeometryIndex, rectToString(isMaximized ? NormalGeometry : parentWidget->normalGeometry()));
     configuration.insert(FrameGeometryIndex, rectToString(parentWidget->frameGeometry()));
-    configuration.insert(ScreenIndex, QString::number(QApplication::desktop()->screenNumber(parentWidget)));
+    configuration.insert(
+        ScreenIndex, QString::number(QGuiApplication::screens().indexOf(parentWidget->screen())));
     configuration.insert(MaximizedIndex, QString::number(int(isMaximized)));
     configuration.insert(
         FullscreenIndex, QString::number(int(bool(parentWidget->windowState() & Qt::WindowFullScreen))));
@@ -182,9 +185,12 @@ void WindowGeometryManager::restoreGeometry()
                << quint8(bool(configuration.at(MaximizedIndex).toInt()))
                << quint8(bool(configuration.at(FullscreenIndex).toInt()));
 
+        // Only the size and the maximised or fullscreen state are the window's to ask for. Where a
+        // window goes is the compositor's decision under Wayland, and the move() that used to
+        // follow this was accepted by Qt and then quietly dropped -- measured on a live compositor,
+        // a window asking to appear at one corner was placed in the middle of the screen. The
+        // position is still recorded, since it costs nothing and the compositor may one day be
+        // asked for it through the session protocol, which QtWayland already speaks.
         parentWidget->restoreGeometry(array);
-#ifndef Q_OS_WIN
-        parentWidget->move(storedGeometry.topLeft());
-#endif
     }
 }

@@ -21,6 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <QtWidgets/QMenu>
 
 #include "actions/action-context-provider.h"
@@ -43,7 +44,7 @@ void CustomInputMenuManager::sortInputContextMenu()
 {
     if (!InputContextMenuSorted)
     {
-        qSort(InputContextMenu);
+        std::sort(InputContextMenu.begin(), InputContextMenu.end());
         InputContextMenuSorted = true;
     }
 }

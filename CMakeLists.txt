@@ -1,6 +1,6 @@
 project (Kadu)
 
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.16)
 
 include (cmake/options.cmake)
 
@@ -34,7 +34,8 @@ else ()
 	set (CXX_FLAGS "${CXX_FLAGS} -Wall -Wextra -Wundef -Wunused -Wuninitialized -Wcast-align -Wpointer-arith -fno-common")
 	set (C_FLAGS "-Wwrite-strings")
 	set (CXX_FLAGS "-Woverloaded-virtual -Wnon-virtual-dtor ${CXX_FLAGS}")
-	set (CMAKE_CXX_STANDARD 14)
+	set (CMAKE_CXX_STANDARD 20)
+	set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 	if (NOT WIN32)
 		set (CXX_FLAGS "${CXX_FLAGS} -fvisibility=hidden")

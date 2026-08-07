@@ -125,6 +125,10 @@ KaduIcon Protocol::icon()
 
 void Protocol::prepareStateMachine()
 {
+    // Runs once the state machine has started, to replay a status that arrived before it was
+    // listening -- which is the normal order when a status container restores from the
+    // configuration file before the protocol's plugin is even loaded. If the status is still
+    // disconnected here, nothing is replayed and the machine waits for a push that may never come.
     if (!CurrentStatus.isDisconnected())
         emit stateMachineChangeStatus();
 }
@@ -168,6 +172,9 @@ void Protocol::disconnectedCleanup()
 
 void Protocol::setStatus(Status status, StatusChangeSource source)
 {
+    // The guard below is the last point at which an account can stop connecting without a word:
+    // no login attempt, no error, and no password prompt either, because the prompt is raised by
+    // the state machine and the machine is never asked to move.
     if (SourceStatusChanger == source && !account().hasPassword())
         return;
 

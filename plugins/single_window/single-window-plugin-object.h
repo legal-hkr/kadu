@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "injeqt-type-roles.h"
 
 #include <QtCore/QPointer>

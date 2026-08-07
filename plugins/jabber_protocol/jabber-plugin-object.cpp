@@ -107,6 +107,8 @@ void JabberPluginObject::done()
 
     m_domVisitorProviderRepository->removeVisitorProvider(m_jabberUrlDomVisitorProvider);
     m_urlHandlerManager->unregisterUrlHandler(m_jabberUrlHandler);
-    m_protocolsManager->registerProtocolFactory(m_gtalkProtocolFactory);
+    // Both factories are registered in init(), so both have to go here. This said "register" for
+    // the GTalk one, which left a factory owned by an unloaded plugin in the manager.
+    m_protocolsManager->unregisterProtocolFactory(m_gtalkProtocolFactory);
     m_protocolsManager->unregisterProtocolFactory(m_jabberProtocolFactory);
 }

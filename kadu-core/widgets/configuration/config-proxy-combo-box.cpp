@@ -78,7 +78,7 @@ void ConfigProxyComboBox::loadConfiguration()
     if (!dataManager)
         return;
 
-    setCurrentProxy(m_networkProxyManager->byUuid(dataManager->readEntry(section, item).toString()));
+    setCurrentProxy(m_networkProxyManager->byUuid(QUuid{dataManager->readEntry(section, item).toString()}));
 
     emit activated(currentIndex());
 }

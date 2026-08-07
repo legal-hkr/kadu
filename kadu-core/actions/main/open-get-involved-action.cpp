@@ -28,7 +28,7 @@ OpenGetInvolvedAction::OpenGetInvolvedAction(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           ActionDescription(parent)
 {
-    setIcon(KaduIcon{"kadu_icons/get-involved"});
+    setIcon(KaduIcon{"help-contents"});
     setName(QStringLiteral("getInvolvedAction"));
     setText(tr("Get Involved"));
     setType(ActionDescription::TypeMainMenu);

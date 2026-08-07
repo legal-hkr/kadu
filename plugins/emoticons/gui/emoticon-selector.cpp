@@ -34,7 +34,8 @@
 #include <QtCore/QScopedArrayPointer>
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QScrollBar>
 
@@ -119,7 +120,9 @@ void EmoticonSelector::addEmoticonButtons(const QVector<Emoticon> &emoticons, QW
 void EmoticonSelector::calculatePositionAndSize(const QWidget *activatingWidget, const QWidget *mainwidget)
 {
     QPoint w_pos = activatingWidget->mapToGlobal(QPoint(0, 0));
-    QSize s_size = QApplication::desktop()->size();
+    // QDesktopWidget is gone; the screen holding this widget is the meaningful equivalent.
+    auto const *selectorScreen = screen() ? screen() : QGuiApplication::primaryScreen();
+    QSize s_size = selectorScreen->size();
     QSize e_size = mainwidget->sizeHint();
 
     bool is_on_left;

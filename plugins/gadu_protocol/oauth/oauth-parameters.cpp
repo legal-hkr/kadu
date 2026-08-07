@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRandomGenerator>
 #include <QtCore/QDateTime>
 #include <QtCore/QMessageAuthenticationCode>
 #include <QtCore/QStringList>
@@ -27,12 +28,12 @@
 
 QString OAuthParameters::createUniqueNonce()
 {
-    return QString::number(qrand());
+    return QString::number(QRandomGenerator::global()->generate());
 }
 
 QString OAuthParameters::createTimestamp()
 {
-    return QString::number(QDateTime::currentDateTime().toTime_t());
+    return QString::number(QDateTime::currentDateTime().toSecsSinceEpoch());
 }
 
 OAuthParameters::OAuthParameters()

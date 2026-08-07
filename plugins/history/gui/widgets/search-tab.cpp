@@ -86,7 +86,7 @@ void SearchTab::init()
 void SearchTab::createGui()
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setMargin(2);
+    layout->setContentsMargins(2, 2, 2, 2);
     layout->setSpacing(0);
 
     Splitter = new QSplitter(Qt::Horizontal, this);
@@ -94,7 +94,7 @@ void SearchTab::createGui()
 
     QWidget *queryWidget = new QWidget(Splitter);
     QVBoxLayout *queryLayout = new QVBoxLayout(queryWidget);
-    queryLayout->setMargin(3);
+    queryLayout->setContentsMargins(3, 3, 3, 3);
 
     QWidget *queryFormWidget = new QWidget(queryWidget);
     queryLayout->addWidget(queryFormWidget);
@@ -102,7 +102,7 @@ void SearchTab::createGui()
     QFormLayout *queryFormLayout = new QFormLayout(queryFormWidget);
     queryFormLayout->setLabelAlignment(Qt::AlignLeft | Qt::AlignHCenter);
     queryFormLayout->setRowWrapPolicy(QFormLayout::WrapAllRows);
-    queryFormLayout->setMargin(0);
+    queryFormLayout->setContentsMargins(0, 0, 0, 0);
 
     Query = new QLineEdit(queryFormWidget);
     Query->setMinimumWidth(200);

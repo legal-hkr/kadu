@@ -36,7 +36,6 @@
 
 #include "configuration/screen-shot-configuration.h"
 #include "gui/widgets/screenshot-widget.h"
-#include "pixmap-grabber.h"
 #include "screenshot-notification-service.h"
 #include "screenshot-taker.h"
 
@@ -84,6 +83,7 @@ void ScreenShot::init()
     MyScreenshotTaker = m_pluginInjectedFactory->makeInjected<ScreenshotTaker>(MyChatWidget);
     connect(MyScreenshotTaker, SIGNAL(screenshotTaken(QPixmap, bool)), this, SLOT(screenshotTaken(QPixmap, bool)));
     connect(MyScreenshotTaker, SIGNAL(screenshotNotTaken()), this, SLOT(screenshotNotTaken()));
+    connect(MyScreenshotTaker, SIGNAL(screenshotFailed(QString)), this, SLOT(screenshotFailed(QString)));
 
     // Rest stuff
     warnedAboutSize = false;
@@ -142,6 +142,16 @@ void ScreenShot::screenshotReady(QPixmap p)
                 m_iconsManager->iconByPath(KaduIcon("dialog-warning")), tr("Kadu"),
                 tr("Image size is bigger than maximal image size for this chat."));
     }
+
+    deleteLater();
+}
+
+void ScreenShot::screenshotFailed(const QString &errorMessage)
+{
+    // Taking a picture of the screen is the desktop's decision to grant, so refusing it is an
+    // ordinary outcome and has to be said out loud rather than leaving the user waiting.
+    MessageDialog::show(
+        m_iconsManager->iconByPath(KaduIcon("dialog-warning")), tr("Kadu"), errorMessage);
 
     deleteLater();
 }

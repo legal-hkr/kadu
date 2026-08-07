@@ -136,8 +136,8 @@ void ContactShared::load()
     else
         Entry->setSynchronized();
 
-    *ContactAccount = m_accountManager->byUuid(loadValue<QString>("Account"));
-    doSetOwnerBuddy(m_buddyManager->byUuid(loadValue<QString>("Buddy")));
+    *ContactAccount = m_accountManager->byUuid(QUuid{loadValue<QString>("Account")});
+    doSetOwnerBuddy(m_buddyManager->byUuid(QUuid{loadValue<QString>("Buddy")}));
 
     protocolFactoryRegistered(m_protocolsManager->byName(ContactAccount->protocolName()));
     addToBuddy();

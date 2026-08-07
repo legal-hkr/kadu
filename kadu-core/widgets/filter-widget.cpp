@@ -26,6 +26,7 @@
  * http://th30z.netsons.org/2008/08/qt4-mac-searchbox-wrapper/
  */
 
+#include <algorithm>
 #include <QtCore/QCoreApplication>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QHBoxLayout>
@@ -70,7 +71,7 @@ void FilterWidget::filterTextChanged(const QString &s)
         QModelIndexList selection = View->selectionModel()->selectedIndexes();
         if (!selection.isEmpty())
         {
-            qSort(selection);
+            std::sort(selection.begin(), selection.end());
             View->scrollTo(selection.at(0));
         }
     }
@@ -102,7 +103,7 @@ void FilterWidget::setInjectedFactory(InjectedFactory *injectedFactory)
 void FilterWidget::init()
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setMargin(3);
+    layout->setContentsMargins(3, 3, 3, 3);
 
     NameFilterEdit = m_injectedFactory->makeInjected<LineEditWithClearButton>(this);
     Label = new QLabel(tr("Search") + ":", this);

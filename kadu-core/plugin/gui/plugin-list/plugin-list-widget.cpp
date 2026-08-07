@@ -89,7 +89,7 @@ void PluginListWidget::setPluginStateService(PluginStateService *pluginStateServ
 void PluginListWidget::init()
 {
     auto layout = new QVBoxLayout;
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     auto filterEdit = m_injectedFactory->makeInjected<FilterWidget>(this);

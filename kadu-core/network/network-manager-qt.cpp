@@ -20,30 +20,38 @@
  */
 
 #include <QtCore/QSysInfo>
-#include <QtNetwork/QNetworkConfigurationManager>
+#include <QtNetwork/QNetworkInformation>
 
 #include "network-manager-qt.h"
 #include "network-manager-qt.moc"
 
+namespace
+{
+/**
+ * @short Whether a reachability value should stop Kadu from using the network.
+ *
+ * Only an explicit Disconnected counts as offline. Unknown means the backend cannot tell, and
+ * Local and Site mean it sees a network but has not confirmed a route to the internet -- which is
+ * what a NetworkManager backend reports whenever its connectivity check is disabled or blocked,
+ * and that is common. Treating those as offline tears down a connection that works perfectly
+ * well: the protocol finds out whether it can reach its servers by trying.
+ */
+bool isReachable(QNetworkInformation::Reachability reachability)
+{
+    return reachability != QNetworkInformation::Reachability::Disconnected;
+}
+}
+
 NetworkManagerQt::NetworkManagerQt(QObject *parent) : NetworkManager{parent}
 {
-#ifdef Q_OS_WIN
-    // Kadu bug #2591
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_VISTA)
-    {
-        ConfigurationManager = 0;
-        HasValidCapabilities = false;
-    }
-    else
-#endif
-    {
-        ConfigurationManager = new QNetworkConfigurationManager(this);
-        HasValidCapabilities =
-            ConfigurationManager->capabilities() & QNetworkConfigurationManager::CanStartAndStopInterfaces;
+    HasReachabilityBackend = QNetworkInformation::loadDefaultBackend() && QNetworkInformation::instance();
 
-        if (HasValidCapabilities)
-            connect(ConfigurationManager, SIGNAL(onlineStateChanged(bool)), this, SLOT(onlineStateChanged(bool)));
-    }
+    if (!HasReachabilityBackend)
+        return;
+
+    connect(
+        QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this,
+        [this](QNetworkInformation::Reachability reachability) { onlineStateChanged(isReachable(reachability)); });
 }
 
 NetworkManagerQt::~NetworkManagerQt()
@@ -52,7 +60,9 @@ NetworkManagerQt::~NetworkManagerQt()
 
 bool NetworkManagerQt::isOnline()
 {
-    return HasValidCapabilities ? ConfigurationManager->isOnline() : true;
+    if (!HasReachabilityBackend)
+        return true;
+    return isReachable(QNetworkInformation::instance()->reachability());
 }
 
 void NetworkManagerQt::forceOnline()

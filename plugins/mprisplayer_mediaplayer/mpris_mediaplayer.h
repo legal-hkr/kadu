@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "plugins/mediaplayer/player-commands.h"
 #include "plugins/mediaplayer/player-info.h"
 

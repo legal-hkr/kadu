@@ -25,7 +25,7 @@
 #include <QtCore/QObject>
 #include <injeqt/injeqt.h>
 
-class QStringList;
+#include <QtCore/QStringList>
 
 class KADUAPI ConfigurationPathProvider final : public QObject
 {

@@ -211,7 +211,7 @@ void JabberEditAccountWidget::createGeneralGroupBox(QVBoxLayout *layout)
 
     QFormLayout *boxLayout = new QFormLayout(general);
     boxLayout->setSpacing(6);
-    boxLayout->setMargin(9);
+    boxLayout->setContentsMargins(9, 9, 9, 9);
 
     CustomHostPort = new QCheckBox(general);
     CustomHostPort->setText(tr("Use custom server address/port"));
@@ -269,7 +269,7 @@ void JabberEditAccountWidget::createGeneralGroupBox(QVBoxLayout *layout)
 
     QFormLayout *connectionBoxLayout = new QFormLayout(connection);
     boxLayout->setSpacing(6);
-    boxLayout->setMargin(9);
+    boxLayout->setContentsMargins(9, 9, 9, 9);
 
     QLabel *dataTransferProxyLabel = new QLabel(connection);
     dataTransferProxyLabel->setText(tr("Data transfer proxy") + ':');
@@ -297,7 +297,7 @@ void JabberEditAccountWidget::createOptionsTab(QTabWidget *tabWidget)
 
     QVBoxLayout *layout = new QVBoxLayout(optionsTab);
     layout->setSpacing(6);
-    layout->setMargin(9);
+    layout->setContentsMargins(9, 9, 9, 9);
 
     QGroupBox *resource = new QGroupBox(tr("Resource"), this);
     QFormLayout *resourceLayout = new QFormLayout(resource);

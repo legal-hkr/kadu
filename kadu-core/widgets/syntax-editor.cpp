@@ -108,7 +108,7 @@ void SyntaxEditor::syntaxChangedSlot(const QString &newSyntax)
         return;
 
     QTextStream stream(&file);
-    stream.setCodec("UTF-8");
+    stream.setEncoding(QStringConverter::Utf8);
     content = stream.readAll();
     file.close();
 

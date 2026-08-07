@@ -25,6 +25,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtGui/QPainter>
 #include <QtCore/QDir>
 #include <QtCore/QList>
 #include <QtCore/QPair>
@@ -72,12 +73,6 @@
 
 #include "main-configuration-window.h"
 #include "main-configuration-window.moc"
-
-#if defined(Q_OS_UNIX)
-#include "os/x11/x11tools.h"   // this should be included as last one,
-#undef KeyPress
-#undef Status   // and Status defined by Xlib.h must be undefined
-#endif
 
 const char *MainConfigurationWindow::SyntaxText = QT_TRANSLATE_NOOP(
     "@default",
@@ -157,10 +152,6 @@ void MainConfigurationWindow::init()
 #ifndef Q_OS_WIN
     widget()->widgetById("startup")->hide();
     widget()->widgetById("hideMainWindowFromTaskbar")->hide();
-#endif
-
-#if !defined(Q_OS_UNIX)
-    widget()->widgetById("windowActivationMethod")->hide();
 #endif
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_WIN)
@@ -342,7 +333,11 @@ void MainConfigurationWindow::setIconThemes()
     QList<QIcon> icons;
     for (auto const &theme : m_iconThemeManager->themes())
     {
-        QPixmap combinedIcon(iconPaths.count() * 36, 36);
+        // The strip is composed at the resolution of the sharpest screen and then told its ratio,
+        // so the theme preview is not an enlarged small image where the display is magnified.
+        auto const ratio = qApp->devicePixelRatio();
+        QPixmap combinedIcon((QSizeF{iconPaths.count() * 36.0, 36.0} * ratio).toSize());
+        combinedIcon.setDevicePixelRatio(ratio);
         combinedIcon.fill(Qt::transparent);
 
         QPainter iconPainter(&combinedIcon);

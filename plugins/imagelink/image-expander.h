@@ -28,7 +28,7 @@ public:
     ImageExpander();
     virtual ~ImageExpander();
 
-    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, QRegExp regExp) const;
+    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, const QRegularExpressionMatch &match) const;
 };
 
 #endif   // IMAGE_EXPANDER_H

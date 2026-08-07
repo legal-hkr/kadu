@@ -71,12 +71,12 @@
 #include <QtNetwork/QAbstractSocket>
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QSslSocket>
-#include <qxmpp/QXmppClient.h>
-#include <qxmpp/QXmppMucManager.h>
-#include <qxmpp/QXmppRosterManager.h>
-#include <qxmpp/QXmppTransferManager.h>
-#include <qxmpp/QXmppVCardManager.h>
-#include <qxmpp/QXmppVersionManager.h>
+#include <QXmppQt6/QXmppClient.h>
+#include <QXmppQt6/QXmppMucManager.h>
+#include <QXmppQt6/QXmppRosterManager.h>
+#include <QXmppQt6/QXmppTransferManager.h>
+#include <QXmppQt6/QXmppVCardManager.h>
+#include <QXmppQt6/QXmppVersionManager.h>
 
 JabberProtocol::JabberProtocol(Account account, ProtocolFactory *factory) : Protocol{account, factory}
 {

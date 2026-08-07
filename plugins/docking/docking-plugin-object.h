@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "docking-exports.h"
 
 #include "injeqt-type-roles.h"

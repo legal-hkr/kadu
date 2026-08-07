@@ -32,7 +32,7 @@
 
 SqlContactsMapping::SqlContactsMapping(
     const QSqlDatabase &database, SqlAccountsMapping *accountsMapping, QObject *parent)
-        : QObject(parent), Database(database), Mutex(QMutex::Recursive), AccountsMapping(accountsMapping)
+        : QObject(parent), Database(database), Mutex(), AccountsMapping(accountsMapping)
 {
     Q_ASSERT(AccountsMapping);
 }

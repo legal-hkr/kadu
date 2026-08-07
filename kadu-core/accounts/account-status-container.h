@@ -20,6 +20,7 @@
 #ifndef ACCOUNT_STATUS_CONTAINER_H
 #define ACCOUNT_STATUS_CONTAINER_H
 
+#include "status/status.h"
 #include "status/storable-status-container.h"
 
 class AccountShared;
@@ -31,6 +32,10 @@ class AccountStatusContainer : public StorableStatusContainer
 
     AccountShared *Account;
 
+    Status PendingStatus;
+    StatusChangeSource PendingStatusSource;
+    bool HasPendingStatus;
+
     void setDisconnectStatus();
 
 public:
@@ -41,6 +46,13 @@ public:
 
     virtual void setStatus(Status newStatus, StatusChangeSource source);
     virtual Status status();
+
+    /**
+     * @short Hands the protocol handler a status that was set before it existed.
+     *
+     * Called when the account gets a protocol handler. Does nothing if no status was held back.
+     */
+    void applyPendingStatus();
 
     virtual bool isStatusSettingInProgress();
     virtual int maxDescriptionLength();

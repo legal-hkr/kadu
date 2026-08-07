@@ -398,7 +398,7 @@ void GroupTabBar::moveToGroup()
     if (!action)
         return;
 
-    const Group &removeFromGroup = m_groupManager->byUuid(tabData(currentIndex()).toString());
+    const Group &removeFromGroup = m_groupManager->byUuid(QUuid{tabData(currentIndex()).toString()});
     const Group &group = action->data().value<Group>();
 
     for (auto const &buddy : DNDBuddies)

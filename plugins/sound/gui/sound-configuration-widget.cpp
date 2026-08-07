@@ -57,7 +57,7 @@ void SoundConfigurationWidget::init()
     connect(m_soundSelectFile, SIGNAL(fileChanged()), this, SIGNAL(soundFileEdited()));
 
     auto layout = new QHBoxLayout{this};
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     layout->addWidget(m_soundSelectFile);
 

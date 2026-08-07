@@ -34,6 +34,7 @@
 
 #include <math.h>   // trunc on C99 compliant systems
 
+#include <algorithm>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QScrollBar>
@@ -112,9 +113,10 @@ bool CategorizedListViewPrivate::isCategorized() const
     return proxyModel && categoryDrawer && proxyModel->isCategorizedModel();
 }
 
-QStyleOptionViewItemV4 CategorizedListViewPrivate::blockRect(const QModelIndex &representative)
+QStyleOptionViewItem CategorizedListViewPrivate::blockRect(const QModelIndex &representative)
 {
-    QStyleOptionViewItemV4 option(q->viewOptions());
+    QStyleOptionViewItem option;
+    q->initViewItemOption(&option);
     const int height = categoryDrawer->categoryHeight(representative, option);
     const QString categoryDisplay =
         representative.data(CategorizedSortFilterProxyModel::CategoryDisplayRole).toString();
@@ -217,7 +219,9 @@ QPoint CategorizedListViewPrivate::blockPosition(const QString &category)
             continue;
         }
 
-        res.ry() += categoryDrawer->categoryHeight(categoryIndex, q->viewOptions()) + categorySpacing;
+        QStyleOptionViewItem categoryOption;
+        q->initViewItemOption(&categoryOption);
+        res.ry() += categoryDrawer->categoryHeight(categoryIndex, categoryOption) + categorySpacing;
 
         if (index.row() == categoryIndex.row())
         {
@@ -352,7 +356,7 @@ void CategorizedListViewPrivate::rowsInserted(const QModelIndex &parent, int sta
         const QModelIndex firstAffectedCategory = blocks[category].firstIndex;
         // BEGIN: order for marking as alternate those blocks that are alternate
         QList<Block> blockList = blocks.values();
-        qSort(blockList.begin(), blockList.end(), Block::lessThan);
+        std::sort(blockList.begin(), blockList.end(), Block::lessThan);
         QList<int> firstIndexesRows;
         for (auto const &block : blockList)
         {
@@ -981,9 +985,10 @@ void CategorizedListView::paintEvent(QPaintEvent *event)
         const CategorizedListViewPrivate::Block &block = *it;
         const QModelIndex categoryIndex =
             d->proxyModel->index(block.firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        QStyleOptionViewItemV4 option(viewOptions());
-        option.features |= d->alternatingBlockColors && block.alternate ? QStyleOptionViewItemV4::Alternate
-                                                                        : QStyleOptionViewItemV4::None;
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
+        option.features |= d->alternatingBlockColors && block.alternate ? QStyleOptionViewItem::Alternate
+                                                                        : QStyleOptionViewItem::None;
         option.state |= !d->collapsibleBlocks || !block.collapsed ? QStyle::State_Open : QStyle::State_None;
         const int height = d->categoryDrawer->categoryHeight(categoryIndex, option);
         QPoint pos = d->blockPosition(it.key());
@@ -1042,16 +1047,17 @@ void CategorizedListView::paintEvent(QPaintEvent *event)
 
             const Qt::ItemFlags flags = d->proxyModel->flags(index);
 
-            QStyleOptionViewItemV4 option(viewOptions());
+            QStyleOptionViewItem option;
+        initViewItemOption(&option);
 
             option.rect = visualRect(index);
 
             option.widget = this;
 
-            option.features |= wordWrap() ? QStyleOptionViewItemV2::WrapText : QStyleOptionViewItemV2::None;
+            option.features |= wordWrap() ? QStyleOptionViewItem::WrapText : QStyleOptionViewItem::None;
 
-            option.features |= alternatingRowColors() && alternateItem ? QStyleOptionViewItemV4::Alternate
-                                                                       : QStyleOptionViewItemV4::None;
+            option.features |= alternatingRowColors() && alternateItem ? QStyleOptionViewItem::Alternate
+                                                                       : QStyleOptionViewItem::None;
 
             if (flags & Qt::ItemIsSelectable)
             {
@@ -1190,7 +1196,8 @@ void CategorizedListView::mouseMoveEvent(QMouseEvent *event)
         const CategorizedListViewPrivate::Block &block = *it;
         const QModelIndex categoryIndex =
             d->proxyModel->index(block.firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        QStyleOptionViewItemV4 option(viewOptions());
+        QStyleOptionViewItem option;
+        initViewItemOption(&option);
         const int height = d->categoryDrawer->categoryHeight(categoryIndex, option);
         QPoint pos = d->blockPosition(it.key());
         pos.ry() -= height;
@@ -1206,7 +1213,7 @@ void CategorizedListView::mouseMoveEvent(QMouseEvent *event)
             {
                 const QModelIndex categoryIndex =
                     d->proxyModel->index(d->hoveredBlock->firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-                const QStyleOptionViewItemV4 option = d->blockRect(categoryIndex);
+                const QStyleOptionViewItem option = d->blockRect(categoryIndex);
                 d->categoryDrawer->mouseLeft(categoryIndex, option.rect);
                 *d->hoveredBlock = block;
                 d->hoveredCategory = it.key();
@@ -1234,7 +1241,7 @@ void CategorizedListView::mouseMoveEvent(QMouseEvent *event)
     {
         const QModelIndex categoryIndex =
             d->proxyModel->index(d->hoveredBlock->firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        const QStyleOptionViewItemV4 option = d->blockRect(categoryIndex);
+        const QStyleOptionViewItem option = d->blockRect(categoryIndex);
         d->categoryDrawer->mouseLeft(categoryIndex, option.rect);
         *d->hoveredBlock = CategorizedListViewPrivate::Block();
         d->hoveredCategory = QString();
@@ -1264,7 +1271,7 @@ void CategorizedListView::mousePressEvent(QMouseEvent *event)
         const CategorizedListViewPrivate::Block &block = *it;
         const QModelIndex categoryIndex =
             d->proxyModel->index(block.firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        const QStyleOptionViewItemV4 option = d->blockRect(categoryIndex);
+        const QStyleOptionViewItem option = d->blockRect(categoryIndex);
         const QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
 
         if (option.rect.contains(mousePos))
@@ -1308,7 +1315,7 @@ void CategorizedListView::mouseReleaseEvent(QMouseEvent *event)
         const CategorizedListViewPrivate::Block &block = *it;
         const QModelIndex categoryIndex =
             d->proxyModel->index(block.firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        const QStyleOptionViewItemV4 option = d->blockRect(categoryIndex);
+        const QStyleOptionViewItem option = d->blockRect(categoryIndex);
         const QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
 
         if (option.rect.contains(mousePos))
@@ -1348,7 +1355,7 @@ void CategorizedListView::leaveEvent(QEvent *event)
     {
         const QModelIndex categoryIndex =
             d->proxyModel->index(d->hoveredBlock->firstIndex.row(), d->proxyModel->sortColumn(), rootIndex());
-        const QStyleOptionViewItemV4 option = d->blockRect(categoryIndex);
+        const QStyleOptionViewItem option = d->blockRect(categoryIndex);
         d->categoryDrawer->mouseLeft(categoryIndex, option.rect);
         *d->hoveredBlock = CategorizedListViewPrivate::Block();
         d->hoveredCategory = QString();
@@ -1653,7 +1660,7 @@ void CategorizedListView::rowsAboutToBeRemoved(const QModelIndex &parent, int st
     {
         // BEGIN: order for marking as alternate those blocks that are alternate
         QList<CategorizedListViewPrivate::Block> blockList = d->blocks.values();
-        qSort(blockList.begin(), blockList.end(), CategorizedListViewPrivate::Block::lessThan);
+        std::sort(blockList.begin(), blockList.end(), CategorizedListViewPrivate::Block::lessThan);
         QList<int> firstIndexesRows;
         for (auto const &block : blockList)
         {

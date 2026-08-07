@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "misc/memory.h"
 
 #include "injeqt-type-roles.h"

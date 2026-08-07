@@ -30,12 +30,17 @@
 
 MailUrlHandler::MailUrlHandler()
 {
-    MailRegExp = QRegExp("\\b(mailto:)?[a-zA-Z0-9_\\.\\-]+@[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,4}\\b");
+    // \b is Unicode-aware in QRegularExpression but ASCII-only in PCRE2 by default, which changes matching
+    // next to Polish letters; the option restores the old behaviour.
+    MailRegExp = QRegularExpression{
+        QStringLiteral("\\b(mailto:)?[a-zA-Z0-9_\\.\\-]+@[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,4}\\b"), QRegularExpression::UseUnicodePropertiesOption};
 }
 
 bool MailUrlHandler::isUrlValid(const QByteArray &url)
 {
-    return MailRegExp.exactMatch(QString::fromUtf8(url));
+    return QRegularExpression{QRegularExpression::anchoredPattern(MailRegExp.pattern()), MailRegExp.patternOptions()}
+        .match(QString::fromUtf8(url))
+        .hasMatch();
 }
 
 void MailUrlHandler::openUrl(UrlOpener *urlOpener, const QByteArray &url, bool disableMenu)

@@ -68,7 +68,7 @@
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
-#include <QtWidgets/QShortcut>
+#include <QtGui/QShortcut>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QVBoxLayout>
 
@@ -199,7 +199,7 @@ void ChatWidgetImpl::init()
 void ChatWidgetImpl::createGui()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
     TopBarContainer = m_injectedFactory->makeInjected<ChatTopBarContainerWidget>(CurrentChat);
@@ -217,7 +217,7 @@ void ChatWidgetImpl::createGui()
     frame->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
-    frameLayout->setMargin(0);
+    frameLayout->setContentsMargins(0, 0, 0, 0);
     frameLayout->setSpacing(0);
 
     MessagesView = m_webkitMessagesViewFactory->createWebkitMessagesView(CurrentChat, true, frame);
@@ -345,7 +345,7 @@ bool ChatWidgetImpl::keyPressEventHandled(QKeyEvent *e)
     if (e->matches(QKeySequence::Copy) && !MessagesView->selectedText().isEmpty())
     {
         // Do not use triggerPageAction(), see bug #2345.
-        MessagesView->pageAction(QWebPage::Copy)->trigger();
+        MessagesView->page()->action(QWebEnginePage::Copy)->trigger();
         return true;
     }
 

@@ -55,7 +55,7 @@ ContactSet ContactSetConfigurationHelper::loadFromConfiguration(
     result.reserve(contactElements.count());
     for (auto const &contactElement : contactElements)
     {
-        Contact contact = contactManager->byUuid(contactElement.text());
+        Contact contact = contactManager->byUuid(QUuid{contactElement.text()});
         if (!contact.isNull())
             result.insert(contact);
     }

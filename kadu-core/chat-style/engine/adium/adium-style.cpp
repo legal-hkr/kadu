@@ -23,7 +23,6 @@
 #include "misc/paths-provider.h"
 
 #include <QtCore/QDir>
-#include <QtCore/QTextCodec>
 #include <QtCore/QTextStream>
 #include <QtXml/QDomNode>
 
@@ -210,7 +209,7 @@ QString AdiumStyle::readStylePart(const QString &part)
         if (fileAccess.open(QIODevice::ReadOnly))
         {
             QTextStream stream(&fileAccess);
-            stream.setCodec(QTextCodec::codecForName("UTF-8"));
+            stream.setEncoding(QStringConverter::Utf8);
             resultHtml = stream.readAll();
             fileAccess.close();
         }

@@ -71,7 +71,7 @@ BuddyList BuddyListMimeDataService::fromMimeData(const QMimeData *mimeData)
     auto buddyListStrings = buddyListString.split(':');
     for (auto const &buddyListString : buddyListStrings)
     {
-        auto buddy = m_buddyManager->byUuid(buddyListString);
+        auto buddy = m_buddyManager->byUuid(QUuid{buddyListString});
         if (!buddy.isNull())
             result << buddy;
     }

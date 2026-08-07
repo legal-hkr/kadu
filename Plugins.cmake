@@ -1,8 +1,6 @@
 set (DEFAULT_PLUGINS
 
 # protocols
-	# Facebook Chat protocol support
-	facebook_protocol
 	# GaduGadu protocol support
 	gadu_protocol
 	# Jabber/XMPP protocol support
@@ -16,11 +14,9 @@ set (DEFAULT_PLUGINS
 	# Notification by external commands module
 	exec_notify
 	# Hints near tray icon
-	hints
 	# Speech synthesis support
 	speech
 	# PC Speaker notification support
-	pcspeaker
 
 # history
 	# General history plugin
@@ -77,8 +73,6 @@ set (DEFAULT_PLUGINS
 	simpleview
 	# Single window mode
 	single_window
-	# Sms gateway support
-	sms
 	# Spellchecking in chat window
 	spellchecker
 	# Tabbed chat dialog

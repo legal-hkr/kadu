@@ -22,6 +22,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <QtGui/QContextMenuEvent>
 #include <QtWidgets/QMenu>
 
@@ -43,12 +44,10 @@
 #include "main-window.h"
 #include "main-window.moc"
 
-#if defined(Q_OS_UNIX)
-#include <QtX11Extras/QX11Info>
+#include "kadu-config.h"
 
-#include "os/x11/x11tools.h"   // this should be included as last one,
-#undef KeyPress
-#undef Status   // and Status defined by Xlib.h must be undefined
+#if HAVE_KWINDOWSYSTEM
+#include <KWindowEffects>
 #endif
 
 MainWindow *MainWindow::findMainWindow(QWidget *widget)
@@ -190,7 +189,7 @@ void MainWindow::loadToolBarsFromConfigNode(QDomElement dockareaConfig, Qt::Tool
     int currentLine = 0;
     if (area == Qt::LeftToolBarArea || area == Qt::RightToolBarArea)
     {
-        qSort(toolBars.begin(), toolBars.end(), verticalToolbarComparator);
+        std::sort(toolBars.begin(), toolBars.end(), verticalToolbarComparator);
         for (auto toolBar : toolBars)
         {
             if (toolBar->xOffset() != currentLine)
@@ -202,7 +201,7 @@ void MainWindow::loadToolBarsFromConfigNode(QDomElement dockareaConfig, Qt::Tool
     }
     else
     {
-        qSort(toolBars.begin(), toolBars.end(), horizontalToolbarComparator);
+        std::sort(toolBars.begin(), toolBars.end(), horizontalToolbarComparator);
         for (auto toolBar : toolBars)
         {
             if (toolBar->yOffset() != currentLine)
@@ -518,11 +517,14 @@ ActionContext *MainWindow::actionContext()
 
 void MainWindow::setBlur(bool enable)
 {
-#if !defined(Q_OS_UNIX)
-    Q_UNUSED(enable);
-#else
     BlurEnabled = enable;
-    X11_setBlur(QX11Info::display(), winId(), enable);
+
+#if HAVE_KWINDOWSYSTEM
+    // Blurring what shows through a translucent window is the compositor's work, and only KWin
+    // offers it; elsewhere the window is simply translucent, as it was on any X11 session whose
+    // window manager did not implement the hint either.
+    if (auto *windowHandle = window()->windowHandle())
+        KWindowEffects::enableBlurBehind(windowHandle, enable);
 #endif
 }
 

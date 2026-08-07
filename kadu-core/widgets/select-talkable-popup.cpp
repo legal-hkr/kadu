@@ -36,7 +36,6 @@
 SelectTalkablePopup::SelectTalkablePopup(QWidget *parent) : FilteredTreeView(FilterAtBottom, parent, Qt::Popup)
 {
     setAttribute(Qt::WA_WindowPropagation);
-    setAttribute(Qt::WA_X11NetWmWindowTypeCombo);
 }
 
 SelectTalkablePopup::~SelectTalkablePopup()

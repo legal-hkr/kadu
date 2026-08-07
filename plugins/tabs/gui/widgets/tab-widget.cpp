@@ -159,7 +159,7 @@ void TabWidget::init()
 
     // przycisk zamkniecia aktywnej karty znajdujacy sie w prawym gornym rogu
     CloseChatButton = new QToolButton(this);
-    CloseChatButton->setIcon(m_iconsManager->iconByPath(KaduIcon("kadu_icons/tab-remove")));
+    CloseChatButton->setIcon(m_iconsManager->iconByPath(KaduIcon("tab-close")));
     CloseChatButton->setToolTip(tr("Close Tab"));
     CloseChatButton->setAutoRaise(true);
     CloseChatButton->setVisible(false);
@@ -517,7 +517,7 @@ void TabWidget::configurationUpdated()
 {
     triggerCompositingStateChanged();
 
-    CloseChatButton->setIcon(m_iconsManager->iconByPath(KaduIcon("kadu_icons/tab-remove")));
+    CloseChatButton->setIcon(m_iconsManager->iconByPath(KaduIcon("tab-close")));
 
     setTabsClosable(m_configuration->deprecatedApi()->readBoolEntry("Tabs", "CloseButtonOnTab"));
     config_oldStyleClosing = m_configuration->deprecatedApi()->readBoolEntry("Tabs", "OldStyleClosing");

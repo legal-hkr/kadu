@@ -30,11 +30,12 @@
 #include "contacts/contact-manager.h"
 #include "contacts/contact-storage.h"
 #include "contacts/contact.h"
+#include "misc/cp1250.h"
 #include "misc/misc.h"
 #include "protocols/protocol.h"
 
 #include <QtCore/QStringList>
-#include <QtCore/QTextCodec>
+#include <QtCore/QIODevice>
 #include <QtCore/QTextStream>
 
 GaduListHelper::GaduListHelper(QObject *parent) : QObject{parent}
@@ -115,7 +116,7 @@ BuddyList GaduListHelper::streamToBuddyList(Account account, QTextStream &conten
 {
     BuddyList result;
 
-    content.setCodec("UTF-8");
+    // QTextStream defaults to UTF-8 in Qt6; setCodec() is gone.
 
     QString line = content.readLine(70);
 
@@ -133,13 +134,17 @@ BuddyList GaduListHelper::streamPre70ToBuddyList(const QString &firstLine, Accou
 {
     BuddyList result;
 
-    content.setCodec(QTextCodec::codecForName("CP1250"));
+    // QTextStream lost codec support in Qt6 and QStringConverter does not know CP1250, so what is
+    // left of the device is decoded explicitly and the rest of this legacy list is read from the
+    // decoded text.
+    auto decoded = content.device() ? cp1250ToUnicode(content.device()->readAll()) : content.readAll();
+    QTextStream cp1250Content{&decoded, QIODevice::ReadOnly};
 
     if (firstLine.isEmpty())
         return result;
 
     QString line = firstLine;
-    QStringList sections = line.split(';', QString::KeepEmptyParts);
+    QStringList sections = line.split(';', Qt::KeepEmptyParts);
 
     if (sections.count() > 6)
     {
@@ -150,7 +155,7 @@ BuddyList GaduListHelper::streamPre70ToBuddyList(const QString &firstLine, Accou
             Buddy buddy = line70ToBuddy(account, sections);
             if (buddy)
                 result.append(buddy);
-            result.append(stream70ToBuddyList(account, content));
+            result.append(stream70ToBuddyList(account, cp1250Content));
             return result;
         }
         else
@@ -161,10 +166,10 @@ BuddyList GaduListHelper::streamPre70ToBuddyList(const QString &firstLine, Accou
         }
     }
 
-    while (!content.atEnd())
+    while (!cp1250Content.atEnd())
     {
-        line = content.readLine();
-        sections = line.split(';', QString::KeepEmptyParts);
+        line = cp1250Content.readLine();
+        sections = line.split(';', Qt::KeepEmptyParts);
 
         if (sections.count() < 7)
             continue;
@@ -187,7 +192,7 @@ BuddyList GaduListHelper::stream70ToBuddyList(Account account, QTextStream &cont
     {
         line = content.readLine();
 
-        sections = line.split(';', QString::KeepEmptyParts);
+        sections = line.split(';', Qt::KeepEmptyParts);
 
         Buddy buddy = line70ToBuddy(account, sections);
         if (buddy)
@@ -369,7 +374,7 @@ Buddy GaduListHelper::line70ToBuddy(Account account, QStringList &sections)
 
     if (!sections[5].isEmpty())
     {
-        for (auto const &group : sections[5].split(',', QString::SkipEmptyParts))
+        for (auto const &group : sections[5].split(',', Qt::SkipEmptyParts))
             groups.insert(m_groupManager->byName(group));
 
         buddy.setGroups(groups);

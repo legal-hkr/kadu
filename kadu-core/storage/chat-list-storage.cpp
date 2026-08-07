@@ -47,7 +47,7 @@ QVector<Chat> ChatListStorage::chatsFromUuids(const QStringList &uuids) const
 
     auto result = QVector<Chat>{};
     std::transform(uuids.begin(), uuids.end(), std::back_inserter(result), [this](const QString &uuid) {
-        return m_chatManager.data()->byUuid(uuid);
+        return m_chatManager.data()->byUuid(QUuid{uuid});
     });
     return result;
 }

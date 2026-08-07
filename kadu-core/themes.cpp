@@ -22,6 +22,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore/QRegularExpression>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QSettings>
@@ -113,7 +114,8 @@ void Themes::setTheme(const QString &theme)
         if (theme != "Custom" && !ConfigName.isEmpty())
         {
             QSettings themeSettings(themePath() + fixFileName(themePath(), ConfigName), QSettings::IniFormat);
-            themeSettings.setIniCodec("ISO8859-2");
+            // Qt6 dropped QSettings::setIniCodec(). Legacy themes whose index files are
+            // ISO8859-2 rather than UTF-8 will now show mojibake in non-ASCII names.
 
             themeSettings.beginGroup(Name);
             auto keys = themeSettings.allKeys();
@@ -190,9 +192,9 @@ QString Themes::themePath(const QString &theme) const
     if (ThemesPaths.isEmpty())
         return "Custom";
 
-    QRegExp r("(/" + t + "/)$");
+    QRegularExpression r{"(/" + QRegularExpression::escape(t) + "/)$"};
     for (auto const &theme : ThemesPaths)
-        if (-1 != r.indexIn(theme))
+        if (theme.contains(r))
             return theme;
 
     return "Custom";

@@ -1,6 +1,6 @@
 project (gadu_protocol)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.16)
 
 find_package (Kadu REQUIRED CONFIG)
 
@@ -117,5 +117,6 @@ kadu_plugin (gadu_protocol
 	PLUGIN_SOURCES ${SOURCES}
 	PLUGIN_CONFIGURATION_FILES ${CONFIGURATION_FILES}
 	PLUGIN_LIBRARIES ${LIBRARIES}
-	PLUGIN_ADDITIONAL_QT_MODULES XmlPatterns
+	# QtXmlPatterns does not exist in Qt6 and was never actually used here.
+	PLUGIN_ADDITIONAL_QT_MODULES StateMachine
 )

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "widgets/chat-configuration-widget-factory.h"
 
 #include <QtCore/QPointer>

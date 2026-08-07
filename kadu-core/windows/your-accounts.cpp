@@ -55,7 +55,7 @@
 #include "windows/message-dialog.h"
 
 #include <QtGui/QKeyEvent>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialogButtonBox>

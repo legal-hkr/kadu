@@ -1,6 +1,6 @@
 project (idle)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.16)
 
 find_package (Kadu REQUIRED CONFIG)
 
@@ -16,19 +16,22 @@ set (SOURCES
 )
 
 if (UNIX AND NOT APPLE)
-	find_package (X11 REQUIRED COMPONENTS X11 Xutil Xscreensaver)
-	if (X11_Xscreensaver_FOUND)
-		message (STATUS "Found required X11 libraries: ${X11_X11_LIB};${X11_Xscreensaver_LIB}")
+	# KIdleTime speaks the compositor's idle protocol. Without it there is no way for a Wayland
+	# client to learn how long the user has been away, so the plugin still builds and answers
+	# that the idle time is unknown rather than making one up.
+	find_package (KF6IdleTime QUIET)
+	if (KF6IdleTime_FOUND)
+		message (STATUS "Found KF6IdleTime: idle detection enabled")
+		set (LIBRARIES KF6::IdleTime)
+		list (APPEND SOURCES
+			idle-kidletime.cpp
+		)
 	else ()
-		message (SEND_ERROR "Could NOT find X11 XScrnSaver")
+		message (STATUS "KF6IdleTime not found: idle time will be reported as unknown")
+		list (APPEND SOURCES
+			idle-unknown.cpp
+		)
 	endif ()
-
-	include_directories (${X11_INCLUDE_DIR})
-	set (LIBRARIES ${X11_X11_LIB} ${X11_Xscreensaver_LIB})
-
-	list (APPEND SOURCES
-		idle-x11.cpp
-	)
 endif ()
 
 if (WIN32)

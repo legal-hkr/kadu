@@ -36,12 +36,12 @@ class StandardUrlExpander : public QObject, public DomTextRegexpVisitor
     QString displayLink(const QString &link) const;
 
 public:
-    explicit StandardUrlExpander(QRegExp regExp);
+    explicit StandardUrlExpander(QRegularExpression regExp);
     virtual ~StandardUrlExpander();
 
     void setConfiguration(const StandardUrlExpanderConfiguration &configuration);
 
-    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, QRegExp regExp) const;
+    virtual QList<QDomNode> matchToDomNodes(QDomDocument document, const QRegularExpressionMatch &match) const;
 };
 
 #endif   // STANDARD_URL_EXPANDER_H

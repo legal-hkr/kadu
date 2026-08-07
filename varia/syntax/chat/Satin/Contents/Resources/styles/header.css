@@ -10,7 +10,11 @@
 	margin-left: -15px;
 	}
 #headerFill {
-	background: url("../images/header/header_fill.png") repeat-x top;
+	/*
+	 * The strip behind the header was a 5x59 picture repeated across it: a plain vertical shading
+	 * from #F6F6F6 to #D8D8D8. Said as a gradient it needs no file and no enlarging.
+	 */
+	background: -webkit-linear-gradient(top, #F6F6F6 0, #D8D8D8 100%);
 	#position: relative;
 	width: "100%";
 	height: 59px;
@@ -38,7 +42,9 @@
 	#display: block;
 	}
 #headerImage {
-	background: url("../images/header/header_sender_bg.png") no-repeat;
+	/* A white disc at 191/255 opacity -- a circle, not a picture of one. */
+	background: rgba(255, 255, 255, 0.749);
+	border-radius: 50%;
 	position: relative;
 	#-webkit-transform:rotate(14deg);
 	width: 46px;

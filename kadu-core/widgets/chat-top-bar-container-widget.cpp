@@ -58,7 +58,7 @@ void ChatTopBarContainerWidget::init()
 void ChatTopBarContainerWidget::createGui()
 {
     Layout = new QVBoxLayout(this);
-    Layout->setMargin(0);
+    Layout->setContentsMargins(0, 0, 0, 0);
     Layout->setSpacing(0);
 }
 

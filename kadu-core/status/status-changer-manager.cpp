@@ -97,6 +97,8 @@ void StatusChangerManager::statusChanged(StatusContainer *container, StatusChang
         for (int i = 0; i < StatusChangers.count(); i++)
             StatusChangers.at(i)->changeStatus(container, status);
 
+        // A container already holding the target status is left alone. That is what keeps the
+        // status widget reading "available" for an account whose protocol never actually got there.
         if (SourceUser == source || container->status() != status)
             container->setStatus(status, source);
     }

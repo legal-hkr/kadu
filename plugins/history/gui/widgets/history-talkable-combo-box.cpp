@@ -19,7 +19,7 @@
  */
 
 #include <QtCore/QFutureWatcher>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 
 #include "buddies/model/buddy-list-model.h"
 #include "chat/model/chat-list-model.h"
@@ -75,8 +75,14 @@ void HistoryTalkableComboBox::setTalkables(const QVector<Talkable> &talkables)
 
     auto chatsBuddies = m_pluginInjectedFactory->makeUnique<ChatsBuddiesSplitter>(talkables);
 
-    ChatsModel->setChats(chatsBuddies->chats().toList().toVector());
-    BuddiesModel->setBuddyList(chatsBuddies->buddies().toList());
+    // QSet::toList() was removed in Qt6; build the containers from iterators.
+    auto const chats = chatsBuddies->chats();
+    auto const buddies = chatsBuddies->buddies();
+    ChatsModel->setChats(QVector<Chat>(chats.cbegin(), chats.cend()));
+    auto buddyList = BuddyList{};
+    for (auto const &buddy : buddies)
+        buddyList.append(buddy);
+    BuddiesModel->setBuddyList(buddyList);
 }
 
 void HistoryTalkableComboBox::setFutureTalkables(const QFuture<QVector<Talkable>> &talkables)

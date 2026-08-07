@@ -1,13 +1,17 @@
 project (jabber_protocol)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.16)
 
 find_package (Kadu REQUIRED CONFIG)
 
+# QXmpp 1.x installs itself per Qt major version: the target, the pkg-config module and the
+# include directory are all named QXmppQt6. The old "qxmpp" module was the Qt5-era name.
+find_package (QXmppQt6 REQUIRED)
+
+# libidn was required here without a single symbol being used; old QXmpp needed it for JID
+# stringprep and the dependency was simply passed along. It is not needed either way now.
 find_package (PkgConfig)
-pkg_search_module (IDN REQUIRED libidn)
-pkg_search_module (ZLIB REQUIRED zlib)
-pkg_search_module (QXMPP REQUIRED qxmpp>=0.8.3)
+pkg_search_module (ZLIB zlib)
 
 if (NOT ZLIB_FOUND)
 	find_package (ZLIB REQUIRED)
@@ -93,15 +97,14 @@ set (SOURCES
 	gtalk-protocol-factory.cpp
 )
 
-add_definitions (${IDN_CFLAGS_OTHER} ${ZLIB_CFLAGS_OTHER} ${QXMPP_DEFINITIONS} ${QXMPP_CFLAGS_OTHER})
+add_definitions (${ZLIB_CFLAGS_OTHER})
 
-set (LIBRARIES ${LIBRARIES} ${IDN_LIBRARIES} ${ZLIB_LIBRARIES} ${QXMPP_LIBRARIES})
+set (LIBRARIES ${LIBRARIES} ${ZLIB_LIBRARIES} QXmppQt6)
 if (WIN32)
 	set (LIBRARIES ${LIBRARIES} advapi32 ws2_32)
 endif ()
 
-include_directories (${QXMPP_INCLUDE_DIRS})
-link_directories (${IDN_LIBRARY_DIRS} ${ZLIB_LIBRARY_DIRS} ${QXMPP_LIBRARY_DIRS})
+link_directories (${ZLIB_LIBRARY_DIRS})
 
 kadu_plugin (jabber_protocol
 	PLUGIN_SOURCES ${SOURCES}

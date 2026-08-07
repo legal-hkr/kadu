@@ -24,7 +24,7 @@
 
 #include <QtCore/QString>
 #include <QtGui/QPixmap>
-#include <QtWidgets/QStyleOptionViewItemV4>
+#include <QtWidgets/QStyleOptionViewItem>
 
 class QModelIndex;
 
@@ -33,7 +33,7 @@ class TalkableDelegateConfiguration;
 class AvatarPainter
 {
     TalkableDelegateConfiguration *Configuration;
-    const QStyleOptionViewItemV4 &Option;
+    const QStyleOptionViewItem &Option;
     const QRect &AvatarRect;
     const QModelIndex &Index;
 
@@ -41,15 +41,15 @@ class AvatarPainter
 
     bool greyOut();
     QPixmap cropped();
-    QString cacheKey();
-    QPixmap getOrCreateCacheItem();
+    QString cacheKey(qreal devicePixelRatio);
+    QPixmap getOrCreateCacheItem(qreal devicePixelRatio);
     void paintFromCache(QPainter *painter);
 
-    void doPaint(QPainter *painter, const QSize &size);
+    void doPaint(QPainter *painter, const QSize &size, qreal devicePixelRatio);
 
 public:
     AvatarPainter(
-        TalkableDelegateConfiguration *configuration, const QStyleOptionViewItemV4 &option, const QRect &avatarRect,
+        TalkableDelegateConfiguration *configuration, const QStyleOptionViewItem &option, const QRect &avatarRect,
         const QModelIndex &index);
 
     void paint(QPainter *painter);

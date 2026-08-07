@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include "history-exports.h"
 
 #include "injeqt-type-roles.h"

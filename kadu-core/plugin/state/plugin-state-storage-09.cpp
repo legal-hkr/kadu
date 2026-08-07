@@ -37,14 +37,17 @@ PluginStateStorage09::load(Configuration *configuration, const ::std::set<QStrin
 {
     auto result = QMap<QString, PluginState>{};
 
+    // QList::toSet() was removed in Qt6; build the set from iterators instead.
+    auto toSet = [](const QStringList &list) { return QSet<QString>{list.cbegin(), list.cend()}; };
+
     auto everLoaded =
-        configuration->deprecatedApi()->readEntry("General", "EverLoaded").split(',', QString::SkipEmptyParts).toSet();
+        toSet(configuration->deprecatedApi()->readEntry("General", "EverLoaded").split(',', Qt::SkipEmptyParts));
     auto loaded = configuration->deprecatedApi()->readEntry("General", "LoadedModules");
 
-    auto loadedPlugins = loaded.split(',', QString::SkipEmptyParts).toSet();
+    auto loadedPlugins = toSet(loaded.split(',', Qt::SkipEmptyParts));
     everLoaded += loadedPlugins;
     auto unloaded_str = configuration->deprecatedApi()->readEntry("General", "UnloadedModules");
-    auto unloadedPlugins = unloaded_str.split(',', QString::SkipEmptyParts).toSet();
+    auto unloadedPlugins = toSet(unloaded_str.split(',', Qt::SkipEmptyParts));
 
     auto allPlugins = everLoaded + unloadedPlugins;   // just in case...
     QSet<QString> oldPlugins;

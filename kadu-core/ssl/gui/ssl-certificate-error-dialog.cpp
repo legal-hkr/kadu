@@ -76,7 +76,7 @@ void SslCertificateErrorDialog::createGui(const QList<QSslError> &errors)
     showCertificateWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     auto showCertificateLayout = new QHBoxLayout{showCertificateWidget};
-    showCertificateLayout->setMargin(0);
+    showCertificateLayout->setContentsMargins(0, 0, 0, 0);
     showCertificateLayout->setSpacing(0);
     showCertificateLayout->addStretch(100);
     showCertificateLayout->addWidget(showCertificateButton);

@@ -169,7 +169,20 @@ QPixmap CropImageWidget::croppedPixmap()
 {
     if (CropRect.normalized().isEmpty())
         return QPixmap();
-    return PixmapItem->pixmap().copy(CropRect.normalized());
+
+    // The selection is made in the scene's logical units, while copy() cuts real pixels out of the
+    // picture. On a magnified screen those differ, and cutting by the wrong ones would return a
+    // fraction of what was selected -- so the rectangle is converted, and the result keeps the
+    // resolution it was captured at.
+    auto const pixmap = PixmapItem->pixmap();
+    auto const ratio = pixmap.devicePixelRatio();
+    auto const selection = QRectF{CropRect.normalized()};
+    auto const inPixels = QRect{QPoint(qRound(selection.left() * ratio), qRound(selection.top() * ratio)),
+                                QSize(qRound(selection.width() * ratio), qRound(selection.height() * ratio))};
+
+    auto cropped = pixmap.copy(inPixels);
+    cropped.setDevicePixelRatio(ratio);
+    return cropped;
 }
 
 void CropImageWidget::handlerMovedTo(HandlerType type, int x, int y)

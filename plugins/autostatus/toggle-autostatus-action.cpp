@@ -29,7 +29,7 @@ ToggleAutostatusAction::ToggleAutostatusAction(QObject *parent)
           ActionDescription(parent)
 {
     setCheckable(true);
-    setIcon(KaduIcon{"kadu_icons/enable-notifications"});
+    setIcon(KaduIcon{"preferences-desktop-notification"});
     setName(QStringLiteral("autostatusAction"));
     setText(tr("&Autostatus"));
     setType(ActionDescription::TypeMainMenu);

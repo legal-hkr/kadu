@@ -8,7 +8,7 @@
 # Copyright (c) 2009, Ruslan Nigmatullin, <euroelessar@gmail.com>
 # Copyrignt (c) 2011, Rafał 'Vogel' Malinowski <vogel@kadu.im>
 
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.16)
 
 # Set default install prefix
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -22,21 +22,24 @@ endif ()
 
 # libraries
 # TODO: support cmake parameters for this
-find_package (Qt5Core 5.2 REQUIRED)
-find_package (Qt5Gui REQUIRED)
-find_package (Qt5LinguistTools REQUIRED)
-find_package (Qt5Network REQUIRED)
-find_package (Qt5Qml REQUIRED)
-find_package (Qt5Quick REQUIRED)
-find_package (Qt5QuickWidgets REQUIRED)
-find_package (Qt5WebKit REQUIRED)
-find_package (Qt5WebKitWidgets REQUIRED)
-find_package (Qt5Widgets REQUIRED)
-find_package (Qt5Xml REQUIRED)
+find_package (Qt6 6.2 REQUIRED COMPONENTS
+	Concurrent
+	Core
+	StateMachine
+	DBus
+	Gui
+	LinguistTools
+	Network
+	Qml
+	Quick
+	QuickWidgets
+	Sql
+	WebEngineWidgets
+	Widgets
+	Xml
+)
 
-if (UNIX AND NOT APPLE)
-	find_package (Qt5X11Extras REQUIRED)
-endif ()
+# Qt5X11Extras was absorbed into QtGui in Qt6 (native interfaces).
 
 include (FindPkgConfig)
 pkg_check_modules (INJEQT REQUIRED injeqt>=1.1)
@@ -44,7 +47,8 @@ include_directories (${INJEQT_INCLUDEDIR})
 link_directories (${INJEQT_LIBRARY_DIRS})
 
 set (CMAKE_CXX_FLAGS "-Woverloaded-virtual -Wnon-virtual-dtor ${CMAKE_CXX_FLAGS}")
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (NOT WIN32)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
@@ -172,7 +176,7 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 	endif ()
 
 	if (_translation_sources)
-		qt5_add_translation (_translation_files ${_translation_sources})
+		qt6_add_translation (_translation_files ${_translation_sources})
 
 		install (FILES ${_translation_files}
 			DESTINATION ${KADU_INSTALL_PLUGINS_DATA_DIR}/translations
@@ -201,12 +205,21 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 		endforeach ()
 	endif ()
 
-	qt5_use_modules (${KADU_PLUGIN_NAME} LINK_PRIVATE Core Gui Network Qml Quick QuickWidgets WebKit WebKitWidgets Widgets Xml)
+	target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE
+		Qt6::Core Qt6::StateMachine Qt6::Gui Qt6::Network
+		Qt6::Qml Qt6::Quick Qt6::QuickWidgets Qt6::WebEngineWidgets Qt6::Widgets Qt6::Xml
+	)
 	if (UNIX AND NOT APPLE)
-		qt5_use_modules (${KADU_PLUGIN_NAME} LINK_PRIVATE DBus)
+		target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE Qt6::DBus)
 	endif ()
 	if (KADU_PLUGIN_ADDITIONAL_QT_MODULES)
-		qt5_use_modules (${KADU_PLUGIN_NAME} LINK_PRIVATE ${KADU_PLUGIN_ADDITIONAL_QT_MODULES})
+		# Plugins name bare modules (e.g. "StateMachine"); map them onto Qt6:: targets. They are
+		# looked up here rather than alongside the modules every plugin needs, so that a module
+		# wanted by one plugin does not become a requirement for building any of them.
+		foreach (_qt_module ${KADU_PLUGIN_ADDITIONAL_QT_MODULES})
+			find_package (Qt6 6.2 REQUIRED COMPONENTS ${_qt_module})
+			target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE Qt6::${_qt_module})
+		endforeach ()
 	endif ()
 
 	target_link_libraries (${KADU_PLUGIN_NAME} LINK_PRIVATE ${INJEQT_LIBRARIES})
@@ -220,8 +233,20 @@ function (kadu_plugin KADU_PLUGIN_NAME)
 	)
 
 	if (NOT WIN32)
+		# KADU_INSTALL_LIB_DIR is relative to the install prefix, and handing it to INSTALL_RPATH
+		# as it stands produced a relative RUNPATH such as "lib64/kadu". The loader resolves those
+		# against the process's working directory rather than the library's own location, so
+		# starting Kadu from a directory someone else can write to lets them supply libkadu -- which
+		# is what scanelf reports as a possible security problem. kadu-core already spells the path
+		# out for the executable; plugins were left behind.
+		if (IS_ABSOLUTE "${KADU_INSTALL_LIB_DIR}")
+			set (kadu_plugin_install_full_lib_dir "${KADU_INSTALL_LIB_DIR}")
+		else ()
+			set (kadu_plugin_install_full_lib_dir "${CMAKE_INSTALL_PREFIX}/${KADU_INSTALL_LIB_DIR}")
+		endif ()
+
 		set_target_properties (${KADU_PLUGIN_NAME} PROPERTIES
-			INSTALL_RPATH "${KADU_INSTALL_LIB_DIR}/kadu"
+			INSTALL_RPATH "${kadu_plugin_install_full_lib_dir}/kadu"
 			BUILD_WITH_INSTALL_RPATH TRUE
 		)
 	endif ()

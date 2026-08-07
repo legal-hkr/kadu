@@ -19,7 +19,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtWebKitWidgets/QWebFrame>
+#include <QtCore/QPointer>
+#include <QtWebEngineCore/QWebEngineFindTextResult>
+#include <QtWebEngineCore/QWebEnginePage>
 
 #include "widgets/webkit-messages-view/webkit-messages-view.h"
 
@@ -46,19 +48,18 @@ void WebViewHighlighter::setAutoUpdate(const bool autoUpdate)
 
     // we might assume that when any message is added to web view its size changes
     // unfortunately contentChanged() does not work when content is updated by javascript
-    // inside webkit instance
 
     if (AutoUpdate)
         disconnect(
-            chatMessagesView()->page()->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this,
-            SLOT(updateHighlighting()));
+            chatMessagesView()->page(), &QWebEnginePage::contentsSizeChanged, this,
+            &WebViewHighlighter::updateHighlighting);
 
     AutoUpdate = autoUpdate;
 
     if (AutoUpdate)
         connect(
-            chatMessagesView()->page()->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this,
-            SLOT(updateHighlighting()));
+            chatMessagesView()->page(), &QWebEnginePage::contentsSizeChanged, this,
+            &WebViewHighlighter::updateHighlighting);
 }
 
 void WebViewHighlighter::setHighlight(const QString &highlightString)
@@ -71,48 +72,53 @@ void WebViewHighlighter::setHighlight(const QString &highlightString)
     updateHighlighting();
 }
 
+void WebViewHighlighter::find(const QString &text, QWebEnginePage::FindFlags flags, bool updateAtBottom)
+{
+    // QtWebKit's findText() answered immediately; QtWebEngine runs the search in the render process
+    // and calls back. The result therefore has to be reported from the callback, and the highlighter
+    // may be gone by then.
+    QPointer<WebViewHighlighter> self{this};
+    chatMessagesView()->page()->findText(text, flags, [self, updateAtBottom](const QWebEngineFindTextResult &result) {
+        if (!self)
+            return;
+        if (updateAtBottom)
+            self->chatMessagesView()->updateAtBottom();
+        emit self->somethingFound(result.numberOfMatches() > 0);
+    });
+}
+
 void WebViewHighlighter::updateHighlighting()
 {
     if (HighlightString.isEmpty())
         return;
 
-    bool found = false;
-    // reset to first occurence
-    chatMessagesView()->findText(QString(), QWebPage::FindWrapsAroundDocument);
-    chatMessagesView()->findText(HighlightString, QWebPage::FindWrapsAroundDocument);
-
-    // highlight all other
-    found = chatMessagesView()->findText(HighlightString, QWebPage::HighlightAllOccurrences);
-
-    emit somethingFound(found);
+    // Repeating a search advances to the next match, so the session is cleared first to make this
+    // start from the top again. QtWebEngine highlights every match and wraps on its own, which is
+    // what QWebPage::HighlightAllOccurrences and FindWrapsAroundDocument used to ask for.
+    chatMessagesView()->page()->findText(QString());
+    find(HighlightString, QWebEnginePage::FindFlags{}, false);
 }
 
 void WebViewHighlighter::clearHighlighting()
 {
-    chatMessagesView()->findText(QString(), QWebPage::HighlightAllOccurrences);
+    chatMessagesView()->page()->findText(QString());
 
     emit somethingFound(true);
 }
 
 void WebViewHighlighter::selectNext(const QString &select)
 {
-    bool found = chatMessagesView()->findText(select, QWebPage::FindWrapsAroundDocument);
-    chatMessagesView()->updateAtBottom();
-
-    emit somethingFound(found);
+    find(select, QWebEnginePage::FindFlags{}, true);
 }
 
 void WebViewHighlighter::selectPrevious(const QString &select)
 {
-    bool found = chatMessagesView()->findText(select, QWebPage::FindWrapsAroundDocument | QWebPage::FindBackward);
-    chatMessagesView()->updateAtBottom();
-
-    emit somethingFound(found);
+    find(select, QWebEnginePage::FindBackward, true);
 }
 
 void WebViewHighlighter::clearSelect()
 {
-    chatMessagesView()->findText(QString(), 0);
+    chatMessagesView()->page()->findText(QString());
     chatMessagesView()->updateAtBottom();
 
     emit somethingFound(true);

@@ -54,7 +54,7 @@ void BuddyConfigurationWidgetGroupBoxesAdapter::widgetAdded(BuddyConfigurationWi
     groupBox->setTitle(widget->windowTitle());
 
     auto groupBoxLayout = new QVBoxLayout{groupBox};
-    groupBoxLayout->setMargin(0);
+    groupBoxLayout->setContentsMargins(0, 0, 0, 0);
     groupBoxLayout->setSpacing(4);
     groupBoxLayout->addWidget(widget);
 

@@ -28,7 +28,7 @@
 #include "network/proxy/model/network-proxy-proxy-model.h"
 #include "windows/proxy-edit-window-service.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 
 #define DEFAULT_PROXY_INDEX 1
 

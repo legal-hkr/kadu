@@ -75,7 +75,7 @@ bool TalkablePainter::useColorsWorkaround()
 #endif
 
 TalkablePainter::TalkablePainter(
-    TalkableDelegateConfiguration *configuration, QStyleOptionViewItemV4 option, const QModelIndex &index)
+    TalkableDelegateConfiguration *configuration, QStyleOptionViewItem option, const QModelIndex &index)
         : Configuration(configuration), Option(option), Index(index), FontMetrics(Configuration->font()),
           BoldFontMetrics(Configuration->boldFont()), DescriptionFontMetrics(Configuration->descriptionFont()),
           DescriptionDocument(0)
@@ -227,12 +227,20 @@ void TalkablePainter::computeIconRect()
     if (paintedIcon.isNull())
         return;
 
-    IconRect.setSize(paintedIcon.size() + QSize(HFrameMargin, 0));
+    // The layout works in logical units, and QPixmap::size() counts device pixels: on a magnified
+    // screen it reported twice the size, so the rectangle came out twice too large and drawPixmap()
+    // stretched the icon into it a second time.
+    IconRect.setSize(paintedIcon.deviceIndependentSize().toSize() + QSize(HFrameMargin, 0));
+
+    // Centring works in the same units as the rectangle above. QPixmap::height() counts device
+    // pixels, so on a magnified screen it subtracted twice the icon's real height and pushed it
+    // above the middle, while the comparison below could never be true.
+    auto const iconHeight = paintedIcon.deviceIndependentSize().toSize().height();
 
     if (!Configuration->alignTop())
-        IconRect.moveTop(ItemRect.top() + (ItemRect.height() - paintedIcon.height()) / 2);
-    else if (fontMetrics().lineSpacing() > paintedIcon.height())
-        IconRect.moveTop(ItemRect.top() + (fontMetrics().lineSpacing() - paintedIcon.height()) / 2);
+        IconRect.moveTop(ItemRect.top() + (ItemRect.height() - iconHeight) / 2);
+    else if (fontMetrics().lineSpacing() > iconHeight)
+        IconRect.moveTop(ItemRect.top() + (fontMetrics().lineSpacing() - iconHeight) / 2);
 }
 
 void TalkablePainter::computeAvatarRect()
@@ -273,7 +281,7 @@ bool TalkablePainter::drawDisabled() const
 
 QTextDocument *TalkablePainter::createDescriptionDocument(const QString &text, int width, QColor color) const
 {
-    QString description = Qt::escape(text).replace(
+    QString description = (text).toHtmlEscaped().replace(
         '\n', Configuration->showMultiLineDescription() ? QStringLiteral("<br/>") : QStringLiteral(" "));
 
     QTextDocument *const doc = new QTextDocument();
@@ -289,7 +297,11 @@ QTextDocument *TalkablePainter::createDescriptionDocument(const QString &text, i
     doc->setDefaultTextOption(opt);
 
     QTextFrameFormat frameFormat = doc->rootFrame()->frameFormat();
-    frameFormat.setMargin(0);
+    // QTextFrameFormat has no setContentsMargins(); set the four margins.
+    frameFormat.setLeftMargin(0);
+    frameFormat.setTopMargin(0);
+    frameFormat.setRightMargin(0);
+    frameFormat.setBottomMargin(0);
     doc->rootFrame()->setFrameFormat(frameFormat);
 
     doc->setTextWidth(width);

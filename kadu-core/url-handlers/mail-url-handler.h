@@ -22,13 +22,13 @@
 #ifndef MAIL_URL_HANDLER_H
 #define MAIL_URL_HANDLER_H
 
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 
 #include "url-handler.h"
 
 class MailUrlHandler : public UrlHandler
 {
-    QRegExp MailRegExp;
+    QRegularExpression MailRegExp;
 
 public:
     MailUrlHandler();
@@ -36,7 +36,7 @@ public:
     virtual bool isUrlValid(const QByteArray &url);
     virtual void openUrl(UrlOpener *urlOpener, const QByteArray &url, bool disableMenu = false);
 
-    const QRegExp &mailRegExp()
+    const QRegularExpression &mailRegExp()
     {
         return MailRegExp;
     }

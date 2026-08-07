@@ -64,7 +64,7 @@ class SqlContactsMapping : public QObject
     QPointer<ContactManager> m_contactManager;
 
     const QSqlDatabase &Database;
-    mutable QMutex Mutex;
+    mutable QRecursiveMutex Mutex;
     SqlAccountsMapping *AccountsMapping;
     QMap<int, Contact> ContactMapping;
 
