@@ -47,7 +47,7 @@ class JabberAddAccountWidget : public AccountAddWidget
     Q_OBJECT
 
 public:
-    explicit JabberAddAccountWidget(bool isGmail, QString defaultServer, bool showButtons, QWidget *parent = nullptr);
+    explicit JabberAddAccountWidget(QString defaultServer, bool showButtons, QWidget *parent = nullptr);
     virtual ~JabberAddAccountWidget();
 
     void setJabberServersService(JabberServersService *serversService);
@@ -63,7 +63,6 @@ private:
     QPointer<IdentityManager> m_identityManager;
     QPointer<PluginInjectedFactory> m_pluginInjectedFactory;
 
-    bool m_isGmail;
     QString m_defaultServer;
     bool m_showButtons;
 

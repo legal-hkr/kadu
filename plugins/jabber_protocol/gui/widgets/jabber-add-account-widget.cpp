@@ -46,9 +46,8 @@
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QVBoxLayout>
 
-JabberAddAccountWidget::JabberAddAccountWidget(bool isGmail, QString defaultServer, bool showButtons, QWidget *parent)
-        : AccountAddWidget{parent}, m_isGmail{isGmail}, m_defaultServer{std::move(defaultServer)}, m_showButtons{
-                                                                                                       showButtons}
+JabberAddAccountWidget::JabberAddAccountWidget(QString defaultServer, bool showButtons, QWidget *parent)
+        : AccountAddWidget{parent}, m_defaultServer{std::move(defaultServer)}, m_showButtons{showButtons}
 {
 }
 
@@ -202,15 +201,6 @@ void JabberAddAccountWidget::apply()
     auto accountData = JabberAccountData{jabberAccount};
     accountData.setResource("Kadu");
     accountData.setPriority(5);
-
-    bool isGoogleAppsAccount = m_isGmail && !Domain->currentText().contains("gmail");
-    // Google Apps account sometimes needs custom host/port settings to work
-    if (isGoogleAppsAccount)
-    {
-        accountData.setUseCustomHostPort(true);
-        accountData.setCustomHost("talk.google.com");
-        accountData.setCustomPort(5222);
-    }
 
     resetGui();
 

@@ -25,7 +25,6 @@
 
 #include "actions/jabber-actions.h"
 #include "actions/jabber-protocol-menu-manager.h"
-#include "gtalk-protocol-factory.h"
 #include "jabber-id-validator.h"
 #include "jabber-protocol-factory.h"
 #include "jabber-url-handler.h"
