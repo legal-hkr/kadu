@@ -180,13 +180,22 @@ void ChatStyleManager::configurationUpdated()
     if (!CurrentEngine || newChatStyle != m_currentChatStyle)
     {
         auto newStyleName = fixedStyleName(newChatStyle.name());
-        CurrentEngine = AvailableStyles.value(newStyleName).engine;
-        auto newVariantName = fixedVariantName(newStyleName, newChatStyle.variant());
-        m_currentChatStyle = {newStyleName, newVariantName};
+        auto *newEngine = AvailableStyles.value(newStyleName).engine;
 
-        if (m_configuredChatStyleRendererFactoryProvider)
-            m_configuredChatStyleRendererFactoryProvider->setChatStyleRendererFactory(
-                CurrentEngine->createRendererFactory(m_currentChatStyle));
+        // No style was found at all -- an uninstalled tree or a broken data directory, which
+        // fixedStyleName() answers with an empty name. Everything below reaches through the engine
+        // that name would have picked, so going on regardless only moves the crash one line down:
+        // fixedVariantName() asks the engine for its variants before anything checks it.
+        if (newEngine)
+        {
+            CurrentEngine = newEngine;
+            auto newVariantName = fixedVariantName(newStyleName, newChatStyle.variant());
+            m_currentChatStyle = {newStyleName, newVariantName};
+
+            if (m_configuredChatStyleRendererFactoryProvider)
+                m_configuredChatStyleRendererFactoryProvider->setChatStyleRendererFactory(
+                    CurrentEngine->createRendererFactory(m_currentChatStyle));
+        }
     }
 
     emit chatStyleConfigurationUpdated();
