@@ -84,7 +84,7 @@ Protocol *JabberProtocolFactory::createProtocolHandler(Account account)
 
 AccountAddWidget *JabberProtocolFactory::newAddAccountWidget(bool showButtons, QWidget *parent)
 {
-    auto result = m_pluginInjectedFactory->makeInjected<JabberAddAccountWidget>(false, QString{}, showButtons, parent);
+    auto result = m_pluginInjectedFactory->makeInjected<JabberAddAccountWidget>(QString{}, showButtons, parent);
     result->setJabberServersService(new JabberServersService{result});
     connect(this, SIGNAL(destroyed()), result, SLOT(deleteLater()));
     return result;

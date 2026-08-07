@@ -94,7 +94,6 @@ set (SOURCES
 	jabber-url-dom-visitor-provider.cpp
 	jabber-url-handler.cpp
 	jid.cpp
-	gtalk-protocol-factory.cpp
 )
 
 add_definitions (${ZLIB_CFLAGS_OTHER})

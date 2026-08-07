@@ -26,7 +26,6 @@
 #include "actions/resend-subscription-action.h"
 #include "actions/show-xml-console-action.h"
 #include "facebook-depreceated-message.h"
-#include "gtalk-protocol-factory.h"
 #include "jabber-plugin-object.h"
 #include "jabber-protocol-factory.h"
 #include "jabber-url-dom-visitor-provider.h"
@@ -36,7 +35,6 @@ JabberModule::JabberModule()
 {
     add_type<AskForSubscriptionAction>();
     add_type<FacebookDepreceatedMessage>();
-    add_type<GTalkProtocolFactory>();
     add_type<JabberActions>();
     add_type<JabberPluginObject>();
     add_type<JabberProtocolFactory>();

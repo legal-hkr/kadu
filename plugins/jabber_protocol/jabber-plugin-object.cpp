@@ -22,7 +22,6 @@
 
 #include "actions/jabber-actions.h"
 #include "actions/jabber-protocol-menu-manager.h"
-#include "gtalk-protocol-factory.h"
 #include "jabber-protocol-factory.h"
 #include "jabber-url-dom-visitor-provider.h"
 #include "jabber-url-handler.h"
@@ -43,11 +42,6 @@ JabberPluginObject::~JabberPluginObject()
 void JabberPluginObject::setDomVisitorProviderRepository(DomVisitorProviderRepository *domVisitorProviderRepository)
 {
     m_domVisitorProviderRepository = domVisitorProviderRepository;
-}
-
-void JabberPluginObject::setGTalkProtocolFactory(GTalkProtocolFactory *gtalkProtocolFactory)
-{
-    m_gtalkProtocolFactory = gtalkProtocolFactory;
 }
 
 void JabberPluginObject::setJabberActions(JabberActions *jabberActions)
@@ -93,7 +87,6 @@ void JabberPluginObject::setUrlHandlerManager(UrlHandlerManager *urlHandlerManag
 void JabberPluginObject::init()
 {
     m_protocolsManager->registerProtocolFactory(m_jabberProtocolFactory);
-    m_protocolsManager->registerProtocolFactory(m_gtalkProtocolFactory);
     m_urlHandlerManager->registerUrlHandler(m_jabberUrlHandler);
     // install before mail handler
     m_domVisitorProviderRepository->addVisitorProvider(m_jabberUrlDomVisitorProvider, 2000);
@@ -107,8 +100,5 @@ void JabberPluginObject::done()
 
     m_domVisitorProviderRepository->removeVisitorProvider(m_jabberUrlDomVisitorProvider);
     m_urlHandlerManager->unregisterUrlHandler(m_jabberUrlHandler);
-    // Both factories are registered in init(), so both have to go here. This said "register" for
-    // the GTalk one, which left a factory owned by an unloaded plugin in the manager.
-    m_protocolsManager->unregisterProtocolFactory(m_gtalkProtocolFactory);
     m_protocolsManager->unregisterProtocolFactory(m_jabberProtocolFactory);
 }

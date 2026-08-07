@@ -168,6 +168,14 @@ void AccountShared::load()
 
     ProtocolName = loadValue<QString>("Protocol");
 
+    // Google's XMPP service is gone, and the separate protocol that existed to talk to it went with
+    // it. An account stored under that name would otherwise wait for a factory nobody registers any
+    // more: listed, never connecting, and silent about why. Underneath it was the same protocol --
+    // the retired factory built the very same handler -- so the name is brought up to date and the
+    // account keeps its identity, its contacts and its history.
+    if (ProtocolName == QStringLiteral("gmail/google talk"))
+        ProtocolName = QStringLiteral("jabber");
+
     doSetId(loadValue<QString>("Id"));
 
     RememberPassword = loadValue<bool>("RememberPassword", true);
