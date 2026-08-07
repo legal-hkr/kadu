@@ -270,10 +270,10 @@ QString convertTimeDate(SystemInfo *systemInfo, const QString &mac_format, const
                     appendStr(str, QLocale::system().dayName(date.dayOfWeek(), QLocale::LongFormat), length);
                     break;
                 case L'b':
-                    appendStr(str, QLocale::system().monthName(date.day(), QLocale::ShortFormat), length);
+                    appendStr(str, QLocale::system().monthName(date.month(), QLocale::ShortFormat), length);
                     break;
                 case L'B':
-                    appendStr(str, QLocale::system().monthName(date.day(), QLocale::LongFormat), length);
+                    appendStr(str, QLocale::system().monthName(date.month(), QLocale::LongFormat), length);
                     break;
                 case L'c':
                     appendStr(str, QLocale::system().toString(datetime), length);
