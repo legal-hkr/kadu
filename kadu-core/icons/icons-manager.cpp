@@ -181,6 +181,19 @@ QString IconsManager::iconPath(
         return iconPath(protocolPathIcon, allowEmpty, sizeMatch);
     }
 
+    // Callers that need a file rather than an icon -- a stylesheet's url() -- ask here by a standard
+    // name too, and this path knows nothing of the desktop's icon theme. go-down is the case in the
+    // contact list: no bundled theme carries a file of that name, so the arrow of an expanded group
+    // fell through to the placeholder. The drawing behind the name answers instead, the same one
+    // iconByPath() falls back on.
+    auto const bundled = bundledEquivalent().value(path);
+    if (!bundled.isEmpty())
+    {
+        KaduIcon bundledIcon = icon;
+        bundledIcon.setPath(bundled);
+        return iconPath(bundledIcon, allowEmpty, sizeMatch);
+    }
+
     if (EmptyAllowed == allowEmpty)
         return QString();
     else
