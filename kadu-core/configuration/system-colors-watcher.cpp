@@ -24,6 +24,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QEvent>
+#include <QtWidgets/QApplication>
 
 SystemColorsWatcher::SystemColorsWatcher(QObject *parent) : QObject{parent}
 {
@@ -35,13 +36,34 @@ SystemColorsWatcher::~SystemColorsWatcher()
 {
 }
 
+void SystemColorsWatcher::reapplyStyleSheet()
+{
+    auto *application = qobject_cast<QApplication *>(QCoreApplication::instance());
+    if (!application)
+        return;
+
+    // An application that carries a style sheet has every widget drawn through the style sheet
+    // style, and that one works out its colours when the sheet is set and keeps them: the menu and
+    // the toolbar went on writing in the colour of the desktop Kadu started under, and only a
+    // restart put it right. Setting the same sheet again is what makes it look at the palette anew.
+    auto const styleSheet = application->styleSheet();
+    if (styleSheet.isEmpty())
+        return;
+
+    application->setStyleSheet(QString{});
+    application->setStyleSheet(styleSheet);
+}
+
 bool SystemColorsWatcher::eventFilter(QObject *watched, QEvent *event)
 {
     // ApplicationPaletteChange is the whole desktop's doing and arrives once; PaletteChange reaches
     // every widget in turn, which would mean recomputing everything as many times as there are
     // windows. Only the first is answered.
     if (event->type() == QEvent::ApplicationPaletteChange)
+    {
+        reapplyStyleSheet();
         ConfigurationAwareObject::notifyAll();
+    }
 
     return QObject::eventFilter(watched, event);
 }

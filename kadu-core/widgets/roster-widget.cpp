@@ -42,6 +42,8 @@
 #include "widgets/talkable-tree-view.h"
 #include "windows/proxy-action-context.h"
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPalette>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPushButton>
@@ -112,9 +114,17 @@ void RosterWidget::createGui()
 
 void RosterWidget::configurationUpdated()
 {
-    QString bgColor = m_configuration->deprecatedApi()->readColorEntry("Look", "UserboxBgColor").name();
+    // The list is painted through a stylesheet, which names its colours outright and so cannot
+    // inherit them. Unless the user asks for colours of their own, they are taken from the palette
+    // here instead: the window's own background, and the colour a list uses for every second row.
+    auto const customColors = m_configuration->deprecatedApi()->readBoolEntry("Look", "UserboxCustomColors");
+    auto const palette = QGuiApplication::palette();
+
+    QString bgColor = customColors ? m_configuration->deprecatedApi()->readColorEntry("Look", "UserboxBgColor").name()
+                                   : palette.base().color().name();
     QString alternateBgColor =
-        m_configuration->deprecatedApi()->readColorEntry("Look", "UserboxAlternateBgColor").name();
+        customColors ? m_configuration->deprecatedApi()->readColorEntry("Look", "UserboxAlternateBgColor").name()
+                     : palette.alternateBase().color().name();
 
     if (CompositingEnabled && m_configuration->deprecatedApi()->readBoolEntry("Look", "UserboxTransparency"))
     {

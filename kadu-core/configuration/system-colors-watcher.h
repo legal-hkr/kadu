@@ -42,4 +42,7 @@ public:
 
 protected:
     virtual bool eventFilter(QObject *watched, QEvent *event) override;
+
+private:
+    void reapplyStyleSheet();
 };
