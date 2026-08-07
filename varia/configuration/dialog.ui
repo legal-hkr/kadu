@@ -91,26 +91,32 @@
 		</tab>
 		<tab name="Colors">
 			<group-box name="Chat Window">
-				<color-button caption="My message font color" config-section="Look" config-item="ChatMyFontColor" />
-				<color-button caption="Buddy's message font color" config-section="Look" config-item="ChatUsrFontColor" />
-				<color-button caption="My nick color" config-section="Look" config-item="ChatMyNickColor" />
-				<color-button caption="Buddy's nick color" config-section="Look" config-item="ChatUsrNickColor" />
-				<color-button caption="My messages' background" config-section="Look" config-item="ChatMyBgColor" />
-				<color-button caption="Buddy's messages' background" config-section="Look" config-item="ChatUsrBgColor" />
-				<check-box caption="Use custom chat background color" config-section="Look" config-item="ChatBgFilled" id="chatBgFilled" />
-				<color-button caption="Chat background" config-section="Look" config-item="ChatBgColor" id="chatBgColor" parent-widget="chatBgFilled" />
-				<check-box caption="Use custom text edit colors" config-section="Look" config-item="ChatTextCustomColors" id="chatTextCustomColors" />
-				<color-button caption="Text edit background" config-section="Look" config-item="ChatTextBgColor" id="chatTextBgColor" parent-widget="chatTextCustomColors" />
-				<color-button caption="Text edit font" config-section="Look" config-item="ChatTextFontColor" id="chatTextFontColor" parent-widget="chatTextCustomColors" />
+				<check-box caption="Use custom colors" config-section="Look" config-item="ChatCustomColors" id="chatCustomColors"
+					tool-tip="With this off the conversation takes its colors from the desktop and follows it from light to dark" />
+				<color-button caption="My message font color" config-section="Look" config-item="ChatMyFontColor" id="chatMyFontColor" parent-widget="chatCustomColors" />
+				<color-button caption="Buddy's message font color" config-section="Look" config-item="ChatUsrFontColor" id="chatUsrFontColor" parent-widget="chatCustomColors" />
+				<color-button caption="My nick color" config-section="Look" config-item="ChatMyNickColor" id="chatMyNickColor" parent-widget="chatCustomColors" />
+				<color-button caption="Buddy's nick color" config-section="Look" config-item="ChatUsrNickColor" id="chatUsrNickColor" parent-widget="chatCustomColors" />
+				<color-button caption="My messages' background" config-section="Look" config-item="ChatMyBgColor" id="chatMyBgColor" parent-widget="chatCustomColors" />
+				<color-button caption="Buddy's messages' background" config-section="Look" config-item="ChatUsrBgColor" id="chatUsrBgColor" parent-widget="chatCustomColors" />
+				<check-box caption="Use custom chat background color" config-section="Look" config-item="ChatBgFilled" id="chatBgFilled" parent-widget="chatCustomColors" />
+				<color-button caption="Chat background" config-section="Look" config-item="ChatBgColor" id="chatBgColor" parent-widget="chatCustomColors,chatBgFilled" />
+				<check-box caption="Use custom text edit colors" config-section="Look" config-item="ChatTextCustomColors" id="chatTextCustomColors" parent-widget="chatCustomColors" />
+				<color-button caption="Text edit background" config-section="Look" config-item="ChatTextBgColor" id="chatTextBgColor" parent-widget="chatCustomColors,chatTextCustomColors" />
+				<color-button caption="Text edit font" config-section="Look" config-item="ChatTextFontColor" id="chatTextFontColor" parent-widget="chatCustomColors,chatTextCustomColors" />
 			</group-box>
 			<group-box name="Buddy List">
-				<color-button caption="Font" config-section="Look" config-item="UserboxFgColor" />
-				<color-button caption="Descriptions font" config-section="Look" config-item="DescriptionColor" />
+				<check-box caption="Use custom colors" config-section="Look" config-item="UserboxCustomColors" id="userboxCustomColors"
+					tool-tip="With this off the buddy list takes its colors from the desktop and follows it from light to dark" />
+				<color-button caption="Font" config-section="Look" config-item="UserboxFgColor" id="userboxFgColor" parent-widget="userboxCustomColors" />
+				<color-button caption="Descriptions font" config-section="Look" config-item="DescriptionColor" id="descriptionColor" parent-widget="userboxCustomColors" />
 			</group-box>
 			<group-box name="Information Panel">
-				<color-button caption="Font" config-section="Look" config-item="InfoPanelFgColor" />
-				<check-box caption="Use custom background color" config-section="Look" config-item="InfoPanelBgFilled" id="infoPanelBgFilled" />
-				<color-button caption="Background" config-section="Look" config-item="InfoPanelBgColor" id="infoPanelBgColor" parent-widget="infoPanelBgFilled" />
+				<check-box caption="Use custom colors" config-section="Look" config-item="InfoPanelCustomColors" id="infoPanelCustomColors"
+					tool-tip="With this off the information panel takes its colors from the desktop and follows it from light to dark" />
+				<color-button caption="Font" config-section="Look" config-item="InfoPanelFgColor" id="infoPanelFgColor" parent-widget="infoPanelCustomColors" />
+				<check-box caption="Use custom background color" config-section="Look" config-item="InfoPanelBgFilled" id="infoPanelBgFilled" parent-widget="infoPanelCustomColors" />
+				<color-button caption="Background" config-section="Look" config-item="InfoPanelBgColor" id="infoPanelBgColor" parent-widget="infoPanelCustomColors,infoPanelBgFilled" />
 			</group-box>
 		</tab>
 		<tab name="Fonts">

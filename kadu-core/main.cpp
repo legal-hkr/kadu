@@ -71,6 +71,8 @@
 #include "widgets/chat-widget/chat-widget-module.h"
 #include "windows/chat-window/chat-window-module.h"
 
+#include "configuration/system-colors-watcher.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
@@ -266,6 +268,11 @@ int main(int argc, char *argv[]) try
 #endif
 
         Core core{std::move(injector)};
+
+        // Watches for the desktop handing out a new palette, which is how a desktop that turns dark
+        // at dusk tells a running program about it. Lives as long as the application does.
+        SystemColorsWatcher systemColorsWatcher{&application};
+
         return core.executeSingle(executionArguments);
     }
     catch (ConfigurationUnusableException &)

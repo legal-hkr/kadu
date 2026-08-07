@@ -21,6 +21,7 @@
  */
 
 #include <QtWidgets/QApplication>
+#include <QtCore/QEvent>
 #include <QtWidgets/QLabel>
 
 #include "config-color-button.h"
@@ -75,6 +76,14 @@ void ConfigColorButton::saveConfiguration()
     if (!dataManager)
         return;
     dataManager->writeEntry(section, item, QVariant(color().name()));
+}
+
+void ConfigColorButton::changeEvent(QEvent *event)
+{
+    ColorButton::changeEvent(event);
+
+    if (event->type() == QEvent::EnabledChange && label)
+        label->setEnabled(isEnabled());
 }
 
 void ConfigColorButton::setVisible(bool visible)

@@ -39,6 +39,8 @@
 #include "talkable/talkable-converter.h"
 #include "url-handlers/url-handler-manager.h"
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPalette>
 #include <QtWebEngineCore/QWebEngineScript>
 #include <QtWebEngineCore/QWebEngineScriptCollection>
 #include <QtWebEngineCore/QWebEngineSettings>
@@ -137,8 +139,16 @@ void BuddyInfoPanel::update()
     QString fontStyle = font.italic() ? "italic" : "normal";
     QString fontWeight = font.bold() ? "bold" : "normal";
     QString textDecoration = font.underline() ? "underline" : "none";
-    QString fontColor = configuration()->deprecatedApi()->readColorEntry("Look", "InfoPanelFgColor").name();
-    bool backgroundFilled = configuration()->deprecatedApi()->readBoolEntry("Look", "InfoPanelBgFilled");
+    // Unless the user asks for a colour of their own, the panel writes in the colour the desktop
+    // uses for text, so it follows the desktop from light to dark. The background is left
+    // transparent as before, which lets the widget underneath -- and its palette -- show through.
+    bool const customColors = configuration()->deprecatedApi()->readBoolEntry("Look", "InfoPanelCustomColors");
+
+    QString fontColor = customColors
+                            ? configuration()->deprecatedApi()->readColorEntry("Look", "InfoPanelFgColor").name()
+                            : QGuiApplication::palette().text().color().name();
+    bool backgroundFilled =
+        customColors && configuration()->deprecatedApi()->readBoolEntry("Look", "InfoPanelBgFilled");
     if (backgroundFilled)
         BackgroundColor = configuration()->deprecatedApi()->readColorEntry("Look", "InfoPanelBgColor").name();
     else

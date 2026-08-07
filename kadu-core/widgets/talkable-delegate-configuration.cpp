@@ -29,7 +29,7 @@
 
 TalkableDelegateConfiguration::TalkableDelegateConfiguration(TalkableTreeView *listView, QObject *parent)
         : QObject{parent}, ListView{listView}, AlwaysShowIdentityName{false}, ShowIdentityName{true},
-          ShowMessagePixmap{true}, UseConfigurationColors{false}
+          ShowMessagePixmap{true}, UseConfigurationColors{false}, CustomColors{false}
 {
     Q_ASSERT(ListView);
 }
@@ -74,6 +74,7 @@ void TalkableDelegateConfiguration::configurationUpdated()
     ShowBold = m_configuration->deprecatedApi()->readBoolEntry("Look", "ShowBold");
     ShowDescription = m_configuration->deprecatedApi()->readBoolEntry("Look", "ShowDesc");
     ShowMultiLineDescription = m_configuration->deprecatedApi()->readBoolEntry("Look", "ShowMultilineDesc");
+    CustomColors = m_configuration->deprecatedApi()->readBoolEntry("Look", "UserboxCustomColors");
     DescriptionColor = m_configuration->deprecatedApi()->readColorEntry("Look", "DescriptionColor");
     FontColor = m_configuration->deprecatedApi()->readColorEntry("Look", "UserboxFgColor");
 

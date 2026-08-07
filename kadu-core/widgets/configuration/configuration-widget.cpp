@@ -24,6 +24,7 @@
  */
 
 #include <QtCore/QFile>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QHBoxLayout>
@@ -146,23 +147,67 @@ QList<ConfigWidget *> ConfigurationWidget::appendUiFile(const QString &fileName,
 {
     QList<ConfigWidget *> widgets = processUiFile(fileName, true);
 
+    // Values first, dependencies afterwards. A switch announces its state as it loads, and the
+    // fields answering to it are built later in the file, so wiring as we went meant the
+    // announcement was made before anyone was listening: a field belonging to an unchecked box
+    // stayed enabled until the box was clicked twice.
+    for (auto widget : widgets)
+        if (widget && load)
+            widget->loadConfiguration();
+
     for (auto widget : widgets)
     {
         if (!widget)
             continue;
 
-        QWidget *currentWidget = widgetById(widget->currentWidgetId());
-        QWidget *parentWidget = widgetById(widget->parentWidgetId());
+        // The field itself rather than a lookup by name: a field only lands in the by-name map when
+        // it was given an id, and the map keeps whatever the cast produced, so asking it for a
+        // field that never cast cleanly answers with nothing and the dependency is silently lost.
+        QWidget *currentWidget = dynamic_cast<QWidget *>(widget);
+        if (!currentWidget)
+            continue;
 
-        if (parentWidget && currentWidget)
+        QVector<QAbstractButton *> switches;
+        QVector<QWidget *> others;
+        for (auto const &parentId : widget->parentWidgetIds())
         {
-            const char *slot = widget->isStateDependentDirectly() ? SLOT(setEnabled(bool)) : SLOT(setDisabled(bool));
+            QWidget *parentWidget = widgetById(parentId.trimmed());
+            if (!parentWidget)
+                continue;
 
-            connect(parentWidget, SIGNAL(toggled(bool)), currentWidget, slot);
+            if (auto *button = qobject_cast<QAbstractButton *>(parentWidget))
+                switches.append(button);
+            else
+                others.append(parentWidget);
         }
 
-        if (load)
-            widget->loadConfiguration();
+        auto const direct = widget->isStateDependentDirectly();
+
+        if (!switches.isEmpty())
+        {
+            // A field may belong to several switches at once and is then offered only when every
+            // one of them is on -- the chat background answers both to the box that turns a custom
+            // background on and to the section that follows the desktop's colours.
+            auto apply = [currentWidget, switches, direct]() {
+                auto all = true;
+                for (auto const *button : switches)
+                    all = all && button->isChecked();
+
+                currentWidget->setEnabled(direct == all);
+            };
+
+            for (auto *button : switches)
+                connect(button, &QAbstractButton::toggled, currentWidget, apply);
+
+            apply();
+        }
+
+        // Anything that is not a button keeps the arrangement it had, which asks only that it
+        // announce itself the way a checkable widget does.
+        for (auto *parentWidget : others)
+            connect(
+                parentWidget, SIGNAL(toggled(bool)), currentWidget,
+                direct ? SLOT(setEnabled(bool)) : SLOT(setDisabled(bool)));
     }
 
     return widgets;
