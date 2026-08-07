@@ -23,7 +23,6 @@
 #include "jabber-protocol-factory.moc"
 
 #include "actions/jabber-protocol-menu-manager.h"
-#include "facebook-depreceated-message.h"
 #include "gui/widgets/jabber-add-account-widget.h"
 #include "gui/widgets/jabber-contact-personal-info-widget.h"
 #include "gui/widgets/jabber-create-account-widget.h"
@@ -54,11 +53,6 @@ JabberProtocolFactory::~JabberProtocolFactory()
 {
 }
 
-void JabberProtocolFactory::setFacebookDepreceatedMessage(FacebookDepreceatedMessage *facebookDepreceatedMessage)
-{
-    m_facebookDepreceatedMessage = facebookDepreceatedMessage;
-}
-
 void JabberProtocolFactory::setJabberProtocolMenuManager(JabberProtocolMenuManager *jabberProtocolMenuManager)
 {
     m_jabberProtocolMenuManager = jabberProtocolMenuManager;
@@ -76,9 +70,6 @@ KaduIcon JabberProtocolFactory::icon()
 
 Protocol *JabberProtocolFactory::createProtocolHandler(Account account)
 {
-    if (account.id().toLower().endsWith("@chat.facebook.com"))
-        m_facebookDepreceatedMessage->showIfNotSeen();
-
     return m_pluginInjectedFactory->makeInjected<JabberProtocol>(account, this);
 }
 

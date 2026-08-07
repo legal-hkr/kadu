@@ -25,7 +25,6 @@
 #include <QtCore/QPointer>
 #include <injeqt/injeqt.h>
 
-class FacebookDepreceatedMessage;
 class JabberProtocolMenuManager;
 class PluginInjectedFactory;
 
@@ -61,14 +60,12 @@ public:
     virtual KaduIcon icon() override;
 
 private:
-    QPointer<FacebookDepreceatedMessage> m_facebookDepreceatedMessage;
     QPointer<JabberProtocolMenuManager> m_jabberProtocolMenuManager;
     QPointer<PluginInjectedFactory> m_pluginInjectedFactory;
 
     QList<StatusType> m_supportedStatusTypes;
 
 private slots:
-    INJEQT_SET void setFacebookDepreceatedMessage(FacebookDepreceatedMessage *facebookDepreceatedMessage);
     INJEQT_SET void setJabberProtocolMenuManager(JabberProtocolMenuManager *jabberProtocolMenuManager);
     INJEQT_SET void setPluginInjectedFactory(PluginInjectedFactory *pluginInjectedFactory);
 };
