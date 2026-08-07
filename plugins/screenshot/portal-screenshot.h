@@ -57,5 +57,7 @@ private slots:
 private:
     QString RequestPath;
 
+    bool listenForResponse();
+    void stopListening();
     void finishWithError(const QString &errorMessage);
 };

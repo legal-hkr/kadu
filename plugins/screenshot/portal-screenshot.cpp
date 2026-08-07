@@ -57,11 +57,31 @@ void PortalScreenshot::take(bool interactive)
         return;
     }
 
+    // The answer is listened for before the request is made, not after it comes back. A request
+    // that needs nothing from the user can be finished by the desktop straight away, and an answer
+    // sent before anyone is listening is simply gone -- leaving taken() and failed() both unsent,
+    // with no timeout to notice. Subscribing first is possible because the caller names its own
+    // request: the object path is built from our unique bus name and a token we choose.
+    static unsigned int requestCounter = 0;
+    auto const token = QStringLiteral("kadu%1").arg(++requestCounter);
+    auto uniqueName = bus.baseService();
+    uniqueName.remove(0, 1);
+    uniqueName.replace('.', '_');
+    RequestPath = QStringLiteral("/org/freedesktop/portal/desktop/request/%1/%2").arg(uniqueName, token);
+
+    if (!listenForResponse())
+    {
+        RequestPath.clear();
+        finishWithError(tr("Could not listen for the desktop's answer to the screenshot request."));
+        return;
+    }
+
     auto call = QDBusMessage::createMethodCall(PortalService, PortalPath, ScreenshotInterface,
                                                QStringLiteral("Screenshot"));
 
     QVariantMap options;
     options.insert(QStringLiteral("interactive"), interactive);
+    options.insert(QStringLiteral("handle_token"), token);
 
     // The window the desktop should attach its own dialog to. Wayland identifiers are obtained
     // through a separate exporting protocol, and getting one wrong is worse than leaving it out:
@@ -71,24 +91,47 @@ void PortalScreenshot::take(bool interactive)
     QDBusReply<QDBusObjectPath> reply = bus.call(call, QDBus::Block, CallTimeoutMsec);
     if (!reply.isValid())
     {
+        stopListening();
         finishWithError(tr("The desktop refused the screenshot request: %1").arg(reply.error().message()));
         return;
     }
 
-    RequestPath = reply.value().path();
-    if (!bus.connect(QString{}, RequestPath, RequestInterface, QStringLiteral("Response"), this,
-                     SLOT(response(uint, QVariantMap))))
+    // A desktop that predates the token convention answers on a path of its own choosing and names
+    // it here. Nothing can have been missed in that case -- it could not have answered on a path we
+    // had not been told about -- so moving the subscription across is enough.
+    auto const answeredOn = reply.value().path();
+    if (answeredOn != RequestPath)
     {
-        RequestPath.clear();
-        finishWithError(tr("Could not listen for the desktop's answer to the screenshot request."));
+        stopListening();
+        RequestPath = answeredOn;
+        if (!listenForResponse())
+        {
+            RequestPath.clear();
+            finishWithError(tr("Could not listen for the desktop's answer to the screenshot request."));
+        }
     }
+}
+
+bool PortalScreenshot::listenForResponse()
+{
+    return QDBusConnection::sessionBus().connect(QString{}, RequestPath, RequestInterface,
+                                                 QStringLiteral("Response"), this,
+                                                 SLOT(response(uint, QVariantMap)));
+}
+
+void PortalScreenshot::stopListening()
+{
+    if (RequestPath.isEmpty())
+        return;
+
+    QDBusConnection::sessionBus().disconnect(QString{}, RequestPath, RequestInterface, QStringLiteral("Response"),
+                                             this, SLOT(response(uint, QVariantMap)));
+    RequestPath.clear();
 }
 
 void PortalScreenshot::response(uint code, const QVariantMap &results)
 {
-    QDBusConnection::sessionBus().disconnect(QString{}, RequestPath, RequestInterface, QStringLiteral("Response"),
-                                             this, SLOT(response(uint, QVariantMap)));
-    RequestPath.clear();
+    stopListening();
 
     // 0 succeeded, 1 the user cancelled, 2 something else went wrong. A cancellation is a decision,
     // not a fault, so it carries no message.
