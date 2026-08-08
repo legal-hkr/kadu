@@ -50,10 +50,21 @@ public:
     void backupConfiguration();
 
     bool isSavingSession() const;
+
+    /**
+     * @short Whether the user has asked the program to finish.
+     *
+     * A window that would rather hide than close -- the contact list does, when there is a tray
+     * icon to hide into -- has to let go when this is true, or the program cannot finish. It is
+     * the same reason isSavingSession() is asked about, and it is asked about in the same places.
+     */
+    bool isQuitting() const;
+
     void quit();
 
 private:
     QPointer<ConfigurationWriter> m_configurationWriter;
+    bool m_quitting{false};
 
 public slots:
     INJEQT_SET void setConfigurationWriter(ConfigurationWriter *configurationWriter);
