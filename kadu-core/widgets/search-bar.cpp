@@ -25,7 +25,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QStyle>
-#include <QtWidgets/QToolButton>
 
 #include "search-bar.h"
 #include "search-bar.moc"
@@ -43,31 +42,29 @@ SearchBar::~SearchBar()
 
 void SearchBar::createGui()
 {
-    QToolButton *closeButton = new QToolButton(this);
-    closeButton->setIcon(qApp->style()->standardIcon(QStyle::SP_DialogCloseButton));
-    closeButton->setFixedSize(QSize(16, 16));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(hide()));
-    addWidget(closeButton);
+    // The three buttons are the tool bar's own, made from actions, rather than tool buttons built
+    // here and handed over. Built here they were given a fixed size of sixteen pixels, which is a
+    // number and not a measurement: the icon inside is drawn at whatever size the style works out
+    // for the screen, and where that came to more than sixteen the button ended up smaller than the
+    // symbol it held -- the frame under the pointer cutting through the arrows instead of going
+    // round them. A tool bar asks the style how big its icons should be, and asks again whenever
+    // the style changes, so the size is left to it and not named here at all.
+
+    auto *closeAction = addAction(qApp->style()->standardIcon(QStyle::SP_DialogCloseButton), tr("Close"));
+    // The same as Escape. It used to only hide the bar, leaving what had been found still marked.
+    connect(closeAction, &QAction::triggered, this, &SearchBar::close);
 
     addWidget(new QLabel(tr("Find:"), this));
 
     FindEdit = new QLineEdit(this);
-    connect(FindEdit, SIGNAL(textChanged(QString)), this, SLOT(searchTextChanged(QString)));
+    connect(FindEdit, &QLineEdit::textChanged, this, &SearchBar::searchTextChanged);
     addWidget(FindEdit);
 
-    QToolButton *previousButton = new QToolButton(this);
-    previousButton->setIcon(qApp->style()->standardIcon(QStyle::SP_ArrowLeft));
-    previousButton->setText(tr("Previous"));
-    previousButton->setFixedSize(QSize(16, 16));
-    connect(previousButton, SIGNAL(clicked(bool)), this, SLOT(previous()));
-    addWidget(previousButton);
+    auto *previousAction = addAction(qApp->style()->standardIcon(QStyle::SP_ArrowLeft), tr("Previous"));
+    connect(previousAction, &QAction::triggered, this, &SearchBar::previous);
 
-    QToolButton *nextButton = new QToolButton(this);
-    nextButton->setIcon(qApp->style()->standardIcon(QStyle::SP_ArrowRight));
-    nextButton->setFixedSize(QSize(16, 16));
-    nextButton->setText(tr("Next"));
-    connect(nextButton, SIGNAL(clicked(bool)), this, SLOT(next()));
-    addWidget(nextButton);
+    auto *nextAction = addAction(qApp->style()->standardIcon(QStyle::SP_ArrowRight), tr("Next"));
+    connect(nextAction, &QAction::triggered, this, &SearchBar::next);
 }
 
 void SearchBar::keyPressEvent(QKeyEvent *event)
