@@ -82,7 +82,7 @@ void SoundConfigurationUiHandler::connectWidgets()
         return;
 
     connect(m_themesComboBox, SIGNAL(activated(int)), m_configurationWidget, SLOT(themeChanged(int)));
-    connect(m_themesComboBox, SIGNAL(activated(const QString &)), this, SLOT(themeChanged(const QString &)));
+    connect(m_themesComboBox, SIGNAL(textActivated(const QString &)), this, SLOT(themeChanged(const QString &)));
     m_configurationWidget->themeChanged(m_themesComboBox->currentIndex());
 }
 

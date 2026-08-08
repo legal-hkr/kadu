@@ -86,7 +86,7 @@ void ChatStyleConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigu
     });
     m_syntaxListCombo->addItems(styleNames);
     m_syntaxListCombo->setCurrentIndex(m_syntaxListCombo->findText(m_chatStyleManager->currentChatStyle().name()));
-    connect(m_syntaxListCombo, SIGNAL(activated(const QString &)), this, SLOT(styleChangedSlot(const QString &)));
+    connect(m_syntaxListCombo, SIGNAL(textActivated(const QString &)), this, SLOT(styleChangedSlot(const QString &)));
 
     editorLayout->addWidget(m_syntaxListCombo, 100);
 
@@ -108,7 +108,7 @@ void ChatStyleConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigu
     variantChangedSlot(newVariant);
     m_variantListCombo->setCurrentIndex(m_variantListCombo->findText(newVariant));
     m_variantListCombo->setEnabled(m_chatStyleManager->currentEngine()->supportVariants());
-    connect(m_variantListCombo, SIGNAL(activated(const QString &)), this, SLOT(variantChangedSlot(const QString &)));
+    connect(m_variantListCombo, SIGNAL(textActivated(const QString &)), this, SLOT(variantChangedSlot(const QString &)));
     //
     groupBox->addWidgets(editorLabel, editor);
     groupBox->addWidgets(

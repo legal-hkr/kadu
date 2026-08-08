@@ -39,7 +39,7 @@ SyntaxEditor::SyntaxEditor(QWidget *parent) : QWidget(parent)
     QHBoxLayout *layout = new QHBoxLayout(this);
 
     syntaxListCombo = new QComboBox(this);
-    connect(syntaxListCombo, SIGNAL(activated(const QString &)), this, SLOT(syntaxChangedSlot(const QString &)));
+    connect(syntaxListCombo, SIGNAL(textActivated(const QString &)), this, SLOT(syntaxChangedSlot(const QString &)));
 
     layout->addWidget(syntaxListCombo, 100);
 }
