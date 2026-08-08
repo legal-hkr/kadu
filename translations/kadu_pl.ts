@@ -640,6 +640,22 @@ znajomych po połączeniu się z serwerem</translation>
         <translation>Tło wiadomości znajomego</translation>
     </message>
     <message>
+        <source>Use custom colors</source>
+        <translation>Używaj własnych kolorów</translation>
+    </message>
+    <message>
+        <source>With this off the conversation takes its colors from the desktop and follows it from light to dark</source>
+        <translation>Przy wyłączonej opcji okno rozmowy bierze kolory z pulpitu i podąża za nim od jasnego do ciemnego</translation>
+    </message>
+    <message>
+        <source>With this off the buddy list takes its colors from the desktop and follows it from light to dark</source>
+        <translation>Przy wyłączonej opcji lista znajomych bierze kolory z pulpitu i podąża za nim od jasnego do ciemnego</translation>
+    </message>
+    <message>
+        <source>With this off the information panel takes its colors from the desktop and follows it from light to dark</source>
+        <translation>Przy wyłączonej opcji panel informacyjny bierze kolory z pulpitu i podąża za nim od jasnego do ciemnego</translation>
+    </message>
+    <message>
         <source>Use custom chat background color</source>
         <translation>Używaj własnego koloru tła  rozmowy</translation>
     </message>
