@@ -13,7 +13,6 @@ else ()
 	message (STATUS "Fast (re)linking disabled")
 endif ()
 
-configure_file (kadu-config.h.in "${CMAKE_CURRENT_BINARY_DIR}/kadu-config.h" ESCAPE_QUOTES)
 include_directories ("${CMAKE_CURRENT_BINARY_DIR}")
 
 set (kadu_SRCS
@@ -123,9 +122,28 @@ else ()
 	message (STATUS "KF6WindowSystem not found: windows will not raise themselves under Wayland")
 endif ()
 
+# KConfig is used for one thing only: telling the desktop's configuration to be read again when the
+# desktop changes its colours. Breeze works its menu bar and tool bar colours out from the file
+# named after the application, which does not notice kdeglobals changing underneath it, so without
+# this those two keep the colours the desktop had when Kadu started.
+find_package (KF6Config QUIET)
+if (KF6Config_FOUND)
+	set (HAVE_KCONFIG 1)
+	message (STATUS "Found KF6Config: menu bar and toolbars follow the desktop's colours")
+	list (APPEND ADDITIONAL_LIBKADU_LIBRARIES KF6::ConfigCore)
+else ()
+	set (HAVE_KCONFIG 0)
+	message (STATUS "KF6Config not found: the menu bar and toolbars keep the colours Kadu started with")
+endif ()
+
 if (APPLE)
 	list (APPEND ADDITIONAL_LIBKADU_LIBRARIES "-framework carbon")
 endif ()
+
+# Written here rather than at the top of the file: every HAVE_* answer above has to be known before
+# the header that carries them is generated. Standing earlier, it wrote them all as zero, so the
+# optional pieces were compiled out however many of their libraries were installed.
+configure_file (kadu-config.h.in "${CMAKE_CURRENT_BINARY_DIR}/kadu-config.h" ESCAPE_QUOTES)
 
 macro (kadu_subdirectory SUBDIR SRCS)
 	if (FAST_LINKING)
