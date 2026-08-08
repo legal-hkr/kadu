@@ -38,6 +38,7 @@ Nowa funkcjonalnosc - Dorregaray
 #include <QtCore/QStringList>
 #include <QtCore/QTimer>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushButton>
 
 #include "firewall-message-filter.h"
 #include "firewall-message-filter.moc"
@@ -521,19 +522,25 @@ bool FirewallMessageFilter::acceptOutgoingMessage(const Message &message)
 
             if (!SecuredTemporaryAllowed.contains(buddy))
             {
-                switch (QMessageBox::warning(
-                    m_chatWidgetRepository->widgetForChat(message.messageChat()), "Kadu",
-                    tr("Are you sure you want to send this message?"), tr("&Yes"),
-                    tr("Yes and allow until chat closed"), tr("&No"), 2, 2))
-                {
-                default:
-                    return false;
-                case 0:
-                    return true;
-                case 1:
+                QMessageBox box{m_chatWidgetRepository->widgetForChat(message.messageChat())};
+                box.setIcon(QMessageBox::Warning);
+                box.setWindowTitle(QStringLiteral("Kadu"));
+                box.setText(tr("Are you sure you want to send this message?"));
+
+                auto *yes = box.addButton(tr("&Yes"), QMessageBox::YesRole);
+                auto *always = box.addButton(tr("Yes and allow until chat closed"), QMessageBox::YesRole);
+                auto *no = box.addButton(tr("&No"), QMessageBox::NoRole);
+                box.setDefaultButton(no);
+                box.setEscapeButton(no);
+                box.exec();
+
+                // Refusing is what a closed dialog means as well, as it did before.
+                if (box.clickedButton() == always)
                     SecuredTemporaryAllowed.insert(buddy);
-                    return true;
-                }
+                else if (box.clickedButton() != yes)
+                    return false;
+
+                return true;
             }
         }
     }

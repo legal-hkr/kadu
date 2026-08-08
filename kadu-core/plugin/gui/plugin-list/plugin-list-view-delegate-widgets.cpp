@@ -185,8 +185,9 @@ bool PluginListWidgetDelegateEventListener::eventFilter(QObject *watched, QEvent
         case QEvent::MouseButtonDblClick:
         {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+            auto const global = mouseEvent->globalPosition();
             QMouseEvent evt(
-                event->type(), viewport->mapFromGlobal(mouseEvent->globalPosition().toPoint()), mouseEvent->button(),
+                event->type(), viewport->mapFromGlobal(global.toPoint()), global, mouseEvent->button(),
                 mouseEvent->buttons(), mouseEvent->modifiers());
             QApplication::sendEvent(viewport, &evt);
         }

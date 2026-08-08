@@ -61,6 +61,7 @@
 #include <QtCore/QFileInfo>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushButton>
 
 FileTransferManager::FileTransferManager(QObject *parent) : Manager<FileTransfer>{parent}, m_totalProgress{100}
 {
@@ -301,21 +302,21 @@ QString FileTransferManager::getSaveFileName(QString fileName, QString remoteFil
 
         if (!haveFileName && info.exists())
         {
-            auto question = tr("File %1 already exists.").arg(fileName);
-            switch (QMessageBox::question(
-                parent, tr("Save file"), question,
-                tr("Overwrite"),   // tr("Resume"),
-                tr("Select another file"), 0, 2))
+            QMessageBox box{parent};
+            box.setIcon(QMessageBox::Question);
+            box.setWindowTitle(tr("Save file"));
+            box.setText(tr("File %1 already exists.").arg(fileName));
+
+            auto *overwrite = box.addButton(tr("Overwrite"), QMessageBox::AcceptRole);
+            auto *another = box.addButton(tr("Select another file"), QMessageBox::RejectRole);
+            box.setDefaultButton(another);
+            box.setEscapeButton(another);
+            box.exec();
+
+            // Closing the dialog counts as asking for another name, which is the harmless of the
+            // two: it goes round again instead of writing over a file nobody agreed to write over.
+            if (box.clickedButton() != overwrite)
             {
-            case 0:
-                // resumeTransfer = false;
-                break;
-
-            case 1:
-                // resumeTransfer = true;
-                // break;
-
-                // case 2:
                 fileName = QString{};
                 haveFileName = false;
                 continue;

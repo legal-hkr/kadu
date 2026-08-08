@@ -28,6 +28,7 @@
 
 #include <QtGui/QPixmap>
 #include <QtWidgets/QStyle>
+#include <QtWidgets/QPushButton>
 
 MessageDialog *
 MessageDialog::create(const QIcon &icon, const QString &title, const QString &text, QWidget *parent, Qt::WindowFlags f)
@@ -66,9 +67,9 @@ void MessageDialog::messageBoxFinished(int result)
 
 MessageDialog *MessageDialog::addButton(QMessageBox::StandardButton button, const QString &text)
 {
-    Box->addButton(button);
-    if (!text.isEmpty())
-        Box->setButtonText(button, text);
+    auto *added = Box->addButton(button);
+    if (added && !text.isEmpty())
+        added->setText(text);
 
     return this;
 }
