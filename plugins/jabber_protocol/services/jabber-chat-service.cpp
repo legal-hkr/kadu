@@ -54,6 +54,7 @@
 
 #include <QtGui/QTextDocument>
 #include <QXmppQt6/QXmppMessage.h>
+#include <QXmppQt6/QXmppTask.h>
 
 JabberChatService::JabberChatService(QXmppClient *client, Account account, QObject *parent)
         : ChatService{account, parent}, m_client{client}
@@ -158,7 +159,7 @@ bool JabberChatService::sendMessage(const Message &message)
     xmppMessage.setTo(jid.full());
     xmppMessage.setType(chatMessageType(message.messageChat(), jid.bare()));
 
-    m_client.data()->sendPacket(m_chatStateService->withSentChatState(xmppMessage));
+    m_client.data()->send(m_chatStateService->withSentChatState(xmppMessage));
 
     return true;
 }
@@ -179,7 +180,7 @@ bool JabberChatService::sendRawMessage(const Chat &chat, const QByteArray &rawMe
     xmppMessage.setTo(jid.full());
     xmppMessage.setType(chatMessageType(chat, jid.bare()));
 
-    m_client.data()->sendPacket(m_chatStateService->withSentChatState(xmppMessage));
+    m_client.data()->send(m_chatStateService->withSentChatState(xmppMessage));
 
     return true;
 }

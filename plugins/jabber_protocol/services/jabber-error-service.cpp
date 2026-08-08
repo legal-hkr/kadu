@@ -90,8 +90,13 @@ QString JabberErrorService::conditionToString(QXmppStanza::Error::Condition cond
         return tr("Not allowed");
     case QXmppStanza::Error::Condition::NotAuthorized:
         return tr("Not authorized");
+    // RFC 6120 dropped this condition and QXmpp keeps the name only so that code naming it still
+    // builds. A server old enough to send it is still owed an explanation, so it stays.
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     case QXmppStanza::Error::Condition::PaymentRequired:
         return tr("Payment required");
+    QT_WARNING_POP
     case QXmppStanza::Error::Condition::RecipientUnavailable:
         return tr("Recipient unavailable");
     case QXmppStanza::Error::Condition::Redirect:

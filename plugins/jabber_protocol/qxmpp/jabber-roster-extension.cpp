@@ -26,6 +26,7 @@
 #include <QtXml/QDomElement>
 #include <QXmppQt6/QXmppClient.h>
 #include <QXmppQt6/QXmppRosterIq.h>
+#include <QXmppQt6/QXmppUtils.h>
 
 JabberRosterExtension::JabberRosterExtension()
 {
@@ -42,7 +43,7 @@ void JabberRosterExtension::setJabberErrorService(JabberErrorService *errorServi
 
 bool JabberRosterExtension::handleStanza(const QDomElement &stanza)
 {
-    if (stanza.tagName() != "iq" || !QXmppRosterIq::isRosterIq(stanza))
+    if (stanza.tagName() != "iq" || !QXmpp::isIqElement<QXmppRosterIq>(stanza))
         return false;
 
     auto rosterIq = QXmppRosterIq{};

@@ -30,6 +30,7 @@
 
 #include <QXmppQt6/QXmppClient.h>
 #include <QXmppQt6/QXmppRegisterIq.h>
+#include <QXmppQt6/QXmppTask.h>
 
 JabberRegisterAccount::JabberRegisterAccount(Jid jid, QString password, QString email, QObject *parent)
         : QObject{parent}, m_jid{std::move(jid)},
@@ -153,7 +154,7 @@ void JabberRegisterAccount::askForRegistration()
     registerIq.setType(QXmppIq::Type::Get);
 
     m_id = registerIq.id();
-    m_client->sendPacket(registerIq);
+    m_client->send(std::move(registerIq));
 
     m_state = State::WaitForRegistrationForm;
 }
@@ -221,7 +222,7 @@ void JabberRegisterAccount::sendFilledRegistrationForm()
     registerIq.setUsername(m_jid.node());
 
     m_id = registerIq.id();
-    m_client->sendPacket(registerIq);
+    m_client->send(std::move(registerIq));
 }
 
 void JabberRegisterAccount::handleRegistrationConfirmation(const QXmppRegisterIq &registerIq)

@@ -23,6 +23,8 @@
 #include <QtXml/QDomElement>
 #include <QXmppQt6/QXmppClient.h>
 #include <QXmppQt6/QXmppRegisterIq.h>
+#include <QXmppQt6/QXmppUtils.h>
+#include <QXmppQt6/QXmppTask.h>
 
 JabberRegisterExtension::JabberRegisterExtension()
 {
@@ -37,7 +39,7 @@ void JabberRegisterExtension::sendRegisterIq(const QXmppRegisterIq &registerIq)
     if (client()->isConnected())
     {
         m_pendingIds.insert(registerIq.id());
-        client()->sendPacket(registerIq);
+        client()->send(QXmppRegisterIq{registerIq});
     }
 }
 
@@ -47,7 +49,7 @@ bool JabberRegisterExtension::handleStanza(const QDomElement &stanza)
         return false;
 
     auto id = stanza.attribute("id");
-    auto isRegisterIq = QXmppRegisterIq::isRegisterIq(stanza) || m_pendingIds.contains(id);
+    auto isRegisterIq = QXmpp::isIqElement<QXmppRegisterIq>(stanza) || m_pendingIds.contains(id);
 
     if (!isRegisterIq)
         return false;
