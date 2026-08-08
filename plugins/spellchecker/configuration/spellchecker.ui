@@ -6,7 +6,6 @@
 				<color-button caption="Color" config-section="ASpell" config-item="Color" />
 				<check-box caption="Bold" config-section="ASpell" config-item="Bold" />
 				<check-box caption="Italic" config-section="ASpell" config-item="Italic" />
-				<check-box caption="Underline" config-section="ASpell" config-item="Underline" />
 			</group-box>
 
 			<group-box name="Spell Checker Options">
