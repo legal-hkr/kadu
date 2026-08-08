@@ -82,6 +82,7 @@ public slots:
     void contactActivityChanged(const Contact &contact, ChatState state);
     void updateAtBottom();
     void updateEmoticonStyle();
+    void applyPalette();
     void updatePageBackground();
     void updateScrollBarStyle();
 
