@@ -24,9 +24,10 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QEvent>
+#include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
 
-SystemColorsWatcher::SystemColorsWatcher(QObject *parent) : QObject{parent}
+SystemColorsWatcher::SystemColorsWatcher(QObject *parent) : QObject{parent}, m_pending{false}
 {
     if (auto *application = QCoreApplication::instance())
         application->installEventFilter(this);
@@ -42,10 +43,11 @@ void SystemColorsWatcher::reapplyStyleSheet()
     if (!application)
         return;
 
-    // An application that carries a style sheet has every widget drawn through the style sheet
-    // style, and that one works out its colours when the sheet is set and keeps them: the menu and
-    // the toolbar went on writing in the colour of the desktop Kadu started under, and only a
-    // restart put it right. Setting the same sheet again is what makes it look at the palette anew.
+    // An application carrying a style sheet has every widget drawn through the style sheet style,
+    // and that one works its colours out when the sheet is set and then keeps them: measured on a
+    // menu bar and a tool bar, their palettes sat at the colours of the first palette they ever
+    // saw and did not move again, however many times the desktop changed. Setting the same sheet
+    // again is what makes them look afresh.
     auto const styleSheet = application->styleSheet();
     if (styleSheet.isEmpty())
         return;
@@ -54,15 +56,28 @@ void SystemColorsWatcher::reapplyStyleSheet()
     application->setStyleSheet(styleSheet);
 }
 
+void SystemColorsWatcher::colorsChanged()
+{
+    m_pending = false;
+
+    reapplyStyleSheet();
+    ConfigurationAwareObject::notifyAll();
+}
+
 bool SystemColorsWatcher::eventFilter(QObject *watched, QEvent *event)
 {
-    // ApplicationPaletteChange is the whole desktop's doing and arrives once; PaletteChange reaches
-    // every widget in turn, which would mean recomputing everything as many times as there are
-    // windows. Only the first is answered.
-    if (event->type() == QEvent::ApplicationPaletteChange)
+    if (event->type() == QEvent::ApplicationPaletteChange && !m_pending)
     {
-        reapplyStyleSheet();
-        ConfigurationAwareObject::notifyAll();
+        // Answered on the next turn of the event loop rather than here. A desktop changing its
+        // colours does not hand the new palette out in one go, and the announcement arrives while
+        // that is still under way -- reading the colours at this point gave a window whose text
+        // had moved on while its background had not. Waiting until the turn is over reads one
+        // palette rather than half of each.
+        //
+        // The announcement also arrives many times over, once for each widget that is told; the
+        // flag turns that crowd into the single piece of news it really is.
+        m_pending = true;
+        QTimer::singleShot(0, this, &SystemColorsWatcher::colorsChanged);
     }
 
     return QObject::eventFilter(watched, event);

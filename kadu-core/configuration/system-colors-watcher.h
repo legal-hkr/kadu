@@ -43,6 +43,11 @@ public:
 protected:
     virtual bool eventFilter(QObject *watched, QEvent *event) override;
 
+private slots:
+    void colorsChanged();
+
 private:
+    bool m_pending;
+
     void reapplyStyleSheet();
 };
