@@ -51,7 +51,9 @@ void CopyDescriptionAction::actionTriggered(QAction *sender, bool)
     if (!contact)
         return;
 
-    auto const &description = contact.currentStatus().description();
+    // Held by value, not by reference. currentStatus() hands back a status of its own, which is
+    // gone by the end of this line -- and the description is a reference into it.
+    auto const description = contact.currentStatus().description();
     if (description.isEmpty())
         return;
 

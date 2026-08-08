@@ -1494,6 +1494,7 @@ QModelIndex CategorizedListView::moveCursor(CursorAction cursorAction, Qt::Keybo
 
             return QModelIndex();
         }
+        break;
     }
 
     case MoveUp:
