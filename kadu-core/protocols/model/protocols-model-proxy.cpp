@@ -29,6 +29,7 @@
 
 #include "protocols-model-proxy.h"
 #include "protocols-model-proxy.moc"
+#include "model/filter-change.h"
 #include "protocols-model.h"
 
 ProtocolsModelProxy::ProtocolsModelProxy(QObject *parent) : QSortFilterProxyModel(parent)
@@ -90,16 +91,19 @@ void ProtocolsModelProxy::addFilter(AbstractProtocolFilter *filter)
     if (ProtocolFilters.contains(filter))
         return;
 
+    KADU_BEGIN_FILTER_CHANGE();
     ProtocolFilters.append(filter);
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_ROWS();
     connect(filter, SIGNAL(filterChanged()), this, SLOT(invalidate()));
 }
 
 void ProtocolsModelProxy::removeFilter(AbstractProtocolFilter *filter)
 {
-    if (ProtocolFilters.removeAll(filter) <= 0)
+    if (!ProtocolFilters.contains(filter))
         return;
 
-    invalidateFilter();
+    KADU_BEGIN_FILTER_CHANGE();
+    ProtocolFilters.removeAll(filter);
+    KADU_END_FILTER_CHANGE_ROWS();
     disconnect(filter, 0, this, 0);
 }

@@ -24,6 +24,7 @@
 
 #include "action-filter-proxy-model.h"
 #include "action-filter-proxy-model.moc"
+#include "model/filter-change.h"
 
 ActionFilterProxyModel::ActionFilterProxyModel(QObject *parent) : QSortFilterProxyModel(parent), Size(0), Model(0)
 {
@@ -55,20 +56,23 @@ void ActionFilterProxyModel::updateSize()
     if (newSize == Size)
         return;
 
+    KADU_BEGIN_FILTER_CHANGE();
     Size = newSize;
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_ROWS();
 }
 
 void ActionFilterProxyModel::addHideWhenModelEmpty(QAction *action)
 {
+    KADU_BEGIN_FILTER_CHANGE();
     HideWhenModelEmpty.append(action);
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_ROWS();
 }
 
 void ActionFilterProxyModel::addHideWhenModelSingle(QAction *action)
 {
+    KADU_BEGIN_FILTER_CHANGE();
     HideWhenModelSingle.append(action);
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_ROWS();
 }
 
 bool ActionFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const

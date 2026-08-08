@@ -39,7 +39,7 @@ class Transformer
 public:
     typedef T object_type;
 
-    virtual ~Transformer<T>()
+    virtual ~Transformer()
     {
     }
 

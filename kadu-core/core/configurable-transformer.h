@@ -41,7 +41,7 @@ public:
     typedef T object_type;
     typedef T_config config_type;
 
-    virtual ~ConfigurableTransformer<T, T_config>()
+    virtual ~ConfigurableTransformer()
     {
     }
 

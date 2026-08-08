@@ -26,6 +26,7 @@
 
 #include "accounts-proxy-model.h"
 #include "accounts-proxy-model.moc"
+#include "model/filter-change.h"
 
 AccountsProxyModel::AccountsProxyModel(QObject *parent) : QSortFilterProxyModel(parent)
 {
@@ -78,22 +79,28 @@ void AccountsProxyModel::addFilter(AbstractAccountFilter *filter)
     if (Filters.contains(filter))
         return;
 
+    KADU_BEGIN_FILTER_CHANGE();
     Filters.append(filter);
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_ROWS();
     connect(filter, SIGNAL(filterChanged()), this, SLOT(filterChangedSlot()));
 }
 
 void AccountsProxyModel::removeFilter(AbstractAccountFilter *filter)
 {
-    if (Filters.removeAll(filter) <= 0)
+    if (!Filters.contains(filter))
         return;
 
-    invalidateFilter();
+    KADU_BEGIN_FILTER_CHANGE();
+    Filters.removeAll(filter);
+    KADU_END_FILTER_CHANGE_ROWS();
     disconnect(filter, 0, this, 0);
 }
 
 void AccountsProxyModel::filterChangedSlot()
 {
-    invalidateFilter();
+    // The criteria were changed by the filter itself, so there is nothing to do between the two
+    // beyond letting the model look at what it accepts a second time.
+    KADU_BEGIN_FILTER_CHANGE();
+    KADU_END_FILTER_CHANGE_ROWS();
     emit filterChanged();
 }

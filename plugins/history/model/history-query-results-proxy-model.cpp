@@ -20,6 +20,7 @@
 
 #include "history-query-results-proxy-model.h"
 #include "history-query-results-proxy-model.moc"
+#include "model/filter-change.h"
 
 HistoryQueryResultsProxyModel::HistoryQueryResultsProxyModel(QObject *parent)
         : QSortFilterProxyModel(parent), TalkableVisible(true), TitleVisible(true)
@@ -47,8 +48,9 @@ void HistoryQueryResultsProxyModel::setTalkableVisible(const bool talkableVisibl
     if (TalkableVisible == talkableVisible)
         return;
 
+    KADU_BEGIN_FILTER_CHANGE();
     TalkableVisible = talkableVisible;
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_BOTH();
 }
 
 void HistoryQueryResultsProxyModel::setTitleVisible(const bool titleVisible)
@@ -56,6 +58,7 @@ void HistoryQueryResultsProxyModel::setTitleVisible(const bool titleVisible)
     if (TitleVisible == titleVisible)
         return;
 
+    KADU_BEGIN_FILTER_CHANGE();
     TitleVisible = titleVisible;
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_BOTH();
 }
