@@ -59,7 +59,6 @@ class HistoryWindow : public QWidget
 
     ChatHistoryTab *ChatTab;
     HistoryMessagesTab *StatusTab;
-    HistoryMessagesTab *SmsTab;
     SearchTab *MySearchTab;
 
     void createGui();

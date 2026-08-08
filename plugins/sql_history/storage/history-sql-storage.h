@@ -78,7 +78,6 @@ class HistorySqlStorage : public HistoryStorage
 
     QSqlQuery AppendMessageQuery;
     QSqlQuery AppendStatusQuery;
-    QSqlQuery AppendSmsQuery;
 
     QMutex DatabaseMutex;
 
@@ -86,7 +85,6 @@ class HistorySqlStorage : public HistoryStorage
 
     HistoryMessagesStorage *m_historyChatStorage;
     HistoryMessagesStorage *StatusStorage;
-    HistoryMessagesStorage *SmsStorage;
 
     void initQueries();
 
@@ -102,22 +100,18 @@ class HistorySqlStorage : public HistoryStorage
     void executeQuery(QSqlQuery &query);
     SortedMessages messagesFromQuery(QSqlQuery &query);
     SortedMessages statusesFromQuery(const Contact &contact, QSqlQuery &query);
-    SortedMessages smsFromQuery(QSqlQuery &query);
 
     bool isDatabaseReady();
     bool waitForDatabase();
 
     QVector<Talkable> syncChats();
     QVector<Talkable> syncStatusBuddies();
-    QVector<Talkable> syncSmsRecipients();
 
     QVector<HistoryQueryResult> syncChatDates(const HistoryQuery &historyQuery);
     QVector<HistoryQueryResult> syncStatusDates(const HistoryQuery &historyQuery);
-    QVector<HistoryQueryResult> syncSmsRecipientDates(const HistoryQuery &historyQuery);
 
     SortedMessages syncMessages(const HistoryQuery &historyQuery);
     SortedMessages syncStatuses(const HistoryQuery &historyQuery);
-    SortedMessages syncSmses(const HistoryQuery &historyQuery);
 
 private slots:
     INJEQT_SET void setBuddyChatManager(BuddyChatManager *buddyChatManager);
@@ -149,28 +143,22 @@ public:
 
     virtual QFuture<QVector<Talkable>> chats();
     virtual QFuture<QVector<Talkable>> statusBuddies();
-    virtual QFuture<QVector<Talkable>> smsRecipients();
 
     virtual QFuture<QVector<HistoryQueryResult>> chatDates(const HistoryQuery &historyQuery);
     virtual QFuture<QVector<HistoryQueryResult>> statusDates(const HistoryQuery &historyQuery);
-    virtual QFuture<QVector<HistoryQueryResult>> smsRecipientDates(const HistoryQuery &historyQuery);
 
     virtual QFuture<SortedMessages> messages(const HistoryQuery &historyQuery);
     virtual QFuture<SortedMessages> statuses(const HistoryQuery &historyQuery);
-    virtual QFuture<SortedMessages> smses(const HistoryQuery &historyQuery);
 
     virtual void appendMessage(const Message &message);
     virtual void appendStatus(const Contact &contact, const Status &status, const QDateTime &time);
-    virtual void appendSms(const QString &recipient, const QString &content, const QDateTime &time);
 
     void sync();
 
     virtual void clearChatHistory(const Talkable &talkable, const QDate &date = QDate());
-    virtual void clearSmsHistory(const Talkable &talkable, const QDate &date = QDate());
     virtual void clearStatusHistory(const Talkable &talkable, const QDate &date = QDate());
     virtual void deleteHistory(const Talkable &talkable);
 
     virtual HistoryMessagesStorage *chatStorage();
     virtual HistoryMessagesStorage *statusStorage();
-    virtual HistoryMessagesStorage *smsStorage();
 };

@@ -59,7 +59,7 @@ class WaitOverlay;
  * @class HistoryMessagesTab
  * @short Widget that provides tab content for history window.
  *
- * This widgets provides tab content for history window - it can be chat, statuses, sms history
+ * This widgets provides tab content for history window - it can be chat or statuses history
  * or any other item. This widgets adds menu with "Remove Entries" action for timeline widget.
  *
  * Each tab is build from one item view on the left and TimelineChatMessagesView on the right side.

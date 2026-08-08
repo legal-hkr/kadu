@@ -49,7 +49,6 @@ class SearchTab : public HistoryTab
 
     HistoryMessagesStorage *m_historyChatStorage;
     HistoryMessagesStorage *StatusStorage;
-    HistoryMessagesStorage *SmsStorage;
     HistoryMessagesStorage **SearchedStorage;
 
     QSplitter *Splitter;
@@ -62,9 +61,6 @@ class SearchTab : public HistoryTab
 
     QRadioButton *SearchInStatuses;
     HistoryTalkableComboBox *SelectStatusBuddy;
-
-    QRadioButton *SearchInSmses;
-    HistoryTalkableComboBox *SelectSmsRecipient;
 
     QCheckBox *SearchByDate;
     QDateEdit *FromDate;
@@ -93,7 +89,6 @@ public:
 
     void setHistoryChatStorage(HistoryMessagesStorage *storage);
     void setStatusStorage(HistoryMessagesStorage *storage);
-    void setSmsStorage(HistoryMessagesStorage *storage);
 
     virtual QList<int> sizes() const;
     virtual void setSizes(const QList<int> &newSizes);

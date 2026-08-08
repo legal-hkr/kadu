@@ -55,31 +55,24 @@ public:
 
     virtual QFuture<QVector<Talkable>> chats() = 0;
     virtual QFuture<QVector<Talkable>> statusBuddies() = 0;
-    virtual QFuture<QVector<Talkable>> smsRecipients() = 0;
 
     virtual QFuture<QVector<HistoryQueryResult>> chatDates(const HistoryQuery &historyQuery) = 0;
     virtual QFuture<QVector<HistoryQueryResult>> statusDates(const HistoryQuery &historyQuery) = 0;
-    virtual QFuture<QVector<HistoryQueryResult>> smsRecipientDates(const HistoryQuery &historyQuery) = 0;
 
     virtual QFuture<SortedMessages> messages(const HistoryQuery &historyQuery) = 0;
     virtual QFuture<SortedMessages> statuses(const HistoryQuery &historyQuery) = 0;
-    virtual QFuture<SortedMessages> smses(const HistoryQuery &historyQuery) = 0;
 
     virtual void appendMessage(const Message &message) = 0;
     virtual void appendStatus(
         const Contact &contact, const Status &status, const QDateTime &time = QDateTime::currentDateTime()) = 0;
-    virtual void appendSms(
-        const QString &recipient, const QString &content, const QDateTime &time = QDateTime::currentDateTime()) = 0;
     virtual void sync() = 0;
 
     virtual void clearChatHistory(const Talkable &talkable, const QDate &date = QDate()) = 0;
-    virtual void clearSmsHistory(const Talkable &talkable, const QDate &date = QDate()) = 0;
     virtual void clearStatusHistory(const Talkable &talkable, const QDate &date = QDate()) = 0;
     virtual void deleteHistory(const Talkable &talkable) = 0;
 
     virtual HistoryMessagesStorage *chatStorage() = 0;
     virtual HistoryMessagesStorage *statusStorage() = 0;
-    virtual HistoryMessagesStorage *smsStorage() = 0;
 };
 
 #endif   // HISTORY_STORAGE_H

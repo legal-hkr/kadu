@@ -32,7 +32,7 @@
  * @class HistoryTab
  * @short Widget that provides tab content for history window.
  *
- * Each HistoryTab widget can display different view of history - like chat, status or smses history,
+ * Each HistoryTab widget can display different view of history - like chat or status history,
  * a search view or anything else. Only common think is tab layout - one widget on the left and two
  * widgets on a right separated by splitters. To maintain coherent look of all tabs, each tab must
  * implement two methods to setting and getting sizez of these splitters - size() and setSize()
