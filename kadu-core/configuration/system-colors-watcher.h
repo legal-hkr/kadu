@@ -48,6 +48,4 @@ private slots:
 
 private:
     bool m_pending;
-
-    void reapplyStyleSheet();
 };

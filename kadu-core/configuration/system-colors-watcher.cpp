@@ -25,7 +25,6 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QEvent>
 #include <QtCore/QTimer>
-#include <QtWidgets/QApplication>
 
 SystemColorsWatcher::SystemColorsWatcher(QObject *parent) : QObject{parent}, m_pending{false}
 {
@@ -37,30 +36,10 @@ SystemColorsWatcher::~SystemColorsWatcher()
 {
 }
 
-void SystemColorsWatcher::reapplyStyleSheet()
-{
-    auto *application = qobject_cast<QApplication *>(QCoreApplication::instance());
-    if (!application)
-        return;
-
-    // An application carrying a style sheet has every widget drawn through the style sheet style,
-    // and that one works its colours out when the sheet is set and then keeps them: measured on a
-    // menu bar and a tool bar, their palettes sat at the colours of the first palette they ever
-    // saw and did not move again, however many times the desktop changed. Setting the same sheet
-    // again is what makes them look afresh.
-    auto const styleSheet = application->styleSheet();
-    if (styleSheet.isEmpty())
-        return;
-
-    application->setStyleSheet(QString{});
-    application->setStyleSheet(styleSheet);
-}
-
 void SystemColorsWatcher::colorsChanged()
 {
     m_pending = false;
 
-    reapplyStyleSheet();
     ConfigurationAwareObject::notifyAll();
 }
 
