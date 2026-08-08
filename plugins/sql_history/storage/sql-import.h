@@ -88,8 +88,9 @@ private:
     void initKaduSchemaTable(QSqlDatabase &database);
     void initKaduMessagesTable(QSqlDatabase &database);
     void initKaduStatusesTable(QSqlDatabase &database);
-    void initKaduSmsTable(QSqlDatabase &database);
     void initIndexes(QSqlDatabase &database);
+
+    void dropKaduSmsTable(QSqlDatabase &database);
 
     void initV4Tables(QSqlDatabase &database);
     void initV4Indexes(QSqlDatabase &database);
