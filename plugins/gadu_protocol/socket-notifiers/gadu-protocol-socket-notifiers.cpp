@@ -254,12 +254,12 @@ void GaduProtocolSocketNotifiers::socketEvent()
 
     case GG_EVENT_PUBDIR50_SEARCH_REPLY:
         m_protocol->CurrentSearchService->handleEventPubdir50SearchReply(e);
-    //			break;
+        [[fallthrough]];   // a search reply is read as a directory read as well
 
     case GG_EVENT_PUBDIR50_READ:
         m_protocol->CurrentPersonalInfoService->handleEventPubdir50Read(e);
         m_protocol->CurrentContactPersonalInfoService->handleEventPubdir50Read(e);
-    //			break;
+        [[fallthrough]];   // and so is a directory read
 
     case GG_EVENT_PUBDIR50_WRITE:
         m_protocol->CurrentPersonalInfoService->handleEventPubdir50Write(e);
