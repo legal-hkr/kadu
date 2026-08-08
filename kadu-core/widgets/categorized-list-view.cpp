@@ -1081,7 +1081,7 @@ void CategorizedListView::paintEvent(QPaintEvent *event)
                 option.state |= (index == d->hoveredIndex) ? QStyle::State_MouseOver : QStyle::State_None;
             }
 
-            itemDelegate(index)->paint(&p, option, index);
+            itemDelegateForIndex(index)->paint(&p, option, index);
 
             ++i;
         }
@@ -1172,13 +1172,13 @@ void CategorizedListView::setSelection(const QRect &rect, QItemSelectionModel::S
 void CategorizedListView::mouseMoveEvent(QMouseEvent *event)
 {
     QListView::mouseMoveEvent(event);
-    d->hoveredIndex = indexAt(event->pos());
+    d->hoveredIndex = indexAt(event->position().toPoint());
     const SelectionMode itemViewSelectionMode = selectionMode();
 
     if (state() == DragSelectingState && isSelectionRectVisible() && itemViewSelectionMode != SingleSelection &&
         itemViewSelectionMode != NoSelection)
     {
-        QRect rect(d->pressedPosition, event->pos() + QPoint(horizontalOffset(), verticalOffset()));
+        QRect rect(d->pressedPosition, event->position().toPoint() + QPoint(horizontalOffset(), verticalOffset()));
         rect = rect.normalized();
         update(rect.united(d->rubberBandRect));
         d->rubberBandRect = rect;
@@ -1253,7 +1253,7 @@ void CategorizedListView::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        d->pressedPosition = event->pos();
+        d->pressedPosition = event->position().toPoint();
         d->pressedPosition.rx() += horizontalOffset();
         d->pressedPosition.ry() += verticalOffset();
     }
@@ -1371,7 +1371,7 @@ void CategorizedListView::startDrag(Qt::DropActions supportedActions)
 void CategorizedListView::dragMoveEvent(QDragMoveEvent *event)
 {
     QListView::dragMoveEvent(event);
-    d->hoveredIndex = indexAt(event->pos());
+    d->hoveredIndex = indexAt(event->position().toPoint());
 }
 
 void CategorizedListView::dragEnterEvent(QDragEnterEvent *event)

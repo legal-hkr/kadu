@@ -45,7 +45,7 @@ void StopSearchAction::actionInstanceCreated(Action *action)
 
 void StopSearchAction::actionTriggered(QAction *sender, bool)
 {
-    auto search = qobject_cast<SearchWindow *>(sender->parentWidget());
+    auto search = qobject_cast<SearchWindow *>(sender->parent());
     if (search)
         search->stopSearch();
 }

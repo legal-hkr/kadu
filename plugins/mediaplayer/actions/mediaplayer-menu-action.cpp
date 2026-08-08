@@ -55,11 +55,16 @@ void MediaplayerMenuAction::actionTriggered(QAction *sender, bool)
     auto chatWidget = chatEditBox->chatWidget();
     if (chatWidget)
     {
-        auto widgets = sender->associatedWidgets();
-        if (widgets.isEmpty())
+        // associatedWidgets() went in Qt6; what is left answers with every object the action was
+        // given to. The last widget among them is the one the menu should drop from, as before.
+        QWidget *widget = nullptr;
+        for (auto *object : sender->associatedObjects())
+            if (auto *candidate = qobject_cast<QWidget *>(object))
+                widget = candidate;
+
+        if (!widget)
             return;
 
-        auto widget = widgets[widgets.size() - 1];
         m_mediaPlayer->menu()->popup(widget->mapToGlobal(QPoint(0, widget->height())));
     }
 }

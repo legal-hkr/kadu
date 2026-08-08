@@ -54,7 +54,7 @@ void ShowMyselfAction::setKaduWindowService(KaduWindowService *kaduWindowService
 
 void ShowMyselfAction::actionInstanceCreated(Action *action)
 {
-    auto window = qobject_cast<MainWindow *>(action->parentWidget());
+    auto window = qobject_cast<MainWindow *>(action->parent());
     if (!window)
         return;
     if (!window->talkableProxyModel())
@@ -71,7 +71,7 @@ void ShowMyselfAction::actionInstanceCreated(Action *action)
 
 void ShowMyselfAction::actionTriggered(QAction *action, bool toggled)
 {
-    auto window = qobject_cast<MainWindow *>(action->parentWidget());
+    auto window = qobject_cast<MainWindow *>(action->parent());
     if (!window)
         return;
     if (!window->talkableProxyModel())

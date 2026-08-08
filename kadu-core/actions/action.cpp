@@ -33,6 +33,8 @@
 #include "icons/kadu-icon.h"
 
 #include "action.h"
+
+#include <QtWidgets/QWidget>
 #include "action.moc"
 
 Action::Action(ActionDescription *description, ActionContext *context, QObject *parent)
@@ -122,4 +124,9 @@ void disableEmptyContacts(Action *action)
 void disableNoChat(Action *action)
 {
     action->setEnabled(action->context()->chat() && !action->context()->buddies().isAnyTemporary());
+}
+
+QWidget *Action::parentWidget() const
+{
+    return qobject_cast<QWidget *>(parent());
 }

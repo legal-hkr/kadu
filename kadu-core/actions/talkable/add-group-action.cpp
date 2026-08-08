@@ -48,6 +48,6 @@ void AddGroupAction::setInjectedFactory(InjectedFactory *injectedFactory)
 
 void AddGroupAction::actionTriggered(QAction *sender, bool)
 {
-    auto window = m_injectedFactory->makeInjected<GroupEditWindow>(Group::null, sender->parentWidget());
+    auto window = m_injectedFactory->makeInjected<GroupEditWindow>(Group::null, qobject_cast<QWidget *>(sender->parent()));
     window->show();
 }

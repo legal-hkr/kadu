@@ -419,9 +419,9 @@ void TabWidget::dropEvent(QDropEvent *e)
     // Jezeli dnd pochodzil z userboxa probujemy dodac nowa karte
     if (qobject_cast<FilteredTreeView *>(e->source()) && false) /*UlesDrag::decode(e, ules))*/
     {
-        if (tabBar()->tabAt(e->pos()) != -1)
+        if (tabBar()->tabAt(e->position().toPoint()) != -1)
             // Jezeli w miejscu upuszczenia jest karta, dodajemy na jej pozycji
-            emit openTab(ules, tabBar()->tabAt(e->pos()));
+            emit openTab(ules, tabBar()->tabAt(e->position().toPoint()));
         else
             // Jezeli nie na koncu tabbara
             emit openTab(ules, -1);

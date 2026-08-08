@@ -63,11 +63,15 @@ void MoreActionsAction::actionTriggered(QAction *sender, bool toggled)
     if (!chatWidget)
         return;
 
-    auto widgets = sender->associatedWidgets();
-    if (widgets.isEmpty())
-        return;
+    // associatedWidgets() went in Qt6; what is left answers with every object the action was given
+    // to, widgets among them. The last widget is the one wanted, as before.
+    QWidget *widget = nullptr;
+    for (auto *object : sender->associatedObjects())
+        if (auto *candidate = qobject_cast<QWidget *>(object))
+            widget = candidate;
 
-    auto widget = widgets.at(widgets.size() - 1);
+    if (!widget)
+        return;
 
     auto parent = widget->parentWidget();
     while (nullptr != parent && nullptr == qobject_cast<ToolBar *>(parent))

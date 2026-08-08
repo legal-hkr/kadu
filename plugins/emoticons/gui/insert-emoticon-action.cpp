@@ -74,7 +74,13 @@ void InsertEmoticonAction::actionTriggered(QAction *sender, bool toggled)
     if (!chatEditBox)
         return;
 
-    QList<QWidget *> widgets = sender->associatedWidgets();
+    // associatedWidgets() went in Qt6; what is left answers with every object the action was given
+    // to, and only the widgets among them are of any use here.
+    QList<QWidget *> widgets;
+    for (auto *object : sender->associatedObjects())
+        if (auto *widget = qobject_cast<QWidget *>(object))
+            widgets.append(widget);
+
     if (widgets.isEmpty())
         return;
 

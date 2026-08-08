@@ -197,7 +197,7 @@ void EmoticonSelector::emoticonClickedSlot(const Emoticon &emoticon)
 bool EmoticonSelector::event(QEvent *e)
 {
     if (e->type() == QEvent::MouseButtonPress &&
-        !rect().contains(static_cast<QMouseEvent *>(e)->globalPos() - mapToGlobal(QPoint(0, 0))))
+        !rect().contains(static_cast<QMouseEvent *>(e)->globalPosition().toPoint() - mapToGlobal(QPoint(0, 0))))
     {
         close();
         return true;

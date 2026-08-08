@@ -378,7 +378,7 @@ void ToolBar::dropEvent(QDropEvent *event)
         return;
     }
 
-    QAction *before = findActionToDropBefore(event->pos());
+    QAction *before = findActionToDropBefore(event->position().toPoint());
 
     if (source != this)
     {

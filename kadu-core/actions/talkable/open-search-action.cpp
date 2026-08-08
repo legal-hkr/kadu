@@ -55,7 +55,7 @@ void OpenSearchAction::actionInstanceCreated(Action *action)
 
 void OpenSearchAction::actionTriggered(QAction *sender, bool)
 {
-    auto window = m_injectedFactory->makeInjected<SearchWindow>(sender->parentWidget());
+    auto window = m_injectedFactory->makeInjected<SearchWindow>(qobject_cast<QWidget *>(sender->parent()));
     window->show();
 }
 

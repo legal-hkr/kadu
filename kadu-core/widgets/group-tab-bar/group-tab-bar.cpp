@@ -275,7 +275,7 @@ void GroupTabBar::dropEvent(QDropEvent *event)
     auto chats = m_chatListMimeDataService->fromMimeData(event->mimeData());
 
     QApplication::setOverrideCursor(Qt::ArrowCursor);
-    int tabIndex = tabAt(event->pos());
+    int tabIndex = tabAt(event->position().toPoint());
 
     if (tabIndex == -1)
     {

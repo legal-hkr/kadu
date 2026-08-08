@@ -104,7 +104,7 @@ QString SingleApplication::normalizedPrefix(bool useOnlyLastSection, const QStri
 QString SingleApplication::socketName(const QString &prefix, const QString &applicationId)
 {
     auto idc = applicationId.toUtf8();
-    auto idNum = qChecksum(idc.constData(), static_cast<uint>(idc.size()));
+    auto idNum = qChecksum(QByteArrayView{idc});
     auto result = QString(QStringLiteral("qtsingleapp-") + prefix + QLatin1Char{'-'} + QString::number(idNum, 16));
 
 #if defined(Q_OS_WIN)

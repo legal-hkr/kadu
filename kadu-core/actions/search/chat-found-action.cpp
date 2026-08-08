@@ -47,7 +47,7 @@ void ChatFoundAction::actionInstanceCreated(Action *action)
 
 void ChatFoundAction::actionTriggered(QAction *sender, bool)
 {
-    auto search = qobject_cast<SearchWindow *>(sender->parentWidget());
+    auto search = qobject_cast<SearchWindow *>(sender->parent());
     if (search)
         search->chatFound();
 }

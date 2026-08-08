@@ -61,7 +61,7 @@ void AttachTabAction::actionInstanceCreated(Action *action)
 
 void AttachTabAction::actionTriggered(QAction *sender, bool toggled)
 {
-    auto chatEditBox = qobject_cast<ChatEditBox *>(sender->parentWidget());
+    auto chatEditBox = qobject_cast<ChatEditBox *>(sender->parent());
     if (!chatEditBox)
         return;
 

@@ -60,6 +60,15 @@ class KADUAPI Action : public QAction
     Q_OBJECT
 
 public:
+
+    /**
+     * @short The widget this action was created for.
+     *
+     * QAction offered this until Qt6 took it away, and Kadu asks for it in some forty places, all
+     * meaning the same thing: the window or the bar the action belongs to. Kept here rather than
+     * spelled out at every one of them.
+     */
+    QWidget *parentWidget() const;
     /**
      * @short Creates new Action instance based on ActionDescription with given ActionContext.
      * @param description description of this action

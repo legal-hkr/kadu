@@ -73,7 +73,7 @@ EmoticonSelectorButtonPopup::~EmoticonSelectorButtonPopup()
 void EmoticonSelectorButtonPopup::mouseMoveEvent(QMouseEvent *e)
 {
     QLabel::mouseMoveEvent(e);
-    if (!rect().contains(e->globalPos() - mapToGlobal(QPoint(0, 0))))
+    if (!rect().contains(e->globalPosition().toPoint() - mapToGlobal(QPoint(0, 0))))
         close();
 }
 
