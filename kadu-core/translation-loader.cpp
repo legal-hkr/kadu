@@ -46,23 +46,24 @@ void TranslationLoader::setPathsProvider(PathsProvider *pathsProvider)
 
 void TranslationLoader::init()
 {
-    auto lang = m_configuration->deprecatedApi()->readEntry("General", "Language", QLocale::system().name().left(2));
+    auto const lang =
+        m_configuration->deprecatedApi()->readEntry("General", "Language", QLocale::system().name().left(2));
+    auto const path = m_pathsProvider->dataPath() + QStringLiteral("translations");
 
-    m_qt.load("qt_" + lang, m_pathsProvider->dataPath() + QStringLiteral("translations"));
-    m_qtbase.load("qtbase_" + lang, m_pathsProvider->dataPath() + QStringLiteral("translations"));
-    m_qtdeclarative.load("qtdeclarative_" + lang, m_pathsProvider->dataPath() + QStringLiteral("translations"));
-    m_qtmultimedia.load("qtmultimedia_" + lang, m_pathsProvider->dataPath() + QStringLiteral("translations"));
-    m_qtscript.load("qtscript_" + lang, m_pathsProvider->dataPath() + QStringLiteral("translations"));
-    m_qtxmlpatterns.load("qtxmlpatterns_" + lang, m_pathsProvider->dataPath() + QStringLiteral("translations"));
-    m_kadu.load("kadu_" + lang, m_pathsProvider->dataPath() + QStringLiteral("translations"));
+    // Installed only where there is something to install. A language Qt has no translation for is
+    // not a fault -- that module simply stays in English -- but an empty translator still gets asked
+    // about every string that is ever displayed, and load() now insists that its answer be read.
+    auto const install = [&lang, &path](QTranslator &translator, const QString &prefix)
+    {
+        if (translator.load(prefix + lang, path))
+            QCoreApplication::installTranslator(&translator);
+    };
 
-    QCoreApplication::installTranslator(&m_qt);
-    QCoreApplication::installTranslator(&m_qtbase);
-    QCoreApplication::installTranslator(&m_qtdeclarative);
-    QCoreApplication::installTranslator(&m_qtmultimedia);
-    QCoreApplication::installTranslator(&m_qtscript);
-    QCoreApplication::installTranslator(&m_qtxmlpatterns);
-    QCoreApplication::installTranslator(&m_kadu);
+    install(m_qt, QStringLiteral("qt_"));
+    install(m_qtbase, QStringLiteral("qtbase_"));
+    install(m_qtdeclarative, QStringLiteral("qtdeclarative_"));
+    install(m_qtmultimedia, QStringLiteral("qtmultimedia_"));
+    install(m_kadu, QStringLiteral("kadu_"));
 }
 
 void TranslationLoader::done()
@@ -71,7 +72,5 @@ void TranslationLoader::done()
     QCoreApplication::removeTranslator(&m_qtbase);
     QCoreApplication::removeTranslator(&m_qtdeclarative);
     QCoreApplication::removeTranslator(&m_qtmultimedia);
-    QCoreApplication::removeTranslator(&m_qtscript);
-    QCoreApplication::removeTranslator(&m_qtxmlpatterns);
     QCoreApplication::removeTranslator(&m_kadu);
 }
