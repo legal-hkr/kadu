@@ -22,9 +22,15 @@
 #include "system-colors-watcher.h"
 #include "system-colors-watcher.moc"
 
+#include "kadu-config.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QEvent>
 #include <QtCore/QTimer>
+
+#if HAVE_KCONFIG
+#include <KSharedConfig>
+#endif
 
 SystemColorsWatcher::SystemColorsWatcher(QObject *parent) : QObject{parent}, m_pending{false}
 {
@@ -43,8 +49,30 @@ void SystemColorsWatcher::colorsChanged()
     ConfigurationAwareObject::notifyAll();
 }
 
+void SystemColorsWatcher::rereadDesktopConfiguration()
+{
+#if HAVE_KCONFIG
+    // Read here rather than a turn later, and before returning: the style is listening for this
+    // same announcement, and filters are called in the reverse of the order they were installed --
+    // this one goes on last and so is heard first. The style then works its colours out from the
+    // configuration as it now stands.
+    //
+    // Without this the menu bar and the tool bars keep the colours the desktop had when Kadu
+    // started. Breeze gives those two a palette of their own, taken from the colours a scheme
+    // names for a window's header, and reads them through the configuration file named after the
+    // application -- which does not notice kdeglobals being rewritten underneath it. Measured on a
+    // bare Qt window: with no application name it follows the desktop, and adding one line,
+    // setApplicationName(), is enough to freeze it. Reported to the Breeze authors; until it is
+    // fixed there, every Qt6 program with a name and a menu bar needs this.
+    KSharedConfig::openConfig()->reparseConfiguration();
+#endif
+}
+
 bool SystemColorsWatcher::eventFilter(QObject *watched, QEvent *event)
 {
+    if (event->type() == QEvent::ApplicationPaletteChange)
+        rereadDesktopConfiguration();
+
     if (event->type() == QEvent::ApplicationPaletteChange && !m_pending)
     {
         // Answered on the next turn of the event loop rather than here. A desktop changing its
