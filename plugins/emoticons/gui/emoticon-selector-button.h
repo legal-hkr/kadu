@@ -55,13 +55,19 @@ class EmoticonSelectorButton : public QLabel
     Emoticon DisplayEmoticon;
     EmoticonPathProvider *PathProvider;
     qreal Scale;
+    QPixmap StillPicture;
     QMovie *Movie;
+    bool MovingOnlyWhilePointed;
+
+    void startMoving(bool onlyWhilePointed);
 
 private slots:
     void showFrame();
 
 protected:
-    void mouseMoveEvent(QMouseEvent *e);
+    void enterEvent(QEnterEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 public:
     /**

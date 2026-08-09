@@ -26,7 +26,6 @@ set (SOURCES
 	gui/emoticon-clipboard-html-transformer.cpp
 	gui/emoticon-selector.cpp
 	gui/emoticon-selector-button.cpp
-	gui/emoticon-selector-button-popup.cpp
 	gui/insert-emoticon-action.cpp
 
 	theme/emoticon-theme.cpp
