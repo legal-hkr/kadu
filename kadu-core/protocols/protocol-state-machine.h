@@ -219,6 +219,8 @@ class ProtocolStateMachine : public QStateMachine
     QState *LoggedInState;
     QState *WaitForSslErrorResult;
 
+    void startDelayTimer();
+
 private slots:
     INJEQT_SET void setNetworkManager(NetworkManager *networkManager);
     INJEQT_INIT void init();

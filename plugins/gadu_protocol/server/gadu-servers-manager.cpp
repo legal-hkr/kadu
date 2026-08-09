@@ -1,7 +1,7 @@
 /*
  * %kadu copyright begin%
- * Copyright 2011, 2012 Bartosz Brachaczek (b.brachaczek@gmail.com)
- * Copyright 2011, 2013, 2014 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
+ * Copyright 2011, 2013 Bartosz Brachaczek (b.brachaczek@gmail.com)
+ * Copyright 2011, 2012, 2013 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
  * %kadu copyright end%
  *
  * This program is free software; you can redistribute it and/or
@@ -22,7 +22,26 @@
 
 #include "gadu-servers-manager.h"
 
-GaduServersManager::GaduServersManager(QObject *parent) : QObject{parent}
+namespace
+{
+const int MaxDirectAttempts = 3;
+const int MaxHubAttempts = 4;
+const int DirectAttemptDelay = 5 * 1000;
+const int HubAttemptDelay = 15 * 1000;
+
+/**
+ * @short The entry standing for the hub rather than for a server.
+ *
+ * An address of zero is how libgadu is told to go and ask appmsg.gadu-gadu.pl which server is up,
+ * instead of being handed one to connect to.
+ */
+GaduServersManager::GaduServer hub()
+{
+    return {QHostAddress{(quint32)0}, 0};
+}
+}
+
+GaduServersManager::GaduServersManager(QObject *parent) : QObject{parent}, DirectAttempts{0}, HubAttempts{0}
 {
 }
 
@@ -30,60 +49,45 @@ GaduServersManager::~GaduServersManager()
 {
 }
 
-namespace
+bool GaduServersManager::isRetryingLastWorkingServer() const
 {
-/**
- * @short Whether this entry stands for the hub rather than for a server.
- *
- * An address of zero is how libgadu is told to go and ask the hub which server is up, instead of
- * being handed one to connect to.
- */
-bool isHub(const GaduServersManager::GaduServer &server)
-{
-    return server.first.isNull() || 0 == server.first.toIPv4Address();
-}
-}
-
-void GaduServersManager::init()
-{
-    // The hub, and nothing besides. Sixteen addresses used to stand here too, 91.214.237.108 up to
-    // 123, and not one of them answers any more -- every attempt on them runs out its clock, and
-    // the clock is capped at fifteen seconds each. Asking all sixteen before the hub is asked again
-    // is what a connection cut while the machine slept looked like from the outside: an account
-    // that blinks and never comes back.
-    //
-    // The hub is asked afresh every time, which is what the first connection after starting does --
-    // and that one has always worked.
-    GoodServers << GaduServer{QHostAddress{(quint32)0}, 0};
+    return !LastWorkingServer.first.isNull() && DirectAttempts < MaxDirectAttempts;
 }
 
 GaduServersManager::GaduServer GaduServersManager::getServer()
 {
-    if (GoodServers.isEmpty())
-    {
-        GoodServers = BadServers;
-        BadServers.clear();
-        return GaduServer(QHostAddress(), 0);
-    }
+    if (!hasAnotherAttempt())
+        startOver();
 
-    if (GoodServers[0].second != 443 && GoodServers[0].second != 0)
-    {
-        markServerAsBad(GoodServers[0]);
-        return getServer();
-    }
-
-    return GoodServers[0];
+    return isRetryingLastWorkingServer() ? LastWorkingServer : hub();
 }
 
-void GaduServersManager::markServerAsBad(GaduServersManager::GaduServer server)
+void GaduServersManager::connectionSucceeded(const GaduServersManager::GaduServer &server)
 {
-    // The hub cannot be a bad server because it is not a server: it is the thing that says which
-    // server to use. It was being thrown out on the first failure all the same, including failures
-    // that say nothing whatever about it -- a connection cut while the machine slept is not the
-    // hub's doing -- and everything after that went to the wrong addresses.
-    if (isHub(server))
-        return;
+    LastWorkingServer = server;
+    startOver();
+}
 
-    GoodServers.removeAll(server);
-    BadServers.append(server);
+void GaduServersManager::attemptFailed()
+{
+    if (isRetryingLastWorkingServer())
+        ++DirectAttempts;
+    else
+        ++HubAttempts;
+}
+
+bool GaduServersManager::hasAnotherAttempt() const
+{
+    return isRetryingLastWorkingServer() || HubAttempts < MaxHubAttempts;
+}
+
+int GaduServersManager::delayBeforeNextAttempt() const
+{
+    return isRetryingLastWorkingServer() ? DirectAttemptDelay : HubAttemptDelay;
+}
+
+void GaduServersManager::startOver()
+{
+    DirectAttempts = 0;
+    HubAttempts = 0;
 }

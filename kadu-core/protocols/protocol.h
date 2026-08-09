@@ -124,6 +124,18 @@ public:
     // method called by user
     void setStatus(Status status, StatusChangeSource source);
     Status status() const;
+    /**
+     * @short How long to wait before trying to log in again, in milliseconds.
+     *
+     * Asked after a login has failed and before the next one is begun. How long is worth waiting
+     * depends on what has already been tried and how often, which is something only the protocol
+     * knows; the default is the half second this used to be for everyone whatever had happened.
+     */
+    virtual int reconnectDelay() const
+    {
+        return 500;
+    }
+
     virtual int maxDescriptionLength()
     {
         return -1;

@@ -374,6 +374,13 @@ void GaduProtocol::login()
 
 void GaduProtocol::connectedToServer()
 {
+    // Remembered so that a connection cut later can be picked up where it was working, without the
+    // round trip through the hub first. libgadu keeps the address it connected to in the session,
+    // in network order, and the port as the entry of the pair it settled on.
+    if (GaduSession)
+        m_gaduServersManager->connectionSucceeded(
+            {QHostAddress{ntohl(GaduSession->server_addr)}, GaduSession->connect_port[GaduSession->connect_index]});
+
     PingTimer = new QTimer(0);
     connect(PingTimer, SIGNAL(timeout()), this, SLOT(everyMinuteActions()));
     PingTimer->start(60000);
@@ -569,9 +576,16 @@ void GaduProtocol::socketConnFailed(GaduError error)
 
     if (!GaduProtocolHelper::isConnectionErrorFatal(error))
     {
-        m_gaduServersManager->markServerAsBad(ActiveServer);
+        m_gaduServersManager->attemptFailed();
+
         logout();
-        connectionError();
+
+        // Out of attempts. The account settles at not connected instead of going round for ever,
+        // and waits to be asked again.
+        if (m_gaduServersManager->hasAnotherAttempt())
+            connectionError();
+        else
+            connectionClosed();
     }
     else
     {
@@ -583,6 +597,11 @@ void GaduProtocol::socketConnFailed(GaduError error)
 void GaduProtocol::disconnectedFromServer()
 {
     connectionClosed();
+}
+
+int GaduProtocol::reconnectDelay() const
+{
+    return m_gaduServersManager->delayBeforeNextAttempt();
 }
 
 QString GaduProtocol::statusPixmapPath()

@@ -222,6 +222,8 @@ public:
 
     virtual void changePrivateMode();
 
+    virtual int reconnectDelay() const;
+
     virtual QString statusPixmapPath();
 
     virtual int maxDescriptionLength();
