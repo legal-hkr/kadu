@@ -42,7 +42,6 @@ public:
     void markServerAsBad(GaduServer server);
 
 private:
-    QList<GaduServer> AllServers;
     QList<GaduServer> GoodServers;
     QList<GaduServer> BadServers;
 
