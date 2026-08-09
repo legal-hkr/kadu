@@ -33,13 +33,14 @@
 
 #include "emoticon.h"
 #include "expander/emoticon-path-provider.h"
+#include "gui/emoticon-image.h"
 
 #include "emoticon-selector-button-popup.h"
 #include "emoticon-selector-button-popup.moc"
 
 EmoticonSelectorButtonPopup::EmoticonSelectorButtonPopup(
-    const Emoticon &emoticon, EmoticonPathProvider *pathProvider, QWidget *parent)
-        : QLabel(parent, Qt::Popup), DisplayEmoticon(emoticon)
+    const Emoticon &emoticon, qreal scale, EmoticonPathProvider *pathProvider, QWidget *parent)
+        : QLabel(parent, Qt::Popup), DisplayEmoticon(emoticon), Movie(nullptr), Scale(scale)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setMinimumSize(parent->sizeHint());
@@ -54,10 +55,14 @@ EmoticonSelectorButtonPopup::EmoticonSelectorButtonPopup(
         "}";
     setStyleSheet(style);
 
-    QMovie *movie = new QMovie(this);
-    movie->setFileName(pathProvider->emoticonPath(emoticon));
-    setMovie(movie);
-    movie->start();
+    // The frames are put on by hand rather than by handing the film to the label, so that each one
+    // goes through the same rule the grid underneath is drawn by. Given to the label directly they
+    // arrive at one screen pixel to a picture pixel, which on a magnified screen means the emoticon
+    // stays the size it was and turns soft the moment the pointer reaches it.
+    Movie = new QMovie(this);
+    Movie->setFileName(pathProvider->emoticonPath(emoticon));
+    connect(Movie, &QMovie::frameChanged, this, &EmoticonSelectorButtonPopup::showFrame);
+    Movie->start();
 
     // center on parent
     QPoint newPos = parent->mapToGlobal(QPoint(0, 0));
@@ -68,6 +73,11 @@ EmoticonSelectorButtonPopup::EmoticonSelectorButtonPopup(
 
 EmoticonSelectorButtonPopup::~EmoticonSelectorButtonPopup()
 {
+}
+
+void EmoticonSelectorButtonPopup::showFrame()
+{
+    setPixmap(emoticonForScreen(Movie->currentPixmap(), Scale, devicePixelRatio()));
 }
 
 void EmoticonSelectorButtonPopup::mouseMoveEvent(QMouseEvent *e)

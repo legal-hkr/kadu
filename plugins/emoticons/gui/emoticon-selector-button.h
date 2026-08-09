@@ -52,6 +52,7 @@ class EmoticonSelectorButton : public QLabel
 
     Emoticon DisplayEmoticon;
     EmoticonPathProvider *PathProvider;
+    qreal Scale;
 
 protected:
     void mouseMoveEvent(QMouseEvent *e);

@@ -35,6 +35,8 @@
 
 #include "emoticon.h"
 
+class QMovie;
+
 class EmoticonPathProvider;
 
 /**
@@ -53,6 +55,11 @@ class EmoticonSelectorButtonPopup : public QLabel
     Q_OBJECT
 
     Emoticon DisplayEmoticon;
+    QMovie *Movie;
+    qreal Scale;
+
+private slots:
+    void showFrame();
 
 protected:
     void mouseMoveEvent(QMouseEvent *e);
@@ -62,11 +69,12 @@ public:
     /**
      * @short Create new EmoticonSelectorButtonPopup widget.
      * @param emoticon emoticon to display
+     * @param scale what the whole set has to be scaled by, one meaning left at its own size
      * @param pathProvider EmoticonPathProvider used to get image file name for emoticon
      * @param parent parent widget
      */
     explicit EmoticonSelectorButtonPopup(
-        const Emoticon &emoticon, EmoticonPathProvider *pathProvider, QWidget *parent = nullptr);
+        const Emoticon &emoticon, qreal scale, EmoticonPathProvider *pathProvider, QWidget *parent = nullptr);
     virtual ~EmoticonSelectorButtonPopup();
 
 signals:

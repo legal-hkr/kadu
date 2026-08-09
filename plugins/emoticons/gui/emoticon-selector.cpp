@@ -43,6 +43,7 @@
 #include <algorithm>
 
 #include "emoticon.h"
+#include "expander/emoticon-path-provider.h"
 #include "gui/emoticon-selector-button.h"
 
 #include "emoticon-selector.h"
@@ -113,13 +114,19 @@ void EmoticonSelector::addEmoticonButtons(const QVector<Emoticon> &emoticons, QW
 
     // Read here, once, rather than a second time inside each button: how any one of them is to be
     // drawn depends on how big the set is as a whole, so all of them have to be measured first.
+    //
+    // The picture read is the one the pointer will animate, not the still version kept beside it.
+    // They are not always the same drawing: in the theme Kadu ships, forty-one of a hundred and
+    // forty-four pairs differ, mostly in the size of the canvas -- the still <urodziny> is twenty by
+    // twenty where the moving one is twenty-seven by twenty-eight. Showing one and then the other
+    // made the picture jump the moment the pointer arrived.
     QVector<QPixmap> images;
     QVector<int> heights;
     images.reserve(count);
     heights.reserve(count);
     for (auto const &emoticon : emoticons)
     {
-        images.append(QPixmap{emoticon.staticFilePath()});
+        images.append(QPixmap{PathProvider->emoticonPath(emoticon)});
         heights.append(images.constLast().height());
     }
 

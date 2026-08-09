@@ -32,51 +32,17 @@
 
 #include "configuration/configuration.h"
 #include "configuration/deprecated-configuration-api.h"
+#include "gui/emoticon-image.h"
 #include "gui/emoticon-selector-button-popup.h"
 
 #include "emoticon-selector-button.h"
 #include "emoticon-selector-button.moc"
 
-namespace
-{
-/**
- * @short The picture as it should appear on this screen.
- *
- * Left at its own size -- which is what a scale of one means -- every pixel of the picture is given
- * a whole square of screen pixels, as many across as the screen puts into a logical one, and no
- * colour is invented in between. That is the rule the emoticons in the conversation itself are
- * drawn by, and these are the same pictures.
- *
- * Every one of them used to be brought to eighteen logical units high whatever it started as. The
- * theme Kadu ships is twenty, so the pictures were being shrunk by nine tenths and then, on a
- * magnified screen, stretched back out again -- twice through an interpolation that has nothing to
- * work with at that size, which is why they came out muddy.
- *
- * Only a set whose emoticons are bigger than a selector has room for is scaled at all, and there
- * the scaling is downwards, which is where a smooth transformation earns its keep.
- */
-QPixmap forScreen(const QPixmap &image, qreal scale, qreal ratio)
-{
-    if (qFuzzyCompare(scale, qreal(1)))
-    {
-        auto const multiple = qMax(1, qRound(ratio));
-        auto scaled = image.scaled(image.size() * multiple, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-        scaled.setDevicePixelRatio(multiple);
-        return scaled;
-    }
-
-    auto scaled =
-        image.scaled((QSizeF{image.size()} * scale * ratio).toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    scaled.setDevicePixelRatio(ratio);
-    return scaled;
-}
-}
-
 EmoticonSelectorButton::EmoticonSelectorButton(
     const Emoticon &emoticon, const QPixmap &image, qreal scale, EmoticonPathProvider *pathProvider, QWidget *parent)
-        : QLabel(parent), DisplayEmoticon(emoticon), PathProvider(pathProvider)
+        : QLabel(parent), DisplayEmoticon(emoticon), PathProvider(pathProvider), Scale(scale)
 {
-    setPixmap(forScreen(image, scale, devicePixelRatio()));
+    setPixmap(emoticonForScreen(image, Scale, devicePixelRatio()));
     setMouseTracking(true);
     setContentsMargins(4, 4, 4, 4);
     setFixedSize(sizeHint());
@@ -90,7 +56,8 @@ void EmoticonSelectorButton::mouseMoveEvent(QMouseEvent *e)
 {
     QLabel::mouseMoveEvent(e);
 
-    EmoticonSelectorButtonPopup *popup = new EmoticonSelectorButtonPopup(DisplayEmoticon, PathProvider, this);
+    EmoticonSelectorButtonPopup *popup =
+        new EmoticonSelectorButtonPopup(DisplayEmoticon, Scale, PathProvider, this);
     connect(popup, SIGNAL(clicked(Emoticon)), this, SIGNAL(clicked(Emoticon)));
     popup->show();
 }
