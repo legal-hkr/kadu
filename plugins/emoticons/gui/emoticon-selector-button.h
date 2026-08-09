@@ -60,11 +60,17 @@ public:
     /**
      * @short Create new EmoticonSelectorButton widget.
      * @param emoticon emoticon to display
+     * @param image the emoticon's picture, already read from disk
+     * @param scale what the whole set has to be scaled by, one meaning left at its own size
      * @param pathProvider EmoticonPathProvider used to get image file name for emoticon for popup widget
      * @param parent parent widget
+     *
+     * The picture is handed in rather than read here, because how it is to be drawn depends on the
+     * size of the set it belongs to, which only the selector can see.
      */
     explicit EmoticonSelectorButton(
-        const Emoticon &emoticon, EmoticonPathProvider *pathProvider, QWidget *parent = nullptr);
+        const Emoticon &emoticon, const QPixmap &image, qreal scale, EmoticonPathProvider *pathProvider,
+        QWidget *parent = nullptr);
     virtual ~EmoticonSelectorButton();
 
 signals:

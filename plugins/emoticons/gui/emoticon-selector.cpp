@@ -37,7 +37,10 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtWidgets/QHBoxLayout>
+#include <QtGui/QPixmap>
 #include <QtWidgets/QScrollBar>
+
+#include <algorithm>
 
 #include "emoticon.h"
 #include "gui/emoticon-selector-button.h"
@@ -64,10 +67,43 @@ EmoticonSelector::~EmoticonSelector()
 {
 }
 
+namespace
+{
+/**
+ * @short About as tall as an emoticon can be before a selector has no room for it.
+ *
+ * Both themes Kadu ships are below it: the large one is twenty pixels across four fifths of its two
+ * hundred and eighty-two, and the small one is twenty-four. So neither is scaled, which is the
+ * whole point -- they are already the size somebody drew them.
+ */
+const int RoomForEmoticon = 24;
+
+/**
+ * @short What a whole set has to be scaled by, one meaning not at all.
+ *
+ * Read off the middle height of the set rather than the average of them, because sets are not of
+ * one size and the average says the wrong thing about them. The theme Kadu ships has two hundred
+ * and twenty-three of its emoticons at exactly twenty pixels, a tail thinning out to thirty, and
+ * two of forty-six; that pulls the average to twenty-one, which is above nothing in particular but
+ * would have every one of those two hundred and twenty-three scaled by a fraction -- blurring the
+ * many to make room for the few. The middle value says twenty, and twenty is left alone.
+ */
+qreal scaleForSet(QVector<int> heights)
+{
+    if (heights.isEmpty())
+        return 1;
+
+    std::sort(heights.begin(), heights.end());
+    auto const middle = heights.at(heights.count() / 2);
+
+    return middle > RoomForEmoticon ? qreal(RoomForEmoticon) / middle : qreal(1);
+}
+}
+
 void EmoticonSelector::addEmoticonButtons(const QVector<Emoticon> &emoticons, QWidget *mainWidget)
 {
     int selector_width = 460;
-    int total_height = 0, cur_width = 0, btn_width = 0;
+    int total_height = 0, cur_width = 0, btn_width = 0, row_height = 0;
     int count = emoticons.count();
     QScopedArrayPointer<EmoticonSelectorButton *> btns(new EmoticonSelectorButton *[count]);
     QVBoxLayout *layout = new QVBoxLayout(mainWidget);
@@ -75,21 +111,42 @@ void EmoticonSelector::addEmoticonButtons(const QVector<Emoticon> &emoticons, QW
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
+    // Read here, once, rather than a second time inside each button: how any one of them is to be
+    // drawn depends on how big the set is as a whole, so all of them have to be measured first.
+    QVector<QPixmap> images;
+    QVector<int> heights;
+    images.reserve(count);
+    heights.reserve(count);
+    for (auto const &emoticon : emoticons)
+    {
+        images.append(QPixmap{emoticon.staticFilePath()});
+        heights.append(images.constLast().height());
+    }
+
+    auto const scale = scaleForSet(heights);
+
     for (int i = 0; i < count; ++i)
     {
         const Emoticon &emoticon = emoticons.at(i);
-        btns[i] = new EmoticonSelectorButton(emoticon, PathProvider.data(), mainWidget);
+        btns[i] = new EmoticonSelectorButton(emoticon, images.at(i), scale, PathProvider.data(), mainWidget);
         btn_width = btns[i]->sizeHint().width();
 
+        // A row is as tall as the tallest thing standing in it. It used to be counted as the height
+        // of whichever emoticon happened to come first, which was the same answer while every one of
+        // them was brought to a single height, and the wrong one now that they are not.
         if (cur_width + btn_width >= selector_width)
+        {
+            total_height += row_height + 1;
+            row_height = 0;
             cur_width = 0;
+        }
 
-        if (cur_width == 0)
-            total_height += btns[i]->sizeHint().height() + 1;
+        row_height = qMax(row_height, btns[i]->sizeHint().height());
         cur_width += btn_width;
 
         connect(btns[i], SIGNAL(clicked(Emoticon)), this, SLOT(emoticonClickedSlot(Emoticon)));
     }
+    total_height += row_height + 1;
 
     if (total_height < selector_width - 80)
         selector_width = static_cast<int>(sqrt(static_cast<float>(selector_width) * total_height) * 1.1f);
