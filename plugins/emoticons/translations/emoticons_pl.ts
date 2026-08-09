@@ -26,6 +26,14 @@
         <translation>Animuj emotikony</translation>
     </message>
     <message>
+        <source>Animate all emoticons when choosing one</source>
+        <translation>Animuj wszystkie emotikony przy wybieraniu</translation>
+    </message>
+    <message>
+        <source>Set every emoticon moving as soon as the list opens, rather than only the one under the pointer</source>
+        <translation>Uruchamia wszystkie emotikony zaraz po otwarciu listy, zamiast tylko tę pod kursorem</translation>
+    </message>
+    <message>
         <source>Icon theme</source>
         <translation>Zestaw emotikon</translation>
     </message>

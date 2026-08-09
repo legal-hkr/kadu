@@ -28,6 +28,14 @@
         <translation>Animate emoticons</translation>
     </message>
     <message>
+        <source>Animate all emoticons when choosing one</source>
+        <translation>Animate all emoticons when choosing one</translation>
+    </message>
+    <message>
+        <source>Set every emoticon moving as soon as the list opens, rather than only the one under the pointer</source>
+        <translation>Set every emoticon moving as soon as the list opens, rather than only the one under the pointer</translation>
+    </message>
+    <message>
         <source>Icon theme</source>
         <translation>Icon theme</translation>
     </message>

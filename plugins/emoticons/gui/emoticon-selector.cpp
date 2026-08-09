@@ -50,7 +50,7 @@
 #include "emoticon-selector.moc"
 
 EmoticonSelector::EmoticonSelector(
-    const QVector<Emoticon> &emoticons, EmoticonPathProvider *pathProvider, QWidget *parent)
+    const QVector<Emoticon> &emoticons, bool animate, EmoticonPathProvider *pathProvider, QWidget *parent)
         : QScrollArea(parent), PathProvider(pathProvider)
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -59,7 +59,7 @@ EmoticonSelector::EmoticonSelector(
 
     QWidget *mainWidget = new QWidget(this);
 
-    addEmoticonButtons(emoticons, mainWidget);
+    addEmoticonButtons(emoticons, animate, mainWidget);
     setWidget(mainWidget);
     calculatePositionAndSize(parent, mainWidget);
 }
@@ -101,7 +101,7 @@ qreal scaleForSet(QVector<int> heights)
 }
 }
 
-void EmoticonSelector::addEmoticonButtons(const QVector<Emoticon> &emoticons, QWidget *mainWidget)
+void EmoticonSelector::addEmoticonButtons(const QVector<Emoticon> &emoticons, bool animate, QWidget *mainWidget)
 {
     int selector_width = 460;
     int total_height = 0, cur_width = 0, btn_width = 0, row_height = 0;
@@ -135,7 +135,8 @@ void EmoticonSelector::addEmoticonButtons(const QVector<Emoticon> &emoticons, QW
     for (int i = 0; i < count; ++i)
     {
         const Emoticon &emoticon = emoticons.at(i);
-        btns[i] = new EmoticonSelectorButton(emoticon, images.at(i), scale, PathProvider.data(), mainWidget);
+        btns[i] =
+            new EmoticonSelectorButton(emoticon, images.at(i), scale, animate, PathProvider.data(), mainWidget);
         btn_width = btns[i]->sizeHint().width();
 
         // A row is as tall as the tallest thing standing in it. It used to be counted as the height

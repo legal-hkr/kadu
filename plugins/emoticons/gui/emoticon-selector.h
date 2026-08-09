@@ -52,7 +52,7 @@ class EmoticonSelector : public QScrollArea
 
     QScopedPointer<EmoticonPathProvider> PathProvider;
 
-    void addEmoticonButtons(const QVector<Emoticon> &emoticons, QWidget *mainwidget);
+    void addEmoticonButtons(const QVector<Emoticon> &emoticons, bool animate, QWidget *mainwidget);
     void calculatePositionAndSize(const QWidget *activatingWidget, const QWidget *mainwidget);
 
 private slots:
@@ -72,7 +72,8 @@ public:
      * This object gets ownership of pathProvider pointer.
      */
     explicit EmoticonSelector(
-        const QVector<Emoticon> &emoticons, EmoticonPathProvider *pathProvider, QWidget *parent = nullptr);
+        const QVector<Emoticon> &emoticons, bool animate, EmoticonPathProvider *pathProvider,
+        QWidget *parent = nullptr);
     virtual ~EmoticonSelector();
 
 signals:

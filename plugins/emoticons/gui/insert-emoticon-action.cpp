@@ -91,8 +91,13 @@ void InsertEmoticonAction::actionTriggered(QAction *sender, bool toggled)
         Configuration.animate() ? static_cast<EmoticonPathProvider *>(new AnimatedEmoticonPathProvider())
                                 : static_cast<EmoticonPathProvider *>(new StaticEmoticonPathProvider());
 
+    // Every one of them moving only if the emoticons are to move at all and the list is to move
+    // with them; either switch turned off leaves the list still until the pointer reaches one.
+    auto const animateAll = Configuration.animate() && Configuration.animateSelector();
+
     EmoticonSelector *emoticonSelector = new EmoticonSelector(
-        Configuration.emoticonTheme().emoticons(), emoticonPathProvider, widgets.at(widgets.size() - 1));
+        Configuration.emoticonTheme().emoticons(), animateAll, emoticonPathProvider,
+        widgets.at(widgets.size() - 1));
     connect(emoticonSelector, SIGNAL(emoticonClicked(QString)), chatEditBox, SLOT(insertPlainText(QString)));
     emoticonSelector->show();
 }
