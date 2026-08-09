@@ -43,7 +43,7 @@ EmoticonSelectorButtonPopup::EmoticonSelectorButtonPopup(
         : QLabel(parent, Qt::Popup), DisplayEmoticon(emoticon), Movie(nullptr), Scale(scale)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    setMinimumSize(parent->sizeHint());
+    setFixedSize(parent->size());
     setAlignment(Qt::AlignCenter);
     setMouseTracking(true);
     setToolTip(emoticon.triggerText());
@@ -64,11 +64,16 @@ EmoticonSelectorButtonPopup::EmoticonSelectorButtonPopup(
     connect(Movie, &QMovie::frameChanged, this, &EmoticonSelectorButtonPopup::showFrame);
     Movie->start();
 
-    // center on parent
-    QPoint newPos = parent->mapToGlobal(QPoint(0, 0));
-    newPos += QPoint(parent->sizeHint().width() / 2, parent->sizeHint().height() / 2);
-    newPos -= QPoint(sizeHint().width() / 2, sizeHint().height() / 2);
-    move(newPos);
+    // Laid straight over the emoticon it belongs to, the same size and in the same place, so that
+    // the picture inside lands exactly where the picture underneath was.
+    //
+    // It used to be centred by halving both widths and both heights and taking the difference. Two
+    // of those numbers were the size this would like to be, asked before it had any picture in it
+    // at all, and the halving threw away the odd pixel besides; between them the window came down a
+    // pixel across and a pixel down from where the emoticon was, and the emoticon appeared to jump
+    // sideways as the pointer reached it.
+    resize(parent->size());
+    move(parent->mapToGlobal(QPoint{0, 0}));
 }
 
 EmoticonSelectorButtonPopup::~EmoticonSelectorButtonPopup()

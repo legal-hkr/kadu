@@ -59,21 +59,25 @@ GaduServersManager::GaduServer GaduServersManager::getServer()
     if (!hasAnotherAttempt())
         startOver();
 
-    return isRetryingLastWorkingServer() ? LastWorkingServer : hub();
+    // Counted here, as the attempt begins, rather than when one is reported to have failed. One
+    // login can report failure twice -- once because Kadu's own clock on it ran out and once
+    // because the socket said so -- and counting those spent two of the budget on a single try.
+    // Read from a log of it: the remembered server was given two goes where it should have had
+    // three. Attempts beginning are exactly as many as there are logins.
+    if (isRetryingLastWorkingServer())
+    {
+        ++DirectAttempts;
+        return LastWorkingServer;
+    }
+
+    ++HubAttempts;
+    return hub();
 }
 
 void GaduServersManager::connectionSucceeded(const GaduServersManager::GaduServer &server)
 {
     LastWorkingServer = server;
     startOver();
-}
-
-void GaduServersManager::attemptFailed()
-{
-    if (isRetryingLastWorkingServer())
-        ++DirectAttempts;
-    else
-        ++HubAttempts;
 }
 
 bool GaduServersManager::hasAnotherAttempt() const

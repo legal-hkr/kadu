@@ -576,8 +576,6 @@ void GaduProtocol::socketConnFailed(GaduError error)
 
     if (!GaduProtocolHelper::isConnectionErrorFatal(error))
     {
-        m_gaduServersManager->attemptFailed();
-
         logout();
 
         // Out of attempts. The account settles at not connected instead of going round for ever,

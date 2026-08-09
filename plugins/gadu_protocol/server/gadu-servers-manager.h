@@ -62,7 +62,7 @@ public:
     virtual ~GaduServersManager();
 
     /**
-     * @short The address the next attempt should use.
+     * @short The address the next attempt should use, counting that attempt as begun.
      *
      * Asked again once every attempt has been used means somebody has asked for a connection anew,
      * since nothing else brings about a login then; the counting starts over.
@@ -73,11 +73,6 @@ public:
      * @short Records where a connection actually got through, and starts the counting over.
      */
     void connectionSucceeded(const GaduServer &server);
-
-    /**
-     * @short Counts one attempt as having failed.
-     */
-    void attemptFailed();
 
     /**
      * @short Whether anything is left to try.
