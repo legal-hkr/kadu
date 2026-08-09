@@ -29,9 +29,11 @@
  */
 
 #include <QtGui/QMouseEvent>
+#include <QtGui/QMovie>
 
 #include "configuration/configuration.h"
 #include "configuration/deprecated-configuration-api.h"
+#include "expander/emoticon-path-provider.h"
 #include "gui/emoticon-image.h"
 #include "gui/emoticon-selector-button-popup.h"
 
@@ -39,13 +41,35 @@
 #include "emoticon-selector-button.moc"
 
 EmoticonSelectorButton::EmoticonSelectorButton(
-    const Emoticon &emoticon, const QPixmap &image, qreal scale, EmoticonPathProvider *pathProvider, QWidget *parent)
-        : QLabel(parent), DisplayEmoticon(emoticon), PathProvider(pathProvider), Scale(scale)
+    const Emoticon &emoticon, const QPixmap &image, qreal scale, bool animate, EmoticonPathProvider *pathProvider,
+    QWidget *parent)
+        : QLabel(parent), DisplayEmoticon(emoticon), PathProvider(pathProvider), Scale(scale), Movie(nullptr)
 {
+    // The still picture first, and the size from it, so that the list can be laid out without
+    // waiting on any film to start. Whatever moves afterwards is the same picture and the same
+    // size, so nothing shifts once it does.
     setPixmap(emoticonForScreen(image, Scale, devicePixelRatio()));
+    // Placed by the same rule the window that opens over it uses. A label left to itself puts its
+    // picture against the left edge, that window centres its own, and the two agree only for as
+    // long as the room left over is exactly nothing. A pixel of slack anywhere -- and where that
+    // falls depends on the screen -- and the emoticon steps sideways as the pointer arrives.
+    setAlignment(Qt::AlignCenter);
     setMouseTracking(true);
     setContentsMargins(4, 4, 4, 4);
     setFixedSize(sizeHint());
+
+    if (!animate)
+        return;
+
+    Movie = new QMovie(this);
+    Movie->setFileName(PathProvider->emoticonPath(DisplayEmoticon));
+    connect(Movie, &QMovie::frameChanged, this, &EmoticonSelectorButton::showFrame);
+    Movie->start();
+}
+
+void EmoticonSelectorButton::showFrame()
+{
+    setPixmap(emoticonForScreen(Movie->currentPixmap(), Scale, devicePixelRatio()));
 }
 
 EmoticonSelectorButton::~EmoticonSelectorButton()
