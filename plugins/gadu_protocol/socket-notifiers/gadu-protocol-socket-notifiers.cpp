@@ -199,6 +199,13 @@ void GaduProtocolSocketNotifiers::socketEvent()
             handleEventConnFailed(e);
         else
             m_protocol->socketConnFailed(GaduProtocol::ConnectionUnknow);
+
+        // Freed here as well. Every event libgadu hands over belongs to whoever asked for it, and
+        // the only place that gave one back was the end of the switch below -- which this way out
+        // never reaches. A connection that fails, and one that fails over and over, leaked one
+        // every time.
+        if (e)
+            gg_free_event(e);
         return;
     }
 

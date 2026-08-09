@@ -78,11 +78,22 @@ void GaduPluginObject::setUrlHandlerManager(UrlHandlerManager *urlHandlerManager
 
 void GaduPluginObject::init()
 {
+    // libgadu says what it is doing only when Kadu is built for development, which is not what
+    // anyone runs. The one thing that ever needs to hear it -- a connection that will not come back
+    // -- happens on an installed Kadu, and asking someone to rebuild differently changes the very
+    // thing being looked at. So the switch is also here at run time: setting KADU_GADU_DEBUG to a
+    // mask turns libgadu's account of itself on for that one session, and it goes to the error
+    // output. 255 is everything it has to say.
+    auto const requestedDebug = qgetenv("KADU_GADU_DEBUG");
+    if (!requestedDebug.isEmpty())
+        gg_debug_level = requestedDebug.toInt();
 #ifdef DEBUG_OUTPUT_ENABLED
-    // 8 bits for gadu debug
-    gg_debug_level = 255;
+    else
+        // 8 bits for gadu debug
+        gg_debug_level = 255;
 #else
-    gg_debug_level = 0;
+    else
+        gg_debug_level = 0;
 #endif
 
     if (!gg_libgadu_check_feature(GG_LIBGADU_FEATURE_USERLIST100))
