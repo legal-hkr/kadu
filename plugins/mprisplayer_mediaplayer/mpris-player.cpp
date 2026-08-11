@@ -66,18 +66,29 @@ void MPRISPlayer::setPluginStateService(PluginStateService *pluginStateService)
 
 void MPRISPlayer::init()
 {
+    // The moving on goes last because replacePlugin() is one of the things that writes an address
+    // down, and what it writes when it takes over from the old mpris_mediaplayer module is
+    // whatever that module was told to use -- a version 1 address, since that is all there was.
+    // Moving first left such a user speaking version 1 for the whole of the session, put right
+    // only at the next start.
     prepareUserPlayersFile();
-    moveChosenPlayerToMpris2();
     replacePlugin();
+    moveChosenPlayerToMpris2();
 }
 
-void MPRISPlayer::moveChosenPlayerToMpris2()
+namespace
 {
-    // Whoever chose a player before this was fixed has an address from version 1 of MPRIS written
-    // down -- org.mpris.audacious, or one of the two that were never MPRIS at all -- and Kadu has
-    // been speaking version 2 to it, which nothing answers. The names it can be certain of are
-    // moved on once; anything else is left as it stands, since it may well be something the user
-    // typed in themselves.
+/**
+ * @short The version 2 address of a player named by a version 1 one.
+ *
+ * Whoever chose a player before this was fixed has an address from version 1 of MPRIS written
+ * down -- org.mpris.audacious, or one of the two that were never MPRIS at all -- and Kadu has been
+ * speaking version 2 to it, which nothing answers. The names that can be known for certain are
+ * moved on; anything else is handed back as it came, since it may well be something the user typed
+ * in themselves.
+ */
+QString movedToMpris2(const QString &service)
+{
     static const QMap<QString, QString> moved = {
         {QStringLiteral("org.kde.amarok"), QStringLiteral("org.mpris.MediaPlayer2.amarok")},
         {QStringLiteral("org.mpris.amarok"), QStringLiteral("org.mpris.MediaPlayer2.amarok")},
@@ -87,11 +98,19 @@ void MPRISPlayer::moveChosenPlayerToMpris2()
         {QStringLiteral("org.mpris.vlc"), QStringLiteral("org.mpris.MediaPlayer2.vlc")},
         {QStringLiteral("org.mpris.xmms2"), QStringLiteral("org.mpris.MediaPlayer2.xmms2")}};
 
+    return moved.value(service, service);
+}
+}
+
+void MPRISPlayer::moveChosenPlayerToMpris2()
+{
     auto const chosen = m_configuration->deprecatedApi()->readEntry("MPRISPlayer", "Service");
-    if (!moved.contains(chosen))
+    auto const moved = movedToMpris2(chosen);
+
+    if (moved == chosen)
         return;
 
-    m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Service", moved.value(chosen));
+    m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Service", moved);
 }
 
 void MPRISPlayer::prepareUserPlayersFile()
@@ -134,7 +153,11 @@ void MPRISPlayer::choosePlayer(const QString &key, const QString &value)
     // Save service value from mpris_mediaplayer module
     if (key == "mpris_mediaplayer")
     {
-        QString oldMPRISService = m_configuration->deprecatedApi()->readEntry("MediaPlayer", "MPRISService");
+        // Moved on here as well as in the chosen address, since this is the entry the player is
+        // listed under from now on and choosing it again later would otherwise bring version 1
+        // back.
+        QString oldMPRISService =
+            movedToMpris2(m_configuration->deprecatedApi()->readEntry("MediaPlayer", "MPRISService"));
         QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
 
         userPlayersSettings.setValue(value + "/player", value);
