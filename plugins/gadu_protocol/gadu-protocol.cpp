@@ -257,7 +257,13 @@ void GaduProtocol::sendStatusToServer()
 
     setStatusFlags();
 
-    m_lastSentStatus = newStatus;
+    // Kept as the server will send it back, so that the echo can be recognised without putting the
+    // two through different conversions. Eight is more than enough to cover what can be in flight.
+    m_recentlySentStatuses.append(Status{
+        GaduProtocolHelper::statusTypeFromGaduStatus(GaduProtocolHelper::gaduStatusFromStatus(newStatus)),
+        newStatus.description()});
+    while (m_recentlySentStatuses.count() > 8)
+        m_recentlySentStatuses.removeFirst();
     auto writableSessionToken = Connection->writableSessionToken();
     if (hasDescription)
         gg_change_status_descr(
@@ -353,7 +359,11 @@ void GaduProtocol::login()
 
     setupLoginParams();
 
-    m_lastSentStatus = loginStatus();
+    // The status the login itself carries, remembered the same way, so its echo is recognised too.
+    m_recentlySentStatuses.clear();
+    m_recentlySentStatuses.append(Status{
+        GaduProtocolHelper::statusTypeFromGaduStatus(GaduProtocolHelper::gaduStatusFromStatus(loginStatus())),
+        loginStatus().description()});
     GaduSession = gg_login(&GaduLoginParams);
 
     cleanUpLoginParams();
@@ -508,19 +518,21 @@ void GaduProtocol::socketContactStatusChanged(
 
     if (uin == GaduLoginParams.uin)
     {
-        // Compared against what was sent as it comes back, not as it went out. The journey through
-        // a Gadu-Gadu status number loses things: "not available" and "away" are both sent as busy
-        // and both come back as away, so a Kadu set to the first of those never recognised its own
-        // status returning and took it for another client changing it. Being taken for that means
-        // the status is set as if by hand, and setting it by hand is what tells the media player to
-        // stop putting the song in the description -- which is how turning that on switched itself
-        // off again a moment later.
-        auto const sentAsItComesBack = Status{
-            GaduProtocolHelper::statusTypeFromGaduStatus(GaduProtocolHelper::gaduStatusFromStatus(m_lastSentStatus)),
-            m_lastSentStatus.description()};
+        // Ours if it matches anything we have sent lately, and only then somebody else's. Two things
+        // used to make Kadu fail to recognise its own status coming back. The comparison was made
+        // across a conversion that loses information -- "not available" and "away" are both sent as
+        // busy and both return as away -- and it was made against the newest status alone, while an
+        // echo can arrive after the next change has already gone out. Putting a song in the
+        // description changes it every time the song does, so there were always several in flight,
+        // and every echo looked like a stranger's doing.
+        //
+        // What followed was the fault as reported: a status believed to come from elsewhere is set
+        // as if by hand, which reverts the description and tells the media player to stop; that is
+        // another change, whose echo is late in turn. Read from a log of it happening, the
+        // description went back and forth between the song and the user's own a dozen times.
+        auto const ours = m_recentlySentStatuses.contains(newStatus);
 
-        if ((!m_lastRemoteStatusRequest.isValid() || m_lastRemoteStatusRequest.elapsed() > 10) &&
-            newStatus != sentAsItComesBack)
+        if ((!m_lastRemoteStatusRequest.isValid() || m_lastRemoteStatusRequest.elapsed() > 10) && !ours)
         {
             emit remoteStatusChangeRequest(account(), newStatus);
             if (m_lastRemoteStatusRequest.isValid())

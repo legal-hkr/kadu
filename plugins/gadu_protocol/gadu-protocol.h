@@ -126,7 +126,12 @@ private:
     friend class GaduProtocolSocketNotifiers;
     GaduProtocolSocketNotifiers *SocketNotifiers;
     QElapsedTimer m_lastRemoteStatusRequest;
-    Status m_lastSentStatus;
+    // The last few statuses sent, not merely the last one. The server sends every change back and
+    // Kadu tells its own echo from another client's doing by recognising it here; while several
+    // changes are in flight -- which is what putting a song in the description does -- an echo
+    // arrives after the next change has gone out, so measuring it against the newest alone finds a
+    // difference that is not there.
+    QVector<Status> m_recentlySentStatuses;
 
     QTimer *PingTimer;
     bool SecureConnection;
