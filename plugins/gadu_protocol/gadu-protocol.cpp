@@ -415,7 +415,12 @@ void GaduProtocol::connectedToServer()
     // round trip through the hub first. libgadu keeps the address it connected to in the session,
     // in network order; the port takes reading out, since the pair it comes from is left in a
     // state that depends on how the connection was made.
-    if (GaduSession)
+    //
+    // Nothing is remembered without an address to remember. libgadu leaves it zero when the hub
+    // answered with a name instead of a number and the connection was made by name, and zero is
+    // also how it is told to go and ask the hub -- so keeping it would spend the attempts meant
+    // to save that round trip on making it.
+    if (GaduSession && GaduSession->server_addr != 0)
         m_gaduServersManager->connectionSucceeded(
             {QHostAddress{ntohl(GaduSession->server_addr)}, portConnectedOn(GaduSession)});
 
