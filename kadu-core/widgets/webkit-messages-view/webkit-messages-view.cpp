@@ -356,15 +356,25 @@ void WebkitMessagesView::updateScrollBarStyle()
     auto const track = colours.color(QPalette::Base);
     auto const thumb = colours.color(QPalette::Mid);
     auto const thumbHover = colours.color(QPalette::Dark);
+    auto const text = colours.color(QPalette::Text);
 
+    // The colour of anything the style did not colour itself. A page whose text is left alone is
+    // black, which was fine while conversations were on white and is not now that the background
+    // follows the desktop. Chat styles colour what they think of -- the nick, the message -- and
+    // leave the rest: the two colons Arvenil puts between the nick and the date sit outside both
+    // its coloured elements, ultr colours nothing at all. Those took the page's black.
+    //
+    // Set on the body, not on everything: colour is inherited, so this reaches whatever was left
+    // alone and nothing that was not. A style that names a colour still gets the colour it named.
     auto const style = QStringLiteral(
+                           "body { color: %4; }"
                            "::-webkit-scrollbar { width: 12px; height: 12px; }"
                            "::-webkit-scrollbar-track { background: %1; }"
                            "::-webkit-scrollbar-thumb { background: %2; border-radius: 6px;"
                            " border: 3px solid %1; }"
                            "::-webkit-scrollbar-thumb:hover { background: %3; }"
                            "::-webkit-scrollbar-corner { background: %1; }")
-                           .arg(track.name(), thumb.name(), thumbHover.name());
+                           .arg(track.name(), thumb.name(), thumbHover.name(), text.name());
 
     // Embedded the way the style renderers do it: escaped, then quoted.
     auto quoted = style;
