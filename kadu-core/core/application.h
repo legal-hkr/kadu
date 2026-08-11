@@ -57,6 +57,9 @@ public:
      * A window that would rather hide than close -- the contact list does, when there is a tray
      * icon to hide into -- has to let go when this is true, or the program cannot finish. It is
      * the same reason isSavingSession() is asked about, and it is asked about in the same places.
+     *
+     * True only while the windows are being asked, since a refused attempt leaves the program
+     * running and the asking has to start afresh the next time.
      */
     bool isQuitting() const;
 
