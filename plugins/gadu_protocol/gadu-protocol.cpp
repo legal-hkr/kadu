@@ -102,11 +102,14 @@ int portConnectedOn(gg_session *session)
 }
 }
 
-GaduProtocol::GaduProtocol(
-    GaduListHelper *gaduListHelper, GaduServersManager *gaduServersManager, Account account, ProtocolFactory *factory)
-        : Protocol(account, factory), m_gaduServersManager{gaduServersManager}, ActiveServer(), GaduLoginParams(),
-          GaduSession(0), SocketNotifiers(0), PingTimer(0), m_gaduListHelper{gaduListHelper}
+GaduProtocol::GaduProtocol(GaduListHelper *gaduListHelper, Account account, ProtocolFactory *factory)
+        : Protocol(account, factory), m_gaduServersManager{new GaduServersManager{this}}, ActiveServer(),
+          GaduLoginParams(), GaduSession(0), SocketNotifiers(0), PingTimer(0), m_gaduListHelper{gaduListHelper}
 {
+    // One of its own, rather than one shared out by the module. What it holds -- the server that
+    // last worked and how many attempts are left -- belongs to a single connection, and two
+    // accounts sharing it spend each other's budget: the second to try can find nothing left and
+    // stay disconnected for good, while either one getting through sets the other counting afresh.
 }
 
 GaduProtocol::~GaduProtocol()

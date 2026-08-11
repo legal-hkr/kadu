@@ -27,7 +27,6 @@
 #include <injeqt/injeqt.h>
 
 class GaduListHelper;
-class GaduServersManager;
 class PluginInjectedFactory;
 
 class GaduProtocolFactory : public ProtocolFactory
@@ -65,13 +64,11 @@ public:
 
 private:
     QPointer<GaduListHelper> m_gaduListHelper;
-    QPointer<GaduServersManager> m_gaduServersManager;
     QPointer<PluginInjectedFactory> m_pluginInjectedFactory;
 
     QList<StatusType> SupportedStatusTypes;
 
 private slots:
     INJEQT_SET void setGaduListHelper(GaduListHelper *gaduListHelper);
-    INJEQT_SET void setGaduServersManager(GaduServersManager *gaduServersManager);
     INJEQT_SET void setPluginInjectedFactory(PluginInjectedFactory *pluginInjectedFactory);
 };

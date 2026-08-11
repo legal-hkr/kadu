@@ -24,14 +24,12 @@
 #include "gadu-url-dom-visitor-provider.h"
 #include "gadu-url-handler.h"
 #include "helpers/gadu-list-helper.h"
-#include "server/gadu-servers-manager.h"
 
 GaduModule::GaduModule()
 {
     add_type<GaduListHelper>();
     add_type<GaduPluginObject>();
     add_type<GaduProtocolFactory>();
-    add_type<GaduServersManager>();
     add_type<GaduUrlDomVisitorProvider>();
     add_type<GaduUrlHandler>();
 }

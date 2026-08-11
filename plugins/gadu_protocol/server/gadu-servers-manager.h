@@ -47,6 +47,9 @@
  *
  * Then nothing. The attempts are not repeated until somebody asks for a connection again, at which
  * point the counting starts from the beginning.
+ *
+ * All of it is the story of one account's connection, so each account keeps one of these to
+ * itself.
  */
 class GADUAPI GaduServersManager : public QObject
 {

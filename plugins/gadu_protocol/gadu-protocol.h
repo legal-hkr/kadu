@@ -181,9 +181,7 @@ protected:
     virtual void disconnectedCleanup();
 
 public:
-    explicit GaduProtocol(
-        GaduListHelper *gaduListHelper, GaduServersManager *gaduServersManager, Account account,
-        ProtocolFactory *factory);
+    explicit GaduProtocol(GaduListHelper *gaduListHelper, Account account, ProtocolFactory *factory);
     virtual ~GaduProtocol();
 
     virtual ChatImageService *chatImageService()
