@@ -130,6 +130,10 @@ void MPRISPlayer::replacePlugin()
     QMap<QString, QString> replaceMap;
     replaceMap.insert("amarok2_mediaplayer", "Amarok");
     replaceMap.insert("audacious_mediaplayer", "Audacious");
+    // BMPx has no version 2 address to be given and is no longer in the list shipped with Kadu,
+    // the project having ended before version 2 existed. It stays here so that a profile still
+    // carrying the old module gets it turned off; choosePlayer() will find nothing to choose and
+    // the search goes on to whatever else is enabled.
     replaceMap.insert("bmpx_mediaplayer", "BMPx");
     replaceMap.insert("dragon_mediaplayer", "Dragon Player");
     replaceMap.insert("mpris_mediaplayer", "MPRIS Media Player");
@@ -139,16 +143,18 @@ void MPRISPlayer::replacePlugin()
     for (auto const &value : replaceMap)
     {
         QString key = replaceMap.key(value);
-        if (m_pluginStateService->pluginState(key) == PluginState::Enabled)
-        {
-            choosePlayer(key, value);
-            m_pluginStateService->setPluginState(key, PluginState::Disabled);
+        if (m_pluginStateService->pluginState(key) != PluginState::Enabled)
+            continue;
+
+        // Turned off whether or not it can be turned into a choice: the module is gone either way.
+        m_pluginStateService->setPluginState(key, PluginState::Disabled);
+
+        if (choosePlayer(key, value))
             break;
-        }
     }
 }
 
-void MPRISPlayer::choosePlayer(const QString &key, const QString &value)
+bool MPRISPlayer::choosePlayer(const QString &key, const QString &value)
 {
     // Save service value from mpris_mediaplayer module
     if (key == "mpris_mediaplayer")
@@ -158,6 +164,9 @@ void MPRISPlayer::choosePlayer(const QString &key, const QString &value)
         // back.
         QString oldMPRISService =
             movedToMpris2(m_configuration->deprecatedApi()->readEntry("MediaPlayer", "MPRISService"));
+        if (oldMPRISService.isEmpty())
+            return false;
+
         QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
 
         userPlayersSettings.setValue(value + "/player", value);
@@ -166,15 +175,24 @@ void MPRISPlayer::choosePlayer(const QString &key, const QString &value)
 
         m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Player", value);
         m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Service", oldMPRISService);
-    }
-    else   // Choose player based on old module loaded.
-    {
-        QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
 
-        m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Player", value);
-        m_configuration->deprecatedApi()->writeEntry(
-            "MPRISPlayer", "Service", globalPlayersSettings.value(value + "/service").toString());
+        return true;
     }
+
+    // Choose player based on old module loaded.
+    QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
+    auto const service = globalPlayersSettings.value(value + "/service").toString();
+
+    // Nothing is written for a player the shipped list does not name. It used to be written all the
+    // same, which left the user with a player chosen and no address to reach it at -- worse than
+    // leaving the choice as it was, since it also replaced whatever was there before.
+    if (service.isEmpty())
+        return false;
+
+    m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Player", value);
+    m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Service", service);
+
+    return true;
 }
 
 void MPRISPlayer::configurationApplied()
