@@ -21,6 +21,7 @@
  */
 
 #include <QtCore/QFile>
+#include <QtCore/QMap>
 #include <QtCore/QSettings>
 
 #include "configuration/configuration.h"
@@ -66,7 +67,31 @@ void MPRISPlayer::setPluginStateService(PluginStateService *pluginStateService)
 void MPRISPlayer::init()
 {
     prepareUserPlayersFile();
+    moveChosenPlayerToMpris2();
     replacePlugin();
+}
+
+void MPRISPlayer::moveChosenPlayerToMpris2()
+{
+    // Whoever chose a player before this was fixed has an address from version 1 of MPRIS written
+    // down -- org.mpris.audacious, or one of the two that were never MPRIS at all -- and Kadu has
+    // been speaking version 2 to it, which nothing answers. The names it can be certain of are
+    // moved on once; anything else is left as it stands, since it may well be something the user
+    // typed in themselves.
+    static const QMap<QString, QString> moved = {
+        {QStringLiteral("org.kde.amarok"), QStringLiteral("org.mpris.MediaPlayer2.amarok")},
+        {QStringLiteral("org.mpris.amarok"), QStringLiteral("org.mpris.MediaPlayer2.amarok")},
+        {QStringLiteral("org.mpris.audacious"), QStringLiteral("org.mpris.MediaPlayer2.audacious")},
+        {QStringLiteral("org.mpris.clementine"), QStringLiteral("org.mpris.MediaPlayer2.clementine")},
+        {QStringLiteral("org.kde.dragon.player"), QStringLiteral("org.mpris.MediaPlayer2.dragonplayer")},
+        {QStringLiteral("org.mpris.vlc"), QStringLiteral("org.mpris.MediaPlayer2.vlc")},
+        {QStringLiteral("org.mpris.xmms2"), QStringLiteral("org.mpris.MediaPlayer2.xmms2")}};
+
+    auto const chosen = m_configuration->deprecatedApi()->readEntry("MPRISPlayer", "Service");
+    if (!moved.contains(chosen))
+        return;
+
+    m_configuration->deprecatedApi()->writeEntry("MPRISPlayer", "Service", moved.value(chosen));
 }
 
 void MPRISPlayer::prepareUserPlayersFile()

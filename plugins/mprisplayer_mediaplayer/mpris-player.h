@@ -51,6 +51,7 @@ class MPRISPlayer : public MPRISMediaPlayer
     QPointer<PluginStateService> m_pluginStateService;
 
     void prepareUserPlayersFile();
+    void moveChosenPlayerToMpris2();
     void replacePlugin();
     void choosePlayer(const QString &key, const QString &value);
 

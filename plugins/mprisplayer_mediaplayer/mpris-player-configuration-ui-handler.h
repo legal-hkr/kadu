@@ -48,6 +48,7 @@ class MPRISPlayerConfigurationUiHandler : public QObject, public ConfigurationUi
     QComboBox *PlayersBox;
 
     void loadPlayersListFromFile();
+    void addPlayersFoundOnBus();
     void fillPlayersBox();
 
 private slots:

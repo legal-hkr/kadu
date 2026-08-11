@@ -1,27 +1,27 @@
+; Bus names as MPRIS version 2 defines them: org.mpris.MediaPlayer2.<player>. The names here are
+; only so that a player can be chosen while it is not running -- one that is running is found on the
+; bus and offered whether it is named here or not.
+
 [Amarok]
 player=Amarok
-service=org.kde.amarok
+service=org.mpris.MediaPlayer2.amarok
 
 [Audacious]
 player=Audacious
-service=org.mpris.audacious
-
-[BMPx]
-player=BMPx
-service=org.mpris.bmp
-
-[Dragon Player]
-player=Dragon Player
-service=org.kde.dragon.player
-
-[VLC]
-player=VLC
-service=org.mpris.vlc
-
-[XMMS2]
-player=XMMS2
-service=org.mpris.xmms2
+service=org.mpris.MediaPlayer2.audacious
 
 [Clementine]
 player=Clementine
-service=org.mpris.clementine
+service=org.mpris.MediaPlayer2.clementine
+
+[Dragon Player]
+player=Dragon Player
+service=org.mpris.MediaPlayer2.dragonplayer
+
+[VLC]
+player=VLC
+service=org.mpris.MediaPlayer2.vlc
+
+[XMMS2]
+player=XMMS2
+service=org.mpris.MediaPlayer2.xmms2

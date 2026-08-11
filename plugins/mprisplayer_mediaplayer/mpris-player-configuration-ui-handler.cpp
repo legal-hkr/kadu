@@ -21,6 +21,10 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QSettings>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusConnectionInterface>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusReply>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -143,6 +147,42 @@ void MPRISPlayerConfigurationUiHandler::loadPlayersListFromFile()
 
         if (!player.isEmpty() && !service.isEmpty())
             PlayersMap.insert(player, service);
+    }
+
+    addPlayersFoundOnBus();
+}
+
+void MPRISPlayerConfigurationUiHandler::addPlayersFoundOnBus()
+{
+    // Version 2 of MPRIS asks every player to take a bus name beginning org.mpris.MediaPlayer2. and
+    // to say what it is called under Identity. A player that is running can therefore be found
+    // rather than looked up, which is worth more than any list: the one shipped with Kadu can only
+    // ever name the players somebody thought of, and it named them by the addresses version 1 used.
+    auto bus = QDBusConnection::sessionBus();
+    if (!bus.isConnected() || !bus.interface())
+        return;
+
+    static auto const prefix = QStringLiteral("org.mpris.MediaPlayer2.");
+
+    for (auto const &service : bus.interface()->registeredServiceNames().value())
+    {
+        if (!service.startsWith(prefix))
+            continue;
+
+        // Already named in one of the lists, under whatever name it was given there.
+        if (PlayersMap.values().contains(service))
+            continue;
+
+        QDBusInterface properties{
+            service, QStringLiteral("/org/mpris/MediaPlayer2"), QStringLiteral("org.freedesktop.DBus.Properties"), bus};
+        QDBusReply<QDBusVariant> reply = properties.call(
+            QStringLiteral("Get"), QStringLiteral("org.mpris.MediaPlayer2"), QStringLiteral("Identity"));
+
+        auto name = reply.isValid() ? reply.value().variant().toString() : QString{};
+        if (name.isEmpty())
+            name = service.mid(prefix.length());
+
+        PlayersMap.insert(name, service);
     }
 }
 
