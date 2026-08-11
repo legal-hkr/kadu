@@ -44,6 +44,7 @@
 #include "windows/main-configuration-window.h"
 #include "windows/string-list-dialog.h"
 
+#include <QtCore/QCoreApplication>
 #include <QtWidgets/QBoxLayout>
 
 PluginListWidget::PluginListWidget(MainConfigurationWindow *window)
@@ -140,7 +141,10 @@ void PluginListWidget::init()
     auto window = static_cast<MainConfigurationWindow *>(parent());
     auto pluginsSection = window->widget()->configSection("Plugins");
     if (pluginsSection)
-        pluginsSection->addFullPageWidget("Plugins", this);
+        // Through the translation, as every other tab's name is. This one was written straight into
+        // the tab, so the list on the left said Wtyczki and the tab beside it said Plugins. The word
+        // is already translated for the section it names, so it is the same one being asked for.
+        pluginsSection->addFullPageWidget(QCoreApplication::translate("@default", "Plugins"), this);
 }
 
 int PluginListWidget::dependantLayoutValue(int value, int width, int totalWidth) const
