@@ -23,6 +23,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QMap>
 #include <QtCore/QPointer>
+#include <QtCore/QStringList>
 #include <injeqt/injeqt.h>
 
 #include "configuration/configuration-aware-object.h"
@@ -35,6 +36,7 @@ class MPRISPlayer;
 class PathsProvider;
 
 class QComboBox;
+class QPushButton;
 
 class MPRISPlayerConfigurationUiHandler : public QObject, public ConfigurationUiHandler
 {
@@ -46,10 +48,18 @@ class MPRISPlayerConfigurationUiHandler : public QObject, public ConfigurationUi
 
     QMap<QString, QString> PlayersMap;
     QComboBox *PlayersBox;
+    QPointer<QPushButton> EditButton;
+    QPointer<QPushButton> DeleteButton;
+
+    // Which of the two files each name was read from, kept so that the buttons can say what they
+    // are able to do without opening the files again on every change of the selection.
+    QStringList UserSections;
+    QStringList GlobalSections;
 
     void loadPlayersListFromFile();
     void addPlayersFoundOnBus();
     void fillPlayersBox();
+    void updateButtons();
 
 private slots:
     INJEQT_SET void setConfiguration(Configuration *configuration);
