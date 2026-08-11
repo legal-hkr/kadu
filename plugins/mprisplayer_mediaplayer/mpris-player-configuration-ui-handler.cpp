@@ -47,6 +47,31 @@
 #include "mpris-player-configuration-ui-handler.h"
 #include "mpris-player-configuration-ui-handler.moc"
 
+namespace
+{
+/**
+ * @short A bus name with the instance taken off, if it had one.
+ *
+ * Version 2 of MPRIS lets a player that can run more than once answer to
+ * org.mpris.MediaPlayer2.<player>.instance<pid> rather than to the plain name. The number is the
+ * process id, so it is worth nothing once the player has been restarted; the plain name is what
+ * is worth keeping. A tail that is not a number is left alone, being part of the player's name.
+ */
+QString playerServiceName(const QString &service)
+{
+    static auto const marker = QStringLiteral(".instance");
+
+    auto const at = service.lastIndexOf(marker);
+    if (at < 0)
+        return service;
+
+    bool digits = false;
+    service.mid(at + marker.length()).toULongLong(&digits);
+
+    return digits ? service.left(at) : service;
+}
+}
+
 MPRISPlayerConfigurationUiHandler::MPRISPlayerConfigurationUiHandler(QObject *parent) : QObject{parent}, PlayersBox{}
 {
 }
@@ -169,8 +194,15 @@ void MPRISPlayerConfigurationUiHandler::addPlayersFoundOnBus()
         if (!service.startsWith(prefix))
             continue;
 
+        // What gets written down is the name without the instance. A player that can run more
+        // than once is allowed to take org.mpris.MediaPlayer2.vlc.instance7710, where the tail is
+        // the process id and is a different number every time it starts -- so remembering the
+        // whole of it would pick the player out today and never again. MPRISController is what
+        // puts the two back together, looking for whichever instance is on the bus at the time.
+        auto const player = playerServiceName(service);
+
         // Already named in one of the lists, under whatever name it was given there.
-        if (PlayersMap.values().contains(service))
+        if (PlayersMap.values().contains(player))
             continue;
 
         QDBusInterface properties{
@@ -180,9 +212,9 @@ void MPRISPlayerConfigurationUiHandler::addPlayersFoundOnBus()
 
         auto name = reply.isValid() ? reply.value().variant().toString() : QString{};
         if (name.isEmpty())
-            name = service.mid(prefix.length());
+            name = player.mid(prefix.length());
 
-        PlayersMap.insert(name, service);
+        PlayersMap.insert(name, player);
     }
 }
 
