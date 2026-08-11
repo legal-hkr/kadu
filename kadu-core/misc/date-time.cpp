@@ -39,6 +39,39 @@
 namespace
 {
 /**
+ * @short Whether the date letters beginning here are asking for a date rather than spelling a word.
+ *
+ * The letters a date is written with are also letters that words are written with, and a
+ * translator writing "el dia " means the Spanish for "the day" and not the day of the month. So a
+ * run of them is honoured only where it stands on its own: touching a letter that a word could be
+ * written with, on either side, makes it part of that word.
+ *
+ * Only the alphabet the date letters themselves belong to counts as making a word. The Chinese
+ * translation writes the year hard against the character for "year" -- yyyy年MMMM月d日 -- where the
+ * neighbour is a neighbour and not a word the letters are part of.
+ */
+bool asksForADate(const QString &text, int at)
+{
+    static auto const dateLetters = QStringLiteral("dMy");
+
+    auto const spellsAWord = [](QChar letter) {
+        return letter.isLetter() && letter.script() == QChar::Script_Latin && !dateLetters.contains(letter);
+    };
+
+    if (!dateLetters.contains(text.at(at)))
+        return false;
+
+    if (at > 0 && spellsAWord(text.at(at - 1)))
+        return false;
+
+    auto after = at;
+    while (after < text.length() && dateLetters.contains(text.at(after)))
+        ++after;
+
+    return after >= text.length() || !spellsAWord(text.at(after));
+}
+
+/**
  * @short A translated prefix turned into a format that says what it means.
  *
  * These prefixes are translated whole -- "dddd at " becomes "dddd o " in Polish -- so a translator
@@ -73,9 +106,14 @@ QString asDateFormat(const QString &translated)
 
     for (int at = 0; at < translated.length();)
     {
-        auto const token = std::find_if(
-            tokens.begin(), tokens.end(),
-            [&translated, at](const QString &candidate) { return translated.mid(at, candidate.length()) == candidate; });
+        auto const token =
+            asksForADate(translated, at)
+                ? std::find_if(
+                      tokens.begin(), tokens.end(),
+                      [&translated, at](const QString &candidate) {
+                          return translated.mid(at, candidate.length()) == candidate;
+                      })
+                : tokens.end();
 
         if (token == tokens.end())
         {
