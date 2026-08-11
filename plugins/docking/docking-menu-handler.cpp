@@ -24,6 +24,7 @@
 #include "status-notifier-item.h"
 
 #include "activate.h"
+#include "core/application.h"
 #include "icons/icons-manager.h"
 #include "notification/silent-mode-service.h"
 #include "plugin/plugin-injected-factory.h"
@@ -46,6 +47,11 @@ DockingMenuHandler::DockingMenuHandler(QObject *parent)
 
 DockingMenuHandler::~DockingMenuHandler()
 {
+}
+
+void DockingMenuHandler::setApplication(Application *application)
+{
+    m_application = application;
 }
 
 void DockingMenuHandler::setConfiguration(Configuration *configuration)
@@ -123,7 +129,12 @@ void DockingMenuHandler::init()
     connect(m_silentModeAction, SIGNAL(triggered(bool)), this, SLOT(silentModeToggled(bool)));
 
     m_closeKaduAction = new QAction{m_iconsManager->iconByPath(KaduIcon{"application-exit"}), tr("&Exit Kadu"), this};
-    connect(m_closeKaduAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    // Kadu's own leaving, not Qt's. Qt's asks every window to close first and gives up if one of
+    // them declines -- and the contact list declines, because closing it is how it is put away into
+    // the tray. So this closed that window and left the program running. Kadu's says it is leaving
+    // before it asks, which is the whole difference, and it is what the Exit in the menu of the
+    // contact list has always called.
+    connect(m_closeKaduAction, &QAction::triggered, this, [this]() { m_application->quit(); });
 }
 
 void DockingMenuHandler::statusContainerRegistered(StatusContainer *statusContainer)
