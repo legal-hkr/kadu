@@ -508,8 +508,19 @@ void GaduProtocol::socketContactStatusChanged(
 
     if (uin == GaduLoginParams.uin)
     {
+        // Compared against what was sent as it comes back, not as it went out. The journey through
+        // a Gadu-Gadu status number loses things: "not available" and "away" are both sent as busy
+        // and both come back as away, so a Kadu set to the first of those never recognised its own
+        // status returning and took it for another client changing it. Being taken for that means
+        // the status is set as if by hand, and setting it by hand is what tells the media player to
+        // stop putting the song in the description -- which is how turning that on switched itself
+        // off again a moment later.
+        auto const sentAsItComesBack = Status{
+            GaduProtocolHelper::statusTypeFromGaduStatus(GaduProtocolHelper::gaduStatusFromStatus(m_lastSentStatus)),
+            m_lastSentStatus.description()};
+
         if ((!m_lastRemoteStatusRequest.isValid() || m_lastRemoteStatusRequest.elapsed() > 10) &&
-            newStatus != m_lastSentStatus)
+            newStatus != sentAsItComesBack)
         {
             emit remoteStatusChangeRequest(account(), newStatus);
             if (m_lastRemoteStatusRequest.isValid())
