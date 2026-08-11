@@ -398,7 +398,16 @@ void GaduProtocol::login()
     if (!GaduSession)
     {
         // gadu session can be null if DNS failed, we can try IP after that
-        connectionError();
+        //
+        // Counted against the same budget as a connection that fails at the socket, and settling
+        // the same way when it runs out. Asking again without that is asking for ever: a fault
+        // that stops gg_login() outright -- a name that does not resolve at all -- is answered by
+        // the next attempt in exactly the same way, and getServer() starts the counting over as
+        // soon as it is spent, so there is nothing in the round to bring it to an end.
+        if (m_gaduServersManager->hasAnotherAttempt())
+            connectionError();
+        else
+            connectionClosed();
         return;
     }
 
