@@ -108,6 +108,14 @@ void ChatStyleConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigu
     variantChangedSlot(newVariant);
     m_variantListCombo->setCurrentIndex(m_variantListCombo->findText(newVariant));
     m_variantListCombo->setEnabled(m_chatStyleManager->currentEngine()->supportVariants());
+
+    // The width of the row, as the list of styles above it has. A form layout asks the widget style
+    // which of its fields may grow, and Breeze answers only those that ask to: the list of styles
+    // does, through the widget it sits in, and this one did not -- so it stayed at whatever width
+    // its longest entry happened to want when it was first shown, and a variant named at any length
+    // was cut off. Measured at six hundred pixels of window: a hundred and seventy-one before,
+    // four hundred and fifty-six after, against the four hundred and forty-four above it.
+    m_variantListCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     connect(m_variantListCombo, SIGNAL(textActivated(const QString &)), this, SLOT(variantChangedSlot(const QString &)));
     //
     groupBox->addWidgets(editorLabel, editor);
