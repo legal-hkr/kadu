@@ -690,7 +690,12 @@ void MediaPlayer::titleChanged()
 
 void MediaPlayer::statusChanged()
 {
-    checkTitle();
+    // The player's playing, pausing or stopping -- not Kadu's status, whatever the name says. The
+    // MPRIS controller calls this on every one of them, and asking for the title on each was work
+    // done for nothing while the song is not being shown at all. Guarded as titleChanged() beside
+    // it already is.
+    if (!Changer->isDisabled())
+        checkTitle();
 }
 
 void MediaPlayer::setInterval(int seconds)
