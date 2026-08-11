@@ -50,6 +50,12 @@ void TranslationLoader::init()
         m_configuration->deprecatedApi()->readEntry("General", "Language", QLocale::system().name().left(2));
     auto const path = m_pathsProvider->dataPath() + QStringLiteral("translations");
 
+    // Dates and numbers follow the language Kadu is being shown in, which is a setting of its own
+    // and not always the desktop's. Left to the desktop, a Kadu asked to speak one language would
+    // write its dates in another -- and it did: the day was spelled out in English beside a Polish
+    // word for "at", because the word came from the translation and the day from the system.
+    QLocale::setDefault(QLocale{lang});
+
     // Installed only where there is something to install. A language Qt has no translation for is
     // not a fault -- that module simply stays in English -- but an empty translator still gets asked
     // about every string that is ever displayed, and load() now insists that its answer be read.
