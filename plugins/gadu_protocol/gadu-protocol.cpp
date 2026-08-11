@@ -78,6 +78,30 @@
 #include "gadu-protocol.h"
 #include "gadu-protocol.moc"
 
+namespace
+{
+/**
+ * @short The port the session got through on, or zero if it cannot be told.
+ *
+ * libgadu keeps the ports it is willing to try as a pair, and an index into that pair. Where the
+ * index stands once the connection is through depends on the road taken. Going straight to the
+ * server moves it on only when a candidate has failed, so it still names the one that worked; a
+ * request through a proxy counts its candidate as spent before the answer comes back, leaving the
+ * index one past the port in use -- and past the end of the pair, when the second of the two was
+ * the one that worked.
+ *
+ * Zero for an answer leaves the next attempt to settle on a port itself, which is what it does
+ * anyway for a server nothing is remembered about.
+ */
+int portConnectedOn(gg_session *session)
+{
+    auto const candidates = static_cast<int>(sizeof(session->connect_port) / sizeof(session->connect_port[0]));
+    auto const index = static_cast<int>(session->connect_index) - (session->proxy_port != 0 ? 1 : 0);
+
+    return (index >= 0 && index < candidates) ? session->connect_port[index] : 0;
+}
+}
+
 GaduProtocol::GaduProtocol(
     GaduListHelper *gaduListHelper, GaduServersManager *gaduServersManager, Account account, ProtocolFactory *factory)
         : Protocol(account, factory), m_gaduServersManager{gaduServersManager}, ActiveServer(), GaduLoginParams(),
@@ -386,10 +410,11 @@ void GaduProtocol::connectedToServer()
 {
     // Remembered so that a connection cut later can be picked up where it was working, without the
     // round trip through the hub first. libgadu keeps the address it connected to in the session,
-    // in network order, and the port as the entry of the pair it settled on.
+    // in network order; the port takes reading out, since the pair it comes from is left in a
+    // state that depends on how the connection was made.
     if (GaduSession)
         m_gaduServersManager->connectionSucceeded(
-            {QHostAddress{ntohl(GaduSession->server_addr)}, GaduSession->connect_port[GaduSession->connect_index]});
+            {QHostAddress{ntohl(GaduSession->server_addr)}, portConnectedOn(GaduSession)});
 
     PingTimer = new QTimer(0);
     connect(PingTimer, SIGNAL(timeout()), this, SLOT(everyMinuteActions()));
