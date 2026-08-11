@@ -1,3 +1,13 @@
+/* Kadu: this style paints its own light background, so its text has to stay dark whatever
+   the desktop is wearing. Kadu gives the page the desktop's colour for text, so that the
+   styles painting no background of their own are not left black on a dark desktop; this is
+   said on html body, which outranks that rule and is not reached by it.
+
+   The black these styles were drawn around. These styles name colours for their
+   timestamps and their headers but never for the words of a message: they were written for
+   a white page and took the colour a page has when nothing is said. Now something is. */
+html body { color: #000000; }
+
 * {
 		word-wrap: break-word;
 		word-break:break-word;
