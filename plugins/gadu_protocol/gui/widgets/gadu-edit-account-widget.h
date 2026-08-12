@@ -30,7 +30,6 @@ class ConfigurationManager;
 class Configuration;
 class ContactManager;
 class GaduPersonalInfoWidget;
-class GaduServersManager;
 class IconsManager;
 class IdentitiesComboBox;
 class IdentityManager;
@@ -50,7 +49,7 @@ class GaduEditAccountWidget : public AccountEditWidget
     Q_OBJECT
 
 public:
-    explicit GaduEditAccountWidget(GaduServersManager *gaduServersManager, Account account, QWidget *parent = nullptr);
+    explicit GaduEditAccountWidget(Account account, QWidget *parent = nullptr);
     virtual ~GaduEditAccountWidget();
 
 public slots:
@@ -62,7 +61,6 @@ private:
     QPointer<ConfigurationManager> m_configurationManager;
     QPointer<Configuration> m_configuration;
     QPointer<ContactManager> m_contactManager;
-    QPointer<GaduServersManager> m_gaduServersManager;
     QPointer<IconsManager> m_iconsManager;
     QPointer<IdentityManager> m_identityManager;
     QPointer<PluginInjectedFactory> m_pluginInjectedFactory;

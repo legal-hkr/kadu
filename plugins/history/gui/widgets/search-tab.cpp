@@ -54,7 +54,7 @@
 #include "search-tab.moc"
 
 SearchTab::SearchTab(QWidget *parent)
-        : HistoryTab(parent), m_historyChatStorage(0), StatusStorage(0), SmsStorage(0),
+        : HistoryTab(parent), m_historyChatStorage(0), StatusStorage(0),
           SearchedStorage(&m_historyChatStorage)
 {
 }
@@ -124,17 +124,9 @@ void SearchTab::createGui()
     SelectStatusBuddy->setEnabled(false);
     queryFormLayout->addRow(SearchInStatuses, SelectStatusBuddy);
 
-    SearchInSmses = new QRadioButton(tr("Smses"), queryFormWidget);
-    SelectSmsRecipient = m_pluginInjectedFactory->makeInjected<HistoryTalkableComboBox>(queryFormWidget);
-    SelectSmsRecipient->setAllLabel(tr(" - All recipients - "));
-    SelectSmsRecipient->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    SelectSmsRecipient->setEnabled(false);
-    queryFormLayout->addRow(SearchInSmses, SelectSmsRecipient);
-
     QButtonGroup *kindRadioGroup = new QButtonGroup(queryFormWidget);
     kindRadioGroup->addButton(SearchInChats);
     kindRadioGroup->addButton(SearchInStatuses);
-    kindRadioGroup->addButton(SearchInSmses);
     connect(kindRadioGroup, SIGNAL(buttonReleased(QAbstractButton *)), this, SLOT(kindChanged(QAbstractButton *)));
 
     SearchByDate = new QCheckBox(tr("By date"), queryFormWidget);
@@ -225,31 +217,10 @@ void SearchTab::setStatusStorage(HistoryMessagesStorage *storage)
     }
 }
 
-void SearchTab::setSmsStorage(HistoryMessagesStorage *storage)
-{
-    if (SmsStorage == storage)
-        return;
-
-    SmsStorage = storage;
-
-    if (!SmsStorage)
-        SelectSmsRecipient->setTalkables(QVector<Talkable>());
-    else
-        SelectSmsRecipient->setFutureTalkables(SmsStorage->talkables());
-
-    if (*SearchedStorage == SmsStorage)
-    {
-        TimelineView->setResults(QVector<HistoryQueryResult>());
-        TimelineView->messagesView()->clearMessages();
-        TimelineView->messagesView()->setChat(Chat::null);
-    }
-}
-
 void SearchTab::kindChanged(QAbstractButton *button)
 {
     SelectChat->setEnabled(SearchInChats == button);
     SelectStatusBuddy->setEnabled(SearchInStatuses == button);
-    SelectSmsRecipient->setEnabled(SearchInSmses == button);
 }
 
 void SearchTab::fromDateChanged(const QDate &date)
@@ -286,12 +257,6 @@ void SearchTab::performSearch()
         query.setTalkable(SelectStatusBuddy->currentTalkable());
         SearchedStorage = &StatusStorage;
         TimelineView->setTalkableHeader(tr("Buddy"));
-    }
-    else if (SearchInSmses->isChecked())
-    {
-        query.setTalkable(SelectSmsRecipient->currentTalkable());
-        SearchedStorage = &SmsStorage;
-        TimelineView->setTalkableHeader(tr("Recipient"));
     }
 
     if (SearchedStorage && *SearchedStorage)

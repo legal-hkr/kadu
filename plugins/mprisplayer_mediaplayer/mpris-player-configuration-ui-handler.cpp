@@ -21,6 +21,10 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QSettings>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusConnectionInterface>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusReply>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -43,7 +47,33 @@
 #include "mpris-player-configuration-ui-handler.h"
 #include "mpris-player-configuration-ui-handler.moc"
 
-MPRISPlayerConfigurationUiHandler::MPRISPlayerConfigurationUiHandler(QObject *parent) : QObject{parent}, PlayersBox{}
+namespace
+{
+/**
+ * @short A bus name with the instance taken off, if it had one.
+ *
+ * Version 2 of MPRIS lets a player that can run more than once answer to
+ * org.mpris.MediaPlayer2.<player>.instance<pid> rather than to the plain name. The number is the
+ * process id, so it is worth nothing once the player has been restarted; the plain name is what
+ * is worth keeping. A tail that is not a number is left alone, being part of the player's name.
+ */
+QString playerServiceName(const QString &service)
+{
+    static auto const marker = QStringLiteral(".instance");
+
+    auto const at = service.lastIndexOf(marker);
+    if (at < 0)
+        return service;
+
+    bool digits = false;
+    service.mid(at + marker.length()).toULongLong(&digits);
+
+    return digits ? service.left(at) : service;
+}
+}
+
+MPRISPlayerConfigurationUiHandler::MPRISPlayerConfigurationUiHandler(QObject *parent)
+        : QObject{parent}, PlayersBox{}, EditButton{}, DeleteButton{}
 {
 }
 
@@ -80,15 +110,15 @@ void MPRISPlayerConfigurationUiHandler::mainConfigurationWindowCreated(MainConfi
     PlayersBox = new QComboBox(options);
 
     QPushButton *add = new QPushButton(tr("Add Player"), options);
-    QPushButton *edit = new QPushButton(tr("Edit Player"), options);
-    QPushButton *del = new QPushButton(tr("Delete Player"), options);
+    EditButton = new QPushButton(tr("Edit Player"), options);
+    DeleteButton = new QPushButton(tr("Delete Player"), options);
 
     selectionLayout->addWidget(label, 0, 0);
     selectionLayout->addWidget(PlayersBox, 0, 1, 1, 5);
 
     buttonsLayout->addWidget(add, 0, 0);
-    buttonsLayout->addWidget(edit, 0, 1);
-    buttonsLayout->addWidget(del, 0, 2);
+    buttonsLayout->addWidget(EditButton, 0, 1);
+    buttonsLayout->addWidget(DeleteButton, 0, 2);
 
     selectionLayout->addLayout(buttonsLayout, 1, 0, 1, 6);
 
@@ -98,10 +128,12 @@ void MPRISPlayerConfigurationUiHandler::mainConfigurationWindowCreated(MainConfi
     fillPlayersBox();
     PlayersBox->setCurrentIndex(
         PlayersBox->findText(m_configuration->deprecatedApi()->readEntry("MPRISPlayer", "Player")));
+    updateButtons();
 
     connect(add, SIGNAL(clicked()), this, SLOT(addPlayer()));
-    connect(edit, SIGNAL(clicked()), this, SLOT(editPlayer()));
-    connect(del, SIGNAL(clicked()), this, SLOT(delPlayer()));
+    connect(EditButton, SIGNAL(clicked()), this, SLOT(editPlayer()));
+    connect(DeleteButton, SIGNAL(clicked()), this, SLOT(delPlayer()));
+    connect(PlayersBox, &QComboBox::currentTextChanged, this, [this]() { updateButtons(); });
     connect(mainConfigurationWindow, SIGNAL(configurationWindowApplied()), this, SLOT(configurationApplied()));
 }
 
@@ -119,8 +151,11 @@ void MPRISPlayerConfigurationUiHandler::loadPlayersListFromFile()
 
     QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
 
-    QStringList globalSections = globalPlayersSettings.childGroups();
-    QStringList userSections = userPlayersSettings.childGroups();
+    GlobalSections = globalPlayersSettings.childGroups();
+    UserSections = userPlayersSettings.childGroups();
+
+    auto const &globalSections = GlobalSections;
+    auto const &userSections = UserSections;
 
     PlayersMap.clear();
 
@@ -144,6 +179,49 @@ void MPRISPlayerConfigurationUiHandler::loadPlayersListFromFile()
         if (!player.isEmpty() && !service.isEmpty())
             PlayersMap.insert(player, service);
     }
+
+    addPlayersFoundOnBus();
+}
+
+void MPRISPlayerConfigurationUiHandler::addPlayersFoundOnBus()
+{
+    // Version 2 of MPRIS asks every player to take a bus name beginning org.mpris.MediaPlayer2. and
+    // to say what it is called under Identity. A player that is running can therefore be found
+    // rather than looked up, which is worth more than any list: the one shipped with Kadu can only
+    // ever name the players somebody thought of, and it named them by the addresses version 1 used.
+    auto bus = QDBusConnection::sessionBus();
+    if (!bus.isConnected() || !bus.interface())
+        return;
+
+    static auto const prefix = QStringLiteral("org.mpris.MediaPlayer2.");
+
+    for (auto const &service : bus.interface()->registeredServiceNames().value())
+    {
+        if (!service.startsWith(prefix))
+            continue;
+
+        // What gets written down is the name without the instance. A player that can run more
+        // than once is allowed to take org.mpris.MediaPlayer2.vlc.instance7710, where the tail is
+        // the process id and is a different number every time it starts -- so remembering the
+        // whole of it would pick the player out today and never again. MPRISController is what
+        // puts the two back together, looking for whichever instance is on the bus at the time.
+        auto const player = playerServiceName(service);
+
+        // Already named in one of the lists, under whatever name it was given there.
+        if (PlayersMap.values().contains(player))
+            continue;
+
+        QDBusInterface properties{
+            service, QStringLiteral("/org/mpris/MediaPlayer2"), QStringLiteral("org.freedesktop.DBus.Properties"), bus};
+        QDBusReply<QDBusVariant> reply = properties.call(
+            QStringLiteral("Get"), QStringLiteral("org.mpris.MediaPlayer2"), QStringLiteral("Identity"));
+
+        auto name = reply.isValid() ? reply.value().variant().toString() : QString{};
+        if (name.isEmpty())
+            name = player.mid(prefix.length());
+
+        PlayersMap.insert(name, player);
+    }
 }
 
 void MPRISPlayerConfigurationUiHandler::fillPlayersBox()
@@ -156,6 +234,37 @@ void MPRISPlayerConfigurationUiHandler::fillPlayersBox()
         PlayersBox->addItem(it.key());
         ++it;
     }
+}
+
+void MPRISPlayerConfigurationUiHandler::updateButtons()
+{
+    if (!EditButton || !DeleteButton)
+        return;
+
+    auto const player = PlayersBox ? PlayersBox->currentText() : QString{};
+    auto const isUsers = UserSections.contains(player);
+    auto const isKadus = GlobalSections.contains(player);
+
+    // Three kinds of entry stand in the same list and not the same things can be done to them, so
+    // each button says what it is able to do rather than doing nothing when pressed.
+    //
+    // One found on the bus is written down nowhere: it is on the list because the player is
+    // running, and would be there again for the same reason however thoroughly it were removed.
+    // One that came with Kadu lives in a file the program installs and does not write to, so it
+    // can be given a different service -- that goes in the user's own file, over the top -- but
+    // not a different name, and taking it away would only bring it back at the next reading.
+    EditButton->setEnabled(isUsers || isKadus);
+    EditButton->setToolTip(
+        (isUsers || isKadus)
+            ? QString{}
+            : tr("This player was found running rather than set up here, so there is nothing to change."));
+
+    DeleteButton->setEnabled(isUsers && !isKadus);
+    DeleteButton->setToolTip(
+        isKadus ? tr("This player came with Kadu and cannot be removed.")
+                : (isUsers ? QString{}
+                           : tr("This player was found running rather than set up here, so there is nothing to "
+                                "remove.")));
 }
 
 void MPRISPlayerConfigurationUiHandler::addPlayer()
@@ -182,86 +291,74 @@ void MPRISPlayerConfigurationUiHandler::addPlayer()
     fillPlayersBox();
 
     PlayersBox->setCurrentIndex(PlayersBox->findText(oldPlayerName));
+    updateButtons();
 }
 
 void MPRISPlayerConfigurationUiHandler::editPlayer()
 {
-    MPRISPlayerDialog Dialog(true);
-
     QString oldPlayer = PlayersBox->currentText();
     QString oldService = PlayersMap.value(oldPlayer);
 
-    if ((oldPlayer.isEmpty() || oldService.isEmpty()))
+    if (oldPlayer.isEmpty() || oldService.isEmpty())
         return;
+
+    auto const nameIsFixed = GlobalSections.contains(oldPlayer);
+
+    MPRISPlayerDialog Dialog(true);
 
     Dialog.setPlayer(oldPlayer);
     Dialog.setService(oldService);
+    if (nameIsFixed)
+        Dialog.fixPlayerName();
 
     if (Dialog.exec() != QDialog::Accepted)
         return;
 
-    QString newPlayer = Dialog.getPlayer();
+    QString newPlayer = nameIsFixed ? oldPlayer : Dialog.getPlayer();
     QString newService = Dialog.getService();
 
     if ((newPlayer.isEmpty() || newService.isEmpty()) || (newPlayer == oldPlayer && oldService == newService))
         return;
 
-    QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
+    // Written where the program is able to write, which is the user's own file, and not looked for
+    // among the sections first. An entry that came with Kadu has no section there yet and gets one
+    // now, over the top of the installed entry of the same name; one the user added already has
+    // its own, and moves within the file when it is renamed.
     QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
-    QStringList sections = globalPlayersSettings.childGroups();
 
-    if (!sections.contains(oldPlayer))
-        sections = userPlayersSettings.childGroups();
+    if (newPlayer != oldPlayer)
+        userPlayersSettings.remove(oldPlayer);
 
-    for (auto const &section : sections)
-    {
-        if (section != oldPlayer)
-            continue;
-
-        userPlayersSettings.remove(section + "/player");
-        userPlayersSettings.remove(section + "/service");
-
-        userPlayersSettings.setValue(newPlayer + "/player", newPlayer);
-        userPlayersSettings.setValue(newPlayer + "/service", newService);
-        break;
-    }
-
+    userPlayersSettings.setValue(newPlayer + "/player", newPlayer);
+    userPlayersSettings.setValue(newPlayer + "/service", newService);
     userPlayersSettings.sync();
 
     loadPlayersListFromFile();
     fillPlayersBox();
 
     PlayersBox->setCurrentIndex(PlayersBox->findText(newPlayer));
+    updateButtons();
 }
 
 void MPRISPlayerConfigurationUiHandler::delPlayer()
 {
     QString playerToRemove = PlayersBox->currentText();
 
-    QSettings globalPlayersSettings(MPRISPlayer::globalPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
+    // The button is not offered for anything else, and this says the same in the one place that
+    // does the removing.
+    if (!UserSections.contains(playerToRemove) || GlobalSections.contains(playerToRemove))
+        return;
+
     QSettings userPlayersSettings(MPRISPlayer::userPlayersListFileName(m_pathsProvider), QSettings::IniFormat);
 
-    QStringList sections = globalPlayersSettings.childGroups();
-
-    if (!sections.contains(playerToRemove))
-        sections = userPlayersSettings.childGroups();
-
-    for (auto const &section : sections)
-    {
-        if (section != playerToRemove)
-            continue;
-
-        userPlayersSettings.remove(section + "/player");
-        userPlayersSettings.remove(section + "/service");
-        break;
-    }
-
+    userPlayersSettings.remove(playerToRemove);
     userPlayersSettings.sync();
 
     loadPlayersListFromFile();
     fillPlayersBox();
 
     PlayersBox->setCurrentIndex(-1);
+    updateButtons();
 }
 
 void MPRISPlayerConfigurationUiHandler::configurationApplied()

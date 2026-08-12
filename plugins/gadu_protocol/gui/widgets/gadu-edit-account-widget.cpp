@@ -25,7 +25,6 @@
 #include "gadu-account-data.h"
 #include "gadu-id-validator.h"
 #include "gadu-personal-info-widget.h"
-#include "server/gadu-servers-manager.h"
 
 #include "accounts/account-manager.h"
 #include "accounts/account.h"
@@ -60,8 +59,7 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
 
-GaduEditAccountWidget::GaduEditAccountWidget(GaduServersManager *gaduServersManager, Account account, QWidget *parent)
-        : AccountEditWidget(account, parent), m_gaduServersManager{gaduServersManager}
+GaduEditAccountWidget::GaduEditAccountWidget(Account account, QWidget *parent) : AccountEditWidget(account, parent)
 {
 }
 

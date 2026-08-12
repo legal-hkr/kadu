@@ -41,6 +41,15 @@ class KADUAPI ConfigColorButton : public ColorButton, public ConfigWidgetValue
 protected:
     virtual void createWidgets();
 
+    /**
+     * @short Keeps the caption in step with the button.
+     *
+     * The caption is a label of its own standing next to the button, so a button that is turned
+     * off leaves its caption looking available unless the two are answered together. setVisible()
+     * already pairs them; this pairs them when they are enabled and disabled as well.
+     */
+    virtual void changeEvent(QEvent *event) override;
+
 public:
     ConfigColorButton(
         const QString &section, const QString &item, const QString &widgetCaption, const QString &toolTip,

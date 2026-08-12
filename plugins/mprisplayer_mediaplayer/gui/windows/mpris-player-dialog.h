@@ -51,6 +51,14 @@ public:
     virtual ~MPRISPlayerDialog();
 
     void setPlayer(const QString &player);
+
+    /**
+     * @short Show the player's name but do not let it be changed.
+     *
+     * For an entry that came with Kadu: its name is a section of a file the program does not write
+     * to, so a new name could only be written beside the old one rather than over it.
+     */
+    void fixPlayerName();
     void setService(const QString &service);
     QString getPlayer();
     QString getService();

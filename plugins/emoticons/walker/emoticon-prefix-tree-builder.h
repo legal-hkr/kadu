@@ -20,7 +20,7 @@
 #ifndef EMOTICON_PREFIX_TREE_BUILDER_H
 #define EMOTICON_PREFIX_TREE_BUILDER_H
 
-#include <QtCore/QScopedPointer>
+#include <memory>
 
 #include "walker/emoticon-prefix-tree.h"
 
@@ -39,7 +39,7 @@ class QChar;
  */
 class EmoticonPrefixTreeBuilder
 {
-    QScopedPointer<EmoticonPrefixTree> Root;
+    std::unique_ptr<EmoticonPrefixTree> Root;
 
 public:
     EmoticonPrefixTreeBuilder();

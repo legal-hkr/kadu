@@ -57,9 +57,18 @@ private:
     TrackInfo CurrentTrack;
 
     bool Active;
-    QString Service;
 
-    void activate();
+    // What the user settled on, and what answers to it on the bus just now. Version 2 of MPRIS
+    // lets a player that can run more than once take org.mpris.MediaPlayer2.<player>.instance<pid>
+    // instead of the plain name, so the second changes with every run of the player while the
+    // first is what there is any sense in writing down.
+    QString Service;
+    QString ActiveService;
+
+    bool namesThisPlayer(const QString &busName) const;
+    QString findOnBus() const;
+
+    void activate(const QString &busName);
     void deactivate();
 
     void updateStatus(const PlayerStatus newStatus);

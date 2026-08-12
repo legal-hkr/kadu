@@ -1,7 +1,7 @@
 /*
  * %kadu copyright begin%
- * Copyright 2011, 2012 Bartosz Brachaczek (b.brachaczek@gmail.com)
- * Copyright 2011, 2013, 2014 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
+ * Copyright 2011, 2013 Bartosz Brachaczek (b.brachaczek@gmail.com)
+ * Copyright 2011, 2012, 2013 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
  * %kadu copyright end%
  *
  * This program is free software; you can redistribute it and/or
@@ -22,7 +22,26 @@
 
 #include "gadu-servers-manager.h"
 
-GaduServersManager::GaduServersManager(QObject *parent) : QObject{parent}
+namespace
+{
+const int MaxDirectAttempts = 3;
+const int MaxHubAttempts = 4;
+const int DirectAttemptDelay = 5 * 1000;
+const int HubAttemptDelay = 15 * 1000;
+
+/**
+ * @short The entry standing for the hub rather than for a server.
+ *
+ * An address of zero is how libgadu is told to go and ask appmsg.gadu-gadu.pl which server is up,
+ * instead of being handed one to connect to.
+ */
+GaduServersManager::GaduServer hub()
+{
+    return {QHostAddress{(quint32)0}, 0};
+}
+}
+
+GaduServersManager::GaduServersManager(QObject *parent) : QObject{parent}, DirectAttempts{0}, HubAttempts{0}
 {
 }
 
@@ -30,34 +49,49 @@ GaduServersManager::~GaduServersManager()
 {
 }
 
-void GaduServersManager::init()
+bool GaduServersManager::isRetryingLastWorkingServer() const
 {
-    GoodServers << GaduServer(QHostAddress((quint32)0), 0);   // for GG hub
-    for (auto i = 108; i <= 123; i++)
-        GoodServers << GaduServer{QHostAddress{QString{"91.214.237.%1"}.arg(i)}, 443};
-    AllServers = GoodServers;
+    return !LastWorkingServer.first.isNull() && DirectAttempts < MaxDirectAttempts;
 }
 
 GaduServersManager::GaduServer GaduServersManager::getServer()
 {
-    if (GoodServers.isEmpty())
+    if (!hasAnotherAttempt())
+        startOver();
+
+    // Counted here, as the attempt begins, rather than when one is reported to have failed. One
+    // login can report failure twice -- once because Kadu's own clock on it ran out and once
+    // because the socket said so -- and counting those spent two of the budget on a single try.
+    // Read from a log of it: the remembered server was given two goes where it should have had
+    // three. Attempts beginning are exactly as many as there are logins.
+    if (isRetryingLastWorkingServer())
     {
-        GoodServers = BadServers;
-        BadServers.clear();
-        return GaduServer(QHostAddress(), 0);
+        ++DirectAttempts;
+        return LastWorkingServer;
     }
 
-    if (GoodServers[0].second != 443 && GoodServers[0].second != 0)
-    {
-        markServerAsBad(GoodServers[0]);
-        return getServer();
-    }
-
-    return GoodServers[0];
+    ++HubAttempts;
+    return hub();
 }
 
-void GaduServersManager::markServerAsBad(GaduServersManager::GaduServer server)
+void GaduServersManager::connectionSucceeded(const GaduServersManager::GaduServer &server)
 {
-    GoodServers.removeAll(server);
-    BadServers.append(server);
+    LastWorkingServer = server;
+    startOver();
+}
+
+bool GaduServersManager::hasAnotherAttempt() const
+{
+    return isRetryingLastWorkingServer() || HubAttempts < MaxHubAttempts;
+}
+
+int GaduServersManager::delayBeforeNextAttempt() const
+{
+    return isRetryingLastWorkingServer() ? DirectAttemptDelay : HubAttemptDelay;
+}
+
+void GaduServersManager::startOver()
+{
+    DirectAttempts = 0;
+    HubAttempts = 0;
 }

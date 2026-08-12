@@ -14,6 +14,7 @@ set (configuration_SRCS
 	configuration-window-data-manager.cpp
 	configuration-writer.cpp
 	deprecated-configuration-api.cpp
+	system-colors-watcher.cpp
 )
 
 kadu_subdirectory (configuration "${configuration_SRCS}")

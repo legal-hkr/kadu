@@ -72,6 +72,11 @@ void MPRISPlayerDialog::setPlayer(const QString &player)
     PlayerEdit->setText(player);
 }
 
+void MPRISPlayerDialog::fixPlayerName()
+{
+    PlayerEdit->setReadOnly(true);
+}
+
 void MPRISPlayerDialog::setService(const QString &service)
 {
     ServiceEdit->setText(service);

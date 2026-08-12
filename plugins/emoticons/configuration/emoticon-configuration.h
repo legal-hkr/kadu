@@ -39,6 +39,7 @@
  * <ul>
  *   <li>enabled - enable displaying emoticons</li>
  *   <li>animate - animate displayed emoticons</li>
+ *   <li>animateSelector - animate every emoticon in the list one is chosen from</li>
  *   <li>emoticonTheme - theme of emoticons to display</li>
  * </ul>
  */
@@ -46,6 +47,7 @@ class EmoticonConfiguration
 {
     bool Enabled;
     bool Animate;
+    bool AnimateSelector;
     EmoticonTheme Emoticons;
 
 public:
@@ -77,6 +79,18 @@ public:
      * @return value of animate property
      */
     bool animate() const;
+
+    /**
+     * @short Set value of animateSelector property.
+     * @param animateSelector new value of animateSelector property
+     */
+    void setAnimateSelector(bool animateSelector);
+
+    /**
+     * @short Return value of animateSelector property.
+     * @return value of animateSelector property
+     */
+    bool animateSelector() const;
 
     /**
      * @short Set value of emoticonTheme property.

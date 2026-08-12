@@ -109,15 +109,10 @@ void HistoryWindow::createGui()
     StatusTab->timelineView()->setTalkableVisible(false);
     StatusTab->setClearHistoryMenuItemTitle(tr("&Clear Status History"));
 
-    SmsTab = m_pluginInjectedFactory->makeInjected<HistoryMessagesTab>(TabWidget);
-    SmsTab->timelineView()->setTalkableVisible(false);
-    SmsTab->setClearHistoryMenuItemTitle(tr("&Clear SMS History"));
-
     MySearchTab = m_pluginInjectedFactory->makeInjected<SearchTab>(TabWidget);
 
     TabWidget->addTab(ChatTab, tr("Chats"));
     TabWidget->addTab(StatusTab, tr("Statuses"));
-    TabWidget->addTab(SmsTab, tr("SMS"));
     TabWidget->addTab(MySearchTab, tr("Search"));
 
     CurrentTab = 0;
@@ -152,19 +147,15 @@ void HistoryWindow::storageChanged(HistoryStorage *historyStorage)
     {
         ChatTab->setHistoryMessagesStorage(historyStorage->chatStorage());
         StatusTab->setHistoryMessagesStorage(historyStorage->statusStorage());
-        SmsTab->setHistoryMessagesStorage(historyStorage->smsStorage());
         MySearchTab->setHistoryChatStorage(historyStorage->chatStorage());
         MySearchTab->setStatusStorage(historyStorage->statusStorage());
-        MySearchTab->setSmsStorage(historyStorage->smsStorage());
     }
     else
     {
         ChatTab->setHistoryMessagesStorage(0);
         StatusTab->setHistoryMessagesStorage(0);
-        SmsTab->setHistoryMessagesStorage(0);
         MySearchTab->setHistoryChatStorage(0);
         MySearchTab->setStatusStorage(0);
-        MySearchTab->setSmsStorage(0);
     }
 }
 

@@ -75,15 +75,17 @@ public:
             return true;
         case QEvent::MouseMove:
         {
+            auto const global = QCursor::pos();
             QMouseEvent event(
-                QEvent::MouseMove, toolbar->mapFromGlobal(QCursor::pos()), Qt::NoButton, ((QMouseEvent *)e)->buttons(),
-                ((QMouseEvent *)e)->modifiers());
+                QEvent::MouseMove, toolbar->mapFromGlobal(global), global, Qt::NoButton,
+                ((QMouseEvent *)e)->buttons(), ((QMouseEvent *)e)->modifiers());
             toolbar->mouseMoveEvent(&event);
             return event.isAccepted();
         }
         case QEvent::ContextMenu:
         {
-            QContextMenuEvent event(QContextMenuEvent::Mouse, toolbar->mapFromGlobal(QCursor::pos()));
+            auto const global = QCursor::pos();
+            QContextMenuEvent event(QContextMenuEvent::Mouse, toolbar->mapFromGlobal(global), global);
             toolbar->contextMenuEvent(&event);
             return event.isAccepted();
         }
@@ -378,7 +380,7 @@ void ToolBar::dropEvent(QDropEvent *event)
         return;
     }
 
-    QAction *before = findActionToDropBefore(event->pos());
+    QAction *before = findActionToDropBefore(event->position().toPoint());
 
     if (source != this)
     {

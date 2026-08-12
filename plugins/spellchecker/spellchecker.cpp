@@ -315,16 +315,17 @@ void SpellChecker::buildMarkTag()
     QTextCharFormat format;
 
     if (m_spellcheckerConfiguration->bold())
-        format.setFontWeight(600);
+        format.setFontWeight(QFont::DemiBold);
     if (m_spellcheckerConfiguration->italic())
         format.setFontItalic(true);
-    if (m_spellcheckerConfiguration->underline())
-    {
-        format.setFontUnderline(true);
-        format.setUnderlineColor(m_spellcheckerConfiguration->color());
-        format.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
-    }
-    format.setForeground(QBrush(m_spellcheckerConfiguration->color()));
+
+    // A wavy line underneath, in the colour the settings name, and the word itself left in the
+    // colour it would otherwise have. Painting the word instead is what made a misspelling
+    // disappear: the colour painted over it knows nothing of the desktop's, so on a dark one the
+    // word sank into the background. The line is drawn whatever else is switched on, because it is
+    // the marking; bold and italic only add to it.
+    format.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+    format.setUnderlineColor(m_spellcheckerConfiguration->color());
 
     Highlighter::setHighlightFormat(format);
     Highlighter::rehighlightAll();

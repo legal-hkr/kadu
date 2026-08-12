@@ -28,6 +28,8 @@
 #include "widgets/dialog/merge-buddies-dialog-widget.h"
 #include "windows/kadu-dialog.h"
 
+#include <QtWidgets/QWidget>
+
 MergeBuddiesAction::MergeBuddiesAction(QObject *parent)
         :   // using C++ initializers breaks Qt's lupdate
           ActionDescription(parent)
@@ -59,8 +61,8 @@ void MergeBuddiesAction::actionTriggered(QAction *sender, bool)
 
     auto *mergeWidget = injectedFactory()->makeInjected<MergeBuddiesDialogWidget>(
         buddy, tr("Choose which buddy would you like to merge with <i>%1</i>").arg(buddy.display()),
-        sender->parentWidget());
-    auto window = new KaduDialog(mergeWidget, sender->parentWidget());
+        qobject_cast<QWidget *>(sender->parent()));
+    auto window = new KaduDialog(mergeWidget, qobject_cast<QWidget *>(sender->parent()));
     window->setAcceptButtonText(tr("Merge"));
     window->exec();
 }

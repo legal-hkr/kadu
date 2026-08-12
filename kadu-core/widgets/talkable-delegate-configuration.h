@@ -55,6 +55,7 @@ class TalkableDelegateConfiguration : public QObject, private ConfigurationAware
     bool ShowAvatars;
     bool ShowMessagePixmap;
     bool UseConfigurationColors;
+    bool CustomColors;
     bool AvatarBorder;
     bool AvatarGreyOut;
     QColor DescriptionColor;
@@ -130,9 +131,16 @@ public:
     {
         return ShowMessagePixmap;
     }
+    /**
+     * @short Whether the list draws itself in the colours from the configuration.
+     *
+     * Two things have to agree. The view says whether colours of its own make sense there at all,
+     * and the user says whether to use them rather than follow the desktop; with either answering
+     * no, the painter takes the colour out of the palette instead.
+     */
     bool useConfigurationColors() const
     {
-        return UseConfigurationColors;
+        return UseConfigurationColors && CustomColors;
     }
     bool avatarBorder() const
     {

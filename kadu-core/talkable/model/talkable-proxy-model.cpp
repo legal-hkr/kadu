@@ -25,6 +25,7 @@
 
 #include "talkable-proxy-model.h"
 #include "talkable-proxy-model.moc"
+#include "model/filter-change.h"
 
 #include "buddies/buddy-preferred-manager.h"
 #include "buddies/buddy.h"
@@ -269,8 +270,9 @@ void TalkableProxyModel::addFilter(TalkableFilter *filter)
     if (TalkableFilters.contains(filter))
         return;
 
+    KADU_BEGIN_FILTER_CHANGE();
     TalkableFilters.append(filter);
-    invalidateFilter();
+    KADU_END_FILTER_CHANGE_ROWS();
     connect(filter, SIGNAL(filterChanged()), this, SLOT(invalidate()));
     connect(filter, SIGNAL(filterChanged()), this, SIGNAL(invalidated()));
 
@@ -279,10 +281,12 @@ void TalkableProxyModel::addFilter(TalkableFilter *filter)
 
 void TalkableProxyModel::removeFilter(TalkableFilter *filter)
 {
-    if (TalkableFilters.removeAll(filter) <= 0)
+    if (!TalkableFilters.contains(filter))
         return;
 
-    invalidateFilter();
+    KADU_BEGIN_FILTER_CHANGE();
+    TalkableFilters.removeAll(filter);
+    KADU_END_FILTER_CHANGE_ROWS();
     disconnect(filter, 0, this, 0);
 
     emit invalidated();

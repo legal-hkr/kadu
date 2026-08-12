@@ -48,7 +48,7 @@ void NextResultsAction::actionInstanceCreated(Action *action)
 
 void NextResultsAction::actionTriggered(QAction *sender, bool)
 {
-    auto search = qobject_cast<SearchWindow *>(sender->parentWidget());
+    auto search = qobject_cast<SearchWindow *>(sender->parent());
     if (search)
         search->nextSearch();
 }

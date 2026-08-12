@@ -234,16 +234,16 @@ void ChatWidgetImpl::createGui()
     connect(messagesSearchBar, SIGNAL(clearSearch()), highligher, SLOT(clearSelect()));
     connect(highligher, SIGNAL(somethingFound(bool)), messagesSearchBar, SLOT(somethingFound(bool)));
 
-    QShortcut *shortcut = new QShortcut(QKeySequence(Qt::Key_PageUp + Qt::SHIFT), this);
+    QShortcut *shortcut = new QShortcut(QKeySequence(Qt::SHIFT | Qt::Key_PageUp), this);
     connect(shortcut, SIGNAL(activated()), MessagesView.get(), SLOT(pageUp()));
 
-    shortcut = new QShortcut(QKeySequence(Qt::Key_PageDown + Qt::SHIFT), this);
+    shortcut = new QShortcut(QKeySequence(Qt::SHIFT | Qt::Key_PageDown), this);
     connect(shortcut, SIGNAL(activated()), MessagesView.get(), SLOT(pageDown()));
 
-    shortcut = new QShortcut(QKeySequence(Qt::Key_PageUp + Qt::ControlModifier), this);
+    shortcut = new QShortcut(QKeySequence(Qt::ControlModifier | Qt::Key_PageUp), this);
     connect(shortcut, SIGNAL(activated()), MessagesView.get(), SLOT(pageUp()));
 
-    shortcut = new QShortcut(QKeySequence(Qt::Key_PageDown + Qt::ControlModifier), this);
+    shortcut = new QShortcut(QKeySequence(Qt::ControlModifier | Qt::Key_PageDown), this);
     connect(shortcut, SIGNAL(activated()), MessagesView.get(), SLOT(pageDown()));
     HorizontalSplitter->addWidget(frame);
 

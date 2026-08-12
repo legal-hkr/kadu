@@ -27,6 +27,7 @@
 
 #include <QtCore/QHash>
 #include <QtCore/QPointer>
+#include <QtGui/QColor>
 #include <QtGui/QIcon>
 #include <injeqt/injeqt.h>
 
@@ -81,6 +82,7 @@ private:
     QPointer<IconThemeManager> m_iconThemeManager;
 
     QHash<QString, QIcon> IconCache;
+    QColor CachedIconsColor;
 
     bool UseSystemIcons;
 

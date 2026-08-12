@@ -22,6 +22,9 @@
  */
 
 #include <QtCore/QDateTime>
+#include <algorithm>
+
+#include <QtCore/QLocale>
 #include <QtWidgets/QApplication>
 
 #ifdef Q_OS_WIN
@@ -32,6 +35,103 @@
 #include <time.h>
 
 #include "date-time.h"
+
+namespace
+{
+/**
+ * @short Whether the date letters beginning here are asking for a date rather than spelling a word.
+ *
+ * The letters a date is written with are also letters that words are written with, and a
+ * translator writing "el dia " means the Spanish for "the day" and not the day of the month. So a
+ * run of them is honoured only where it stands on its own: touching a letter that a word could be
+ * written with, on either side, makes it part of that word.
+ *
+ * Only the alphabet the date letters themselves belong to counts as making a word. The Chinese
+ * translation writes the year hard against the character for "year" -- yyyy年MMMM月d日 -- where the
+ * neighbour is a neighbour and not a word the letters are part of.
+ */
+bool asksForADate(const QString &text, int at)
+{
+    static auto const dateLetters = QStringLiteral("dMy");
+
+    auto const spellsAWord = [](QChar letter) {
+        return letter.isLetter() && letter.script() == QChar::Script_Latin && !dateLetters.contains(letter);
+    };
+
+    if (!dateLetters.contains(text.at(at)))
+        return false;
+
+    if (at > 0 && spellsAWord(text.at(at - 1)))
+        return false;
+
+    auto after = at;
+    while (after < text.length() && dateLetters.contains(text.at(after)))
+        ++after;
+
+    return after >= text.length() || !spellsAWord(text.at(after));
+}
+
+/**
+ * @short A translated prefix turned into a format that says what it means.
+ *
+ * These prefixes are translated whole -- "dddd at " becomes "dddd o " in Polish -- so a translator
+ * writes the date tokens and the words around them into one string. Qt then reads the whole thing
+ * as a format, and the words are read as tokens too: the "m" of the German "um" comes out as the
+ * minutes, the "s" of the Portuguese "às" as the seconds, the "a" and "t" of the English "at" as
+ * am/pm and the time zone. Fifteen of the thirty-one translations of these strings were mangled
+ * that way, in whichever language their author spoke.
+ *
+ * Anything here that is not a date token is quoted, and Qt writes quoted text out as it stands.
+ * Only date tokens are honoured, because these prefixes carry a date and the time is added
+ * separately -- which is why an "m" or an "s" in them is a letter of a word and not a request.
+ */
+QString asDateFormat(const QString &translated)
+{
+    static const QStringList tokens = {
+        QStringLiteral("dddd"), QStringLiteral("ddd"),  QStringLiteral("dd"), QStringLiteral("d"),
+        QStringLiteral("MMMM"), QStringLiteral("MMM"),  QStringLiteral("MM"), QStringLiteral("M"),
+        QStringLiteral("yyyy"), QStringLiteral("yy")};
+
+    QString format;
+    QString literal;
+
+    auto const flush = [&format, &literal]() {
+        if (literal.isEmpty())
+            return;
+        // A quote of its own is written twice to stand for itself.
+        format += QLatin1Char('\'') + QString{literal}.replace(QLatin1Char('\''), QStringLiteral("''")) +
+                  QLatin1Char('\'');
+        literal.clear();
+    };
+
+    for (int at = 0; at < translated.length();)
+    {
+        auto const token =
+            asksForADate(translated, at)
+                ? std::find_if(
+                      tokens.begin(), tokens.end(),
+                      [&translated, at](const QString &candidate) {
+                          return translated.mid(at, candidate.length()) == candidate;
+                      })
+                : tokens.end();
+
+        if (token == tokens.end())
+        {
+            literal += translated.at(at);
+            ++at;
+            continue;
+        }
+
+        flush();
+        format += *token;
+        at += token->length();
+    }
+
+    flush();
+
+    return format;
+}
+}
 
 QString printDateTime(bool niceDateFormat, const QDateTime &datetime)
 {
@@ -53,7 +153,13 @@ QString printDateTime(bool niceDateFormat, const QDateTime &datetime)
                 ret.prepend(QCoreApplication::translate("@default", "Yesterday at "));
             else if (delta < 7)   // less than week ago
             {
-                ret.prepend(datetime.toString(QCoreApplication::translate("@default", "dddd at ")));
+                // Asked of the locale rather than of the date. QDateTime::toString(format) spells
+                // the day out in English whatever language is in use -- it reads the names from the
+                // C locale -- so a Polish Kadu showed "Friday o 13:19:57": the word between them
+                // translated, the day not. The default locale is set from the language Kadu was
+                // asked to speak, so the two now come from the same place.
+                ret.prepend(QLocale{}.toString(
+                    datetime, asDateFormat(QCoreApplication::translate("@default", "dddd at "))));
                 ret[0] = ret.at(0).toUpper();   // looks ugly lowercase ;)
             }
             else if (delta < 14)
@@ -79,7 +185,8 @@ QString printDateTime(bool niceDateFormat, const QDateTime &datetime)
                                     .arg(delta % 7));
             }
             else
-                ret.prepend(datetime.toString(QCoreApplication::translate("@default", "d MMMM yyyy at ")));
+                ret.prepend(QLocale{}.toString(
+                    datetime, asDateFormat(QCoreApplication::translate("@default", "d MMMM yyyy at "))));
         }
         else
             ret.append(datetime.toString(" (dd.MM.yyyy)"));

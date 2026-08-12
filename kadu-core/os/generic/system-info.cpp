@@ -163,6 +163,7 @@ QString SystemInfo::linuxHeuristicDetect()
                 ret = desc;
                 if (!ret.isEmpty())
                     break;
+                [[fallthrough]];   // the file said nothing, so fall back on the name
             case OsUseName:
                 ret = osInfo[i].name;
                 break;

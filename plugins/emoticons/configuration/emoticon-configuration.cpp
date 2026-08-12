@@ -19,7 +19,7 @@
 
 #include "emoticon-configuration.h"
 
-EmoticonConfiguration::EmoticonConfiguration() : Enabled(true), Animate(true)
+EmoticonConfiguration::EmoticonConfiguration() : Enabled(true), Animate(true), AnimateSelector(true)
 {
 }
 
@@ -27,6 +27,7 @@ EmoticonConfiguration::EmoticonConfiguration(const EmoticonConfiguration &copyMe
 {
     Enabled = copyMe.Enabled;
     Animate = copyMe.Animate;
+    AnimateSelector = copyMe.AnimateSelector;
     Emoticons = copyMe.Emoticons;
 }
 
@@ -34,6 +35,7 @@ EmoticonConfiguration &EmoticonConfiguration::operator=(const EmoticonConfigurat
 {
     Enabled = copyMe.Enabled;
     Animate = copyMe.Animate;
+    AnimateSelector = copyMe.AnimateSelector;
     Emoticons = copyMe.Emoticons;
 
     return *this;
@@ -57,6 +59,16 @@ void EmoticonConfiguration::setAnimate(bool animate)
 bool EmoticonConfiguration::animate() const
 {
     return Animate;
+}
+
+void EmoticonConfiguration::setAnimateSelector(bool animateSelector)
+{
+    AnimateSelector = animateSelector;
+}
+
+bool EmoticonConfiguration::animateSelector() const
+{
+    return AnimateSelector;
 }
 
 void EmoticonConfiguration::setEmoticonTheme(const EmoticonTheme &emoticonTheme)

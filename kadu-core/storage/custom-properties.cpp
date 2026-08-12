@@ -51,7 +51,7 @@ void CustomProperties::loadFromModuleData(const QDomNode &node)
     const unsigned int propertyNodesCount = propertyNodes.length();
     for (unsigned int i = 0; i < propertyNodesCount; i++)
     {
-        const QDomElement &propertyElement = propertyNodes.at(static_cast<const int>(i)).toElement();
+        const QDomElement &propertyElement = propertyNodes.at(static_cast<int>(i)).toElement();
         if (!propertyElement.isElement())
             continue;
 
@@ -71,9 +71,9 @@ void CustomProperties::loadFrom(const std::shared_ptr<StoragePoint> &storagePoin
     const QDomNodeList &moduleDataNodes = element.elementsByTagName("ModuleData");
     const unsigned int moduleDataNodesCount = moduleDataNodes.length();
     for (unsigned int i = 0; i < moduleDataNodesCount; i++)
-        loadFromModuleData(moduleDataNodes.at(static_cast<const int>(i)));
+        loadFromModuleData(moduleDataNodes.at(static_cast<int>(i)));
     for (unsigned int i = 0; i < moduleDataNodesCount; i++)
-        element.removeChild(moduleDataNodes.at(static_cast<const int>(i)));
+        element.removeChild(moduleDataNodes.at(static_cast<int>(i)));
 
     const QDomNodeList &customProperties = element.elementsByTagName("CustomProperty");
     const unsigned int customPropertiesCount = customProperties.length();

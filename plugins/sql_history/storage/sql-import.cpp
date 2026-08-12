@@ -41,7 +41,7 @@
 #include "sql-import.h"
 #include "sql-import.moc"
 
-#define CURRENT_SCHEMA_VERSION 4
+#define CURRENT_SCHEMA_VERSION 5
 
 quint16 SqlImport::databaseSchemaVersion(QSqlDatabase &database)
 {
@@ -104,7 +104,6 @@ void SqlImport::initTables(QSqlDatabase &database)
     initKaduSchemaTable(database);
     initKaduMessagesTable(database);
     initKaduStatusesTable(database);
-    initKaduSmsTable(database);
 
     initV4Tables(database);
 }
@@ -192,21 +191,22 @@ void SqlImport::initKaduStatusesTable(QSqlDatabase &database)
     query.exec();
 }
 
-void SqlImport::initKaduSmsTable(QSqlDatabase &database)
+void SqlImport::dropKaduSmsTable(QSqlDatabase &database)
 {
+    // Schema five is this table going away. The gateways whose messages it held stopped answering
+    // years ago, and since the gateway support was taken out nothing in Kadu can write a row into
+    // it or read one back -- it would sit there holding whatever it holds, unreachable. Dropping it
+    // takes its indexes with it.
+    //
+    // Outside the switch above, because every way through that switch arrives here with the table
+    // still present: an older database because it was made with the table, and a database made a
+    // moment ago because version four made it too.
+    //
+    // The file does not shrink by itself afterwards; SQLite hands the freed pages back only on
+    // VACUUM, which is not worth making everyone wait for.
     QSqlQuery query(database);
 
-    query.prepare("PRAGMA encoding = \"UTF-8\";");
-    query.exec();
-
-    query.prepare("PRAGMA synchronous = OFF;");
-    query.exec();
-
-    query.prepare(
-        "CREATE TABLE kadu_sms ("
-        "receipient VARCHAR(255),"
-        "send_time TIMESTAMP,"
-        "content TEXT);");
+    query.prepare("DROP TABLE IF EXISTS kadu_sms;");
     query.exec();
 }
 
@@ -520,9 +520,6 @@ void SqlImport::importVersion1Schema(QSqlDatabase &database)
         << "DROP INDEX IF EXISTS kadu_statuses_contact;"
         << "DROP INDEX IF EXISTS kadu_statuses_contact_time;"
         << "DROP INDEX IF EXISTS kadu_statuses_contact_time_date;"
-        << "DROP INDEX IF EXISTS kadu_sms_receipient;"
-        << "DROP INDEX IF EXISTS kadu_sms_receipient_time;"
-        << "DROP INDEX IF EXISTS kadu_sms_receipient_time_date;"
 
         << "CREATE TABLE kadu_chats (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid VARCHAR(16));"
         << "CREATE TABLE kadu_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid VARCHAR(16));"
@@ -701,6 +698,8 @@ void SqlImport::performImport(QSqlDatabase &database)
     default:
         break;   // no need to import
     }
+
+    dropKaduSmsTable(database);
 
     initKaduSchemaTable(database);
 

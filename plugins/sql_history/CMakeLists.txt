@@ -12,7 +12,6 @@ set (SOURCES
 	storage/sql-import.cpp
 	storage/sql-initializer.cpp
 	storage/sql-messages-chat-storage.cpp
-	storage/sql-messages-sms-storage.cpp
 	storage/sql-messages-status-storage.cpp
 	storage/sql-restore.cpp
 

@@ -47,7 +47,7 @@ void ClearResultsAction::actionInstanceCreated(Action *action)
 
 void ClearResultsAction::actionTriggered(QAction *sender, bool)
 {
-    auto search = qobject_cast<SearchWindow *>(sender->parentWidget());
+    auto search = qobject_cast<SearchWindow *>(sender->parent());
     if (search)
         search->clearResults();
 }

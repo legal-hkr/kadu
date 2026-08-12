@@ -1,7 +1,7 @@
 /*
  * %kadu copyright begin%
- * Copyright 2011 Bartosz Brachaczek (b.brachaczek@gmail.com)
- * Copyright 2011 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
+ * Copyright 2011, 2013 Bartosz Brachaczek (b.brachaczek@gmail.com)
+ * Copyright 2011, 2012, 2013 Rafał Przemysław Malinowski (rafal.przemyslaw.malinowski@gmail.com)
  * %kadu copyright end%
  *
  * This program is free software; you can redistribute it and/or
@@ -18,34 +18,82 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef GADU_SERVERS_MANAGER_H
+#define GADU_SERVERS_MANAGER_H
 
-#include <QtCore/QObject>
-#include <QtCore/QList>
-#include <QtCore/QPointer>
+#include <QtCore/QPair>
 #include <QtNetwork/QHostAddress>
 #include <injeqt/injeqt.h>
 
 #include "../gadu-exports.h"
 
+/**
+ * @class GaduServersManager
+ * @short Where to connect next, and how long to wait first.
+ *
+ * A connection that goes away wants picking up again, but not at any price and not for ever. This
+ * decides both parts of that: which address the next attempt should use, and how long to leave
+ * between one attempt and the next.
+ *
+ * What it does, in order:
+ *
+ * Three attempts at the server the account was last connected to, five seconds apart. That address
+ * is known to have worked, and a connection cut by a sleeping machine or a changed network usually
+ * comes straight back on it, without the round trip through the hub.
+ *
+ * Then four attempts at the whole procedure, starting from the hub -- appmsg.gadu-gadu.pl, which
+ * says which server is up -- fifteen seconds apart. This is what happens if the remembered server
+ * is not the one to use any more, and it is also where an account with nothing remembered begins.
+ *
+ * Then nothing. The attempts are not repeated until somebody asks for a connection again, at which
+ * point the counting starts from the beginning.
+ *
+ * All of it is the story of one account's connection, so each account keeps one of these to
+ * itself.
+ */
 class GADUAPI GaduServersManager : public QObject
 {
     Q_OBJECT
 
 public:
+    /**
+     * @short An address and a port. A null address means the hub is to be asked.
+     */
     typedef QPair<QHostAddress, int> GaduServer;
 
     Q_INVOKABLE explicit GaduServersManager(QObject *parent = nullptr);
     virtual ~GaduServersManager();
 
-    QPair<QHostAddress, int> getServer();
-    void markServerAsBad(GaduServer server);
+    /**
+     * @short The address the next attempt should use, counting that attempt as begun.
+     *
+     * Asked again once every attempt has been used means somebody has asked for a connection anew,
+     * since nothing else brings about a login then; the counting starts over.
+     */
+    GaduServer getServer();
+
+    /**
+     * @short Records where a connection actually got through, and starts the counting over.
+     */
+    void connectionSucceeded(const GaduServer &server);
+
+    /**
+     * @short Whether anything is left to try.
+     */
+    bool hasAnotherAttempt() const;
+
+    /**
+     * @short How long to wait before the next attempt, in milliseconds.
+     */
+    int delayBeforeNextAttempt() const;
 
 private:
-    QList<GaduServer> AllServers;
-    QList<GaduServer> GoodServers;
-    QList<GaduServer> BadServers;
+    GaduServer LastWorkingServer;
+    int DirectAttempts;
+    int HubAttempts;
 
-private slots:
-    INJEQT_INIT void init();
+    bool isRetryingLastWorkingServer() const;
+    void startOver();
 };
+
+#endif   // GADU_SERVERS_MANAGER_H

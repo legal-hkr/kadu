@@ -29,7 +29,7 @@
 #include "configuration/deprecated-configuration-api.h"
 
 SpellcheckerConfiguration::SpellcheckerConfiguration(QObject *parent)
-        : QObject{parent}, Bold{}, Italic{}, Underline{}, Accents{}, Case{}, Suggester{}, SuggesterWordCount{}
+        : QObject{parent}, Bold{}, Italic{}, Accents{}, Case{}, Suggester{}, SuggesterWordCount{}
 {
 }
 
@@ -52,7 +52,6 @@ void SpellcheckerConfiguration::createDefaultConfiguration()
 {
     m_configuration->deprecatedApi()->addVariable("ASpell", "Bold", "false");
     m_configuration->deprecatedApi()->addVariable("ASpell", "Italic", "false");
-    m_configuration->deprecatedApi()->addVariable("ASpell", "Underline", "true");
     m_configuration->deprecatedApi()->addVariable("ASpell", "Color", "#FF0101");
     m_configuration->deprecatedApi()->addVariable(
         "ASpell", "Checked", m_configuration->deprecatedApi()->readEntry("General", "Language"));
@@ -66,7 +65,6 @@ void SpellcheckerConfiguration::configurationUpdated()
 {
     bool bold = m_configuration->deprecatedApi()->readBoolEntry("ASpell", "Bold", false);
     bool italic = m_configuration->deprecatedApi()->readBoolEntry("ASpell", "Italic", false);
-    bool underline = m_configuration->deprecatedApi()->readBoolEntry("ASpell", "Underline", false);
     bool accents = m_configuration->deprecatedApi()->readBoolEntry("ASpell", "Accents", false);
     bool caseSensivity = m_configuration->deprecatedApi()->readBoolEntry("ASpell", "Case", false);
     bool suggester = m_configuration->deprecatedApi()->readBoolEntry("ASpell", "Suggester", true);
@@ -78,13 +76,12 @@ void SpellcheckerConfiguration::configurationUpdated()
     auto checked = checkedEntry == "empty" ? QStringList{} : checkedEntry.split(',', Qt::SkipEmptyParts);
     int suggesterWordCount = m_configuration->deprecatedApi()->readNumEntry("ASpell", "SuggesterWordCount");
 
-    if (bold == Bold && italic == Italic && underline == Underline && accents == Accents && caseSensivity == Case &&
+    if (bold == Bold && italic == Italic && accents == Accents && caseSensivity == Case &&
         suggester == Suggester && color == Color && checked == Checked && suggesterWordCount == SuggesterWordCount)
         return;
 
     Bold = bold;
     Italic = italic;
-    Underline = underline;
     Accents = accents;
     Case = caseSensivity;
     Suggester = suggester;

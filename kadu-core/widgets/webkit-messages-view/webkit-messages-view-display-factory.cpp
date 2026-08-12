@@ -50,12 +50,12 @@ WebkitMessagesViewDisplayFactory::createWebkitMessagesViewDisplay(ChatStyleRende
     {
         auto result = std::make_unique<WebkitMessagesViewClearingDisplay>(chatStyleRenderer);
         result->setMessageRenderInfoFactory(m_messageRenderInfoFactory);
-        return std::move(result);
+        return result;
     }
     else
     {
         auto result = std::make_unique<WebkitMessagesViewRemovingDisplay>(chatStyleRenderer);
         result->setMessageRenderInfoFactory(m_messageRenderInfoFactory);
-        return std::move(result);
+        return result;
     }
 }

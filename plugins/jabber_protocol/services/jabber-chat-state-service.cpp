@@ -32,6 +32,7 @@
 
 #include <QXmppQt6/QXmppClient.h>
 #include <QXmppQt6/QXmppMessage.h>
+#include <QXmppQt6/QXmppTask.h>
 
 namespace
 {
@@ -164,18 +165,18 @@ void JabberChatStateService::sendState(const Contact &contact, ChatState state)
     {
         // send intermediate state first
         xmppMessage.setState(QXmppMessage::State::Paused);
-        m_client->sendPacket(xmppMessage);
+        m_client->send(QXmppMessage{xmppMessage});
     }
 
     if (xmppState == QXmppMessage::State::Composing && sentChatState == QXmppMessage::State::Inactive)
     {
         // send intermediate state first
         xmppMessage.setState(QXmppMessage::State::Active);
-        m_client->sendPacket(xmppMessage);
+        m_client->send(QXmppMessage{xmppMessage});
     }
 
     xmppMessage.setState(xmppState);
-    m_client->sendPacket(xmppMessage);
+    m_client->send(std::move(xmppMessage));
 
     // Save last state
     // if (sentChatState != QXmppMessage::State::Gone || xmppState == QXmppMessage::State::Active) I don't know why we

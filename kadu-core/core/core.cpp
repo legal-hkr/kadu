@@ -230,6 +230,10 @@ void Core::createDefaultConfiguration()
         m_injector.get<Configuration>()->deprecatedApi()->readColorEntry("Look", "ChatBgColor").isValid() &&
             m_injector.get<Configuration>()->deprecatedApi()->readColorEntry("Look", "ChatBgColor") !=
                 QColor("#ffffff"));
+    // Off by default: the colours below are the ones a desktop of ten years ago wanted, and a
+    // desktop that turns dark at dusk wants its own. They stay in the configuration untouched, so
+    // turning this on brings back whatever was set before.
+    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ChatCustomColors", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ChatBgColor", QColor("#ffffff"));
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ChatMyBgColor", QColor("#E0E0E0"));
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "ChatMyFontColor", QColor("#000000"));
@@ -249,6 +253,7 @@ void Core::createDefaultConfiguration()
         "Look", "DescriptionColor", w.palette().text().color());
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "DisplayGroupTabs", true);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "HeaderSeparatorHeight", 1);
+    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "InfoPanelCustomColors", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "Look", "InfoPanelFgColor", w.palette().text().color());
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "InfoPanelBgFilled", false);
@@ -282,6 +287,7 @@ void Core::createDefaultConfiguration()
     m_injector.get<Configuration>()->deprecatedApi()->addVariable(
         "Look", "UserboxAlternateBgColor", w.palette().alternateBase().color());
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserBoxColumnCount", 1);
+    m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxCustomColors", false);
     m_injector.get<Configuration>()->deprecatedApi()->addVariable("Look", "UserboxFgColor", w.palette().text().color());
     QFont userboxfont(qApp->font());
     userboxfont.setPointSize(qApp->font().pointSize() + 1);

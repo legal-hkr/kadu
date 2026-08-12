@@ -59,8 +59,12 @@ public:
      * Creates new status with given type and description.
      */
     explicit Status(StatusType statusType = StatusType::Offline, const QString &description = QString());
-    Status(const Status &copyme);
-    ~Status();
+
+    // Copying, moving and destroying are left to the compiler. Writing the copy constructor and the
+    // destructor out by hand -- both of them doing exactly what the compiler would -- was enough to
+    // make the assignment operator a deprecated one, which every place that assigned a status was
+    // warned about: four hundred and seventy five warnings from this alone. It also kept the class
+    // from ever being moved.
 
     /**
      * @short Returns this status type.

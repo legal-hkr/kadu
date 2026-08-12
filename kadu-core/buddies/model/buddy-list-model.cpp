@@ -324,7 +324,7 @@ void BuddyListModel::setBuddyList(const BuddyList &list)
 {
     beginResetModel();
 
-    for (auto const buddy : List)
+    for (auto const &buddy : List)
         disconnectBuddy(buddy);
 
     List = list;

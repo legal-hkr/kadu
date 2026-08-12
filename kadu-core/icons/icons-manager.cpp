@@ -38,6 +38,8 @@
 #include <QtCore/QHash>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QFileInfo>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPalette>
 
 namespace
 {
@@ -292,6 +294,19 @@ void IconsManager::clearCache()
 
 void IconsManager::configurationUpdated()
 {
+    // A desktop draws its icons in its own colours, so one that turns dark hands out different
+    // pictures under the same names -- and nothing in the configuration changes when it does. The
+    // cached icons are therefore remembered along with the colour they were fetched under, and go
+    // when that colour no longer matches.
+    auto const iconsColor = QGuiApplication::palette().color(QPalette::WindowText);
+    if (iconsColor != CachedIconsColor)
+    {
+        CachedIconsColor = iconsColor;
+        clearCache();
+
+        emit themeChanged();
+    }
+
     bool const useSystemIcons = m_configuration->deprecatedApi()->readBoolEntry("Look", "UseSystemIcons", true);
     if (useSystemIcons != UseSystemIcons)
     {

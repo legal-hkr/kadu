@@ -35,7 +35,7 @@ JabberContactAvatarService::JabberContactAvatarService(
         : ContactAvatarService{account, parent}, m_client{client}, m_vCardService{vCardService}
 {
     connect(
-        &m_client->rosterManager(), &QXmppRosterManager::rosterReceived, this,
+        m_client->findExtension<QXmppRosterManager>(), &QXmppRosterManager::rosterReceived, this,
         &JabberContactAvatarService::rosterReceived);
     connect(m_client, &QXmppClient::presenceReceived, this, &JabberContactAvatarService::presenceReceived);
 }
@@ -50,8 +50,9 @@ void JabberContactAvatarService::download(const ContactAvatarId &id)
 
 void JabberContactAvatarService::rosterReceived()
 {
-    for (auto &&bareId : m_client->rosterManager().getRosterBareJids())
-        for (auto &&presence : m_client->rosterManager().getAllPresencesForBareJid(bareId))
+    auto *rosterManager = m_client->findExtension<QXmppRosterManager>();
+    for (auto &&bareId : rosterManager->getRosterBareJids())
+        for (auto &&presence : rosterManager->getAllPresencesForBareJid(bareId))
             presenceReceived(presence);
 }
 

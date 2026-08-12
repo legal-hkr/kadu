@@ -48,7 +48,7 @@ void AddFoundBuddyAction::actionInstanceCreated(Action *action)
 
 void AddFoundBuddyAction::actionTriggered(QAction *sender, bool)
 {
-    auto search = qobject_cast<SearchWindow *>(sender->parentWidget());
+    auto search = qobject_cast<SearchWindow *>(sender->parent());
     if (search)
         search->addFound();
 }

@@ -47,10 +47,6 @@ public:
     {
         return Italic;
     }
-    bool underline() const
-    {
-        return Underline;
-    }
     bool accents() const
     {
         return Accents;
@@ -89,7 +85,6 @@ private:
 
     bool Bold;
     bool Italic;
-    bool Underline;
     bool Accents;
     bool Case;
     bool Suggester;

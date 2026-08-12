@@ -83,6 +83,7 @@ void EmoticonConfigurator::createDefaultConfiguration()
     m_configuration->deprecatedApi()->addVariable(
         "Chat", "EnableEmoticonAnimations",
         1 != m_configuration->deprecatedApi()->readNumEntry("Chat", "EmoticonsStyle", 2));
+    m_configuration->deprecatedApi()->addVariable("Chat", "AnimateEmoticonSelector", true);
     m_configuration->deprecatedApi()->addVariable("Chat", "EmoticonsTheme", ThemeManager->defaultTheme());
     m_configuration->deprecatedApi()->addVariable(
         "Chat", "EnableEmoticons", m_configuration->deprecatedApi()->readEntry("Chat", "EmoticonsTheme") != "None");
@@ -103,6 +104,8 @@ void EmoticonConfigurator::configurationUpdated()
         m_configuration->deprecatedApi()->readBoolEntry("Chat", "EnableEmoticons", true));
     m_emoticonConfiguration.setAnimate(
         m_configuration->deprecatedApi()->readBoolEntry("Chat", "EnableEmoticonAnimations", true));
+    m_emoticonConfiguration.setAnimateSelector(
+        m_configuration->deprecatedApi()->readBoolEntry("Chat", "AnimateEmoticonSelector", true));
 
     if (m_emoticonConfiguration.enabled())
     {

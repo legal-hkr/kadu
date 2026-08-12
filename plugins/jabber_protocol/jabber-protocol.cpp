@@ -185,7 +185,7 @@ void JabberProtocol::init()
         pluginInjectedFactory()->makeInjected<JabberFileTransferService>(m_transferManager.get(), account(), this);
     m_fileTransferService->setResourceService(m_resourceService);
 
-    m_vcardService = new JabberVCardService{&m_client->vCardManager(), this};
+    m_vcardService = new JabberVCardService{m_client->findExtension<QXmppVCardManager>(), this};
     m_contactAvatarService =
         pluginInjectedFactory()->makeInjected<JabberContactAvatarService>(m_client, m_vcardService, account(), this);
 
@@ -195,14 +195,15 @@ void JabberProtocol::init()
 
     auto contacts = contactManager()->contacts(account(), ContactManager::ExcludeAnonymous);
     auto rosterService = pluginInjectedFactory()->makeInjected<JabberRosterService>(
-        &m_client->rosterManager(), m_rosterExtension.get(), contacts, this);
+        m_client->findExtension<QXmppRosterManager>(), m_rosterExtension.get(), contacts, this);
 
     connect(rosterService, SIGNAL(rosterReady()), this, SLOT(rosterReady()));
 
     setRosterService(rosterService);
 
     m_subscriptionService =
-        pluginInjectedFactory()->makeInjected<JabberSubscriptionService>(&m_client->rosterManager(), this);
+        pluginInjectedFactory()->makeInjected<JabberSubscriptionService>(
+            m_client->findExtension<QXmppRosterManager>(), this);
 
     m_jabberOpenChatWithRunner = m_pluginInjectedFactory->makeInjected<JabberOpenChatWithRunner>(account());
     OpenChatWithRunnerManager::instance()->registerRunner(m_jabberOpenChatWithRunner);
@@ -232,17 +233,18 @@ void JabberProtocol::rosterReady()
 void JabberProtocol::login()
 {
     auto accountData = JabberAccountData{account()};
+    auto *versionManager = m_client->findExtension<QXmppVersionManager>();
     if (accountData.publishSystemInfo())
     {
-        m_client->versionManager().setClientName("Kadu");
-        m_client->versionManager().setClientVersion(m_versionService->version());
-        m_client->versionManager().setClientOs(m_systemInfo->osFullName());
+        versionManager->setClientName("Kadu");
+        versionManager->setClientVersion(m_versionService->version());
+        versionManager->setClientOs(m_systemInfo->osFullName());
     }
     else
     {
-        m_client->versionManager().setClientName(QString{});
-        m_client->versionManager().setClientVersion(QString{});
-        m_client->versionManager().setClientOs(QString{});
+        versionManager->setClientName(QString{});
+        versionManager->setClientVersion(QString{});
+        versionManager->setClientOs(QString{});
     }
 
     auto streamSecurityMode = QXmppConfiguration::StreamSecurityMode{};

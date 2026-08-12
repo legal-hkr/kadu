@@ -78,11 +78,38 @@
 #include "gadu-protocol.h"
 #include "gadu-protocol.moc"
 
-GaduProtocol::GaduProtocol(
-    GaduListHelper *gaduListHelper, GaduServersManager *gaduServersManager, Account account, ProtocolFactory *factory)
-        : Protocol(account, factory), m_gaduServersManager{gaduServersManager}, ActiveServer(), GaduLoginParams(),
-          GaduSession(0), SocketNotifiers(0), PingTimer(0), m_gaduListHelper{gaduListHelper}
+namespace
 {
+/**
+ * @short The port the session got through on, or zero if it cannot be told.
+ *
+ * libgadu keeps the ports it is willing to try as a pair, and an index into that pair. Where the
+ * index stands once the connection is through depends on the road taken. Going straight to the
+ * server moves it on only when a candidate has failed, so it still names the one that worked; a
+ * request through a proxy counts its candidate as spent before the answer comes back, leaving the
+ * index one past the port in use -- and past the end of the pair, when the second of the two was
+ * the one that worked.
+ *
+ * Zero for an answer leaves the next attempt to settle on a port itself, which is what it does
+ * anyway for a server nothing is remembered about.
+ */
+int portConnectedOn(gg_session *session)
+{
+    auto const candidates = static_cast<int>(sizeof(session->connect_port) / sizeof(session->connect_port[0]));
+    auto const index = static_cast<int>(session->connect_index) - (session->proxy_port != 0 ? 1 : 0);
+
+    return (index >= 0 && index < candidates) ? session->connect_port[index] : 0;
+}
+}
+
+GaduProtocol::GaduProtocol(GaduListHelper *gaduListHelper, Account account, ProtocolFactory *factory)
+        : Protocol(account, factory), m_gaduServersManager{new GaduServersManager{this}}, ActiveServer(),
+          GaduLoginParams(), GaduSession(0), SocketNotifiers(0), PingTimer(0), m_gaduListHelper{gaduListHelper}
+{
+    // One of its own, rather than one shared out by the module. What it holds -- the server that
+    // last worked and how many attempts are left -- belongs to a single connection, and two
+    // accounts sharing it spend each other's budget: the second to try can find nothing left and
+    // stay disconnected for good, while either one getting through sets the other counting afresh.
 }
 
 GaduProtocol::~GaduProtocol()
@@ -257,7 +284,13 @@ void GaduProtocol::sendStatusToServer()
 
     setStatusFlags();
 
-    m_lastSentStatus = newStatus;
+    // Kept as the server will send it back, so that the echo can be recognised without putting the
+    // two through different conversions. Eight is more than enough to cover what can be in flight.
+    m_recentlySentStatuses.append(Status{
+        GaduProtocolHelper::statusTypeFromGaduStatus(GaduProtocolHelper::gaduStatusFromStatus(newStatus)),
+        newStatus.description()});
+    while (m_recentlySentStatuses.count() > 8)
+        m_recentlySentStatuses.removeFirst();
     auto writableSessionToken = Connection->writableSessionToken();
     if (hasDescription)
         gg_change_status_descr(
@@ -353,7 +386,11 @@ void GaduProtocol::login()
 
     setupLoginParams();
 
-    m_lastSentStatus = loginStatus();
+    // The status the login itself carries, remembered the same way, so its echo is recognised too.
+    m_recentlySentStatuses.clear();
+    m_recentlySentStatuses.append(Status{
+        GaduProtocolHelper::statusTypeFromGaduStatus(GaduProtocolHelper::gaduStatusFromStatus(loginStatus())),
+        loginStatus().description()});
     GaduSession = gg_login(&GaduLoginParams);
 
     cleanUpLoginParams();
@@ -361,7 +398,16 @@ void GaduProtocol::login()
     if (!GaduSession)
     {
         // gadu session can be null if DNS failed, we can try IP after that
-        connectionError();
+        //
+        // Counted against the same budget as a connection that fails at the socket, and settling
+        // the same way when it runs out. Asking again without that is asking for ever: a fault
+        // that stops gg_login() outright -- a name that does not resolve at all -- is answered by
+        // the next attempt in exactly the same way, and getServer() starts the counting over as
+        // soon as it is spent, so there is nothing in the round to bring it to an end.
+        if (m_gaduServersManager->hasAnotherAttempt())
+            connectionError();
+        else
+            connectionClosed();
         return;
     }
 
@@ -374,6 +420,19 @@ void GaduProtocol::login()
 
 void GaduProtocol::connectedToServer()
 {
+    // Remembered so that a connection cut later can be picked up where it was working, without the
+    // round trip through the hub first. libgadu keeps the address it connected to in the session,
+    // in network order; the port takes reading out, since the pair it comes from is left in a
+    // state that depends on how the connection was made.
+    //
+    // Nothing is remembered without an address to remember. libgadu leaves it zero when the hub
+    // answered with a name instead of a number and the connection was made by name, and zero is
+    // also how it is told to go and ask the hub -- so keeping it would spend the attempts meant
+    // to save that round trip on making it.
+    if (GaduSession && GaduSession->server_addr != 0)
+        m_gaduServersManager->connectionSucceeded(
+            {QHostAddress{ntohl(GaduSession->server_addr)}, portConnectedOn(GaduSession)});
+
     PingTimer = new QTimer(0);
     connect(PingTimer, SIGNAL(timeout()), this, SLOT(everyMinuteActions()));
     PingTimer->start(60000);
@@ -501,8 +560,21 @@ void GaduProtocol::socketContactStatusChanged(
 
     if (uin == GaduLoginParams.uin)
     {
-        if ((!m_lastRemoteStatusRequest.isValid() || m_lastRemoteStatusRequest.elapsed() > 10) &&
-            newStatus != m_lastSentStatus)
+        // Ours if it matches anything we have sent lately, and only then somebody else's. Two things
+        // used to make Kadu fail to recognise its own status coming back. The comparison was made
+        // across a conversion that loses information -- "not available" and "away" are both sent as
+        // busy and both return as away -- and it was made against the newest status alone, while an
+        // echo can arrive after the next change has already gone out. Putting a song in the
+        // description changes it every time the song does, so there were always several in flight,
+        // and every echo looked like a stranger's doing.
+        //
+        // What followed was the fault as reported: a status believed to come from elsewhere is set
+        // as if by hand, which reverts the description and tells the media player to stop; that is
+        // another change, whose echo is late in turn. Read from a log of it happening, the
+        // description went back and forth between the song and the user's own a dozen times.
+        auto const ours = m_recentlySentStatuses.contains(newStatus);
+
+        if ((!m_lastRemoteStatusRequest.isValid() || m_lastRemoteStatusRequest.elapsed() > 10) && !ours)
         {
             emit remoteStatusChangeRequest(account(), newStatus);
             if (m_lastRemoteStatusRequest.isValid())
@@ -569,9 +641,14 @@ void GaduProtocol::socketConnFailed(GaduError error)
 
     if (!GaduProtocolHelper::isConnectionErrorFatal(error))
     {
-        m_gaduServersManager->markServerAsBad(ActiveServer);
         logout();
-        connectionError();
+
+        // Out of attempts. The account settles at not connected instead of going round for ever,
+        // and waits to be asked again.
+        if (m_gaduServersManager->hasAnotherAttempt())
+            connectionError();
+        else
+            connectionClosed();
     }
     else
     {
@@ -583,6 +660,11 @@ void GaduProtocol::socketConnFailed(GaduError error)
 void GaduProtocol::disconnectedFromServer()
 {
     connectionClosed();
+}
+
+int GaduProtocol::reconnectDelay() const
+{
+    return m_gaduServersManager->delayBeforeNextAttempt();
 }
 
 QString GaduProtocol::statusPixmapPath()

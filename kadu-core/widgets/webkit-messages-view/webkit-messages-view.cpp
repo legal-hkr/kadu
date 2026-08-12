@@ -104,16 +104,7 @@ void WebkitMessagesView::init()
     setMinimumSize(QSize(100, 100));
     // JavaScript is enabled on the shared profile; plugins no longer exist in QtWebEngine.
 
-    auto p = palette();
-
-    // This widget never has focus anyway, so there's no need for distinction
-    // between active and inactive, and active highlight colors have way better
-    // contrast, especially on Windows. See Kadu bug #2605.
-    p.setBrush(QPalette::Inactive, QPalette::Highlight, p.brush(QPalette::Active, QPalette::Highlight));
-    p.setBrush(QPalette::Inactive, QPalette::HighlightedText, p.brush(QPalette::Active, QPalette::HighlightedText));
-
-    setPalette(p);
-
+    applyPalette();
     updatePageBackground();
 
     // Messages are written by other people. Neutering XMLHttpRequest keeps rendered content from
@@ -348,6 +339,7 @@ void WebkitMessagesView::forceScrollToBottom()
 
 void WebkitMessagesView::configurationUpdated()
 {
+    applyPalette();
     updateScrollBarStyle();
     updatePageBackground();
     setUserFont(m_chatConfigurationHolder->chatFont().toString(), m_chatConfigurationHolder->forceCustomChatFont());
@@ -364,15 +356,25 @@ void WebkitMessagesView::updateScrollBarStyle()
     auto const track = colours.color(QPalette::Base);
     auto const thumb = colours.color(QPalette::Mid);
     auto const thumbHover = colours.color(QPalette::Dark);
+    auto const text = colours.color(QPalette::Text);
 
+    // The colour of anything the style did not colour itself. A page whose text is left alone is
+    // black, which was fine while conversations were on white and is not now that the background
+    // follows the desktop. Chat styles colour what they think of -- the nick, the message -- and
+    // leave the rest: the two colons Arvenil puts between the nick and the date sit outside both
+    // its coloured elements, ultr colours nothing at all. Those took the page's black.
+    //
+    // Set on the body, not on everything: colour is inherited, so this reaches whatever was left
+    // alone and nothing that was not. A style that names a colour still gets the colour it named.
     auto const style = QStringLiteral(
+                           "body { color: %4; }"
                            "::-webkit-scrollbar { width: 12px; height: 12px; }"
                            "::-webkit-scrollbar-track { background: %1; }"
                            "::-webkit-scrollbar-thumb { background: %2; border-radius: 6px;"
                            " border: 3px solid %1; }"
                            "::-webkit-scrollbar-thumb:hover { background: %3; }"
                            "::-webkit-scrollbar-corner { background: %1; }")
-                           .arg(track.name(), thumb.name(), thumbHover.name());
+                           .arg(track.name(), thumb.name(), thumbHover.name(), text.name());
 
     // Embedded the way the style renderers do it: escaped, then quoted.
     auto quoted = style;
@@ -457,6 +459,25 @@ void WebkitMessagesView::updateEmoticonStyle()
     page()->scripts().insert(emoticonStyle);
 
     page()->runJavaScript(emoticonStyle.sourceCode());
+}
+
+void WebkitMessagesView::applyPalette()
+{
+    // Built from the application's palette every time rather than from this widget's own, and
+    // applied again whenever the desktop changes its colours. Setting a palette makes every colour
+    // in it the widget's own, which Qt then stops revising -- so doing this once at construction
+    // left the conversation's scroll bar and its background at the colours of whatever scheme was
+    // current when the window opened, however dark the desktop went afterwards.
+    auto palette = QGuiApplication::palette();
+
+    // This widget never has focus anyway, so there's no need for distinction
+    // between active and inactive, and active highlight colors have way better
+    // contrast, especially on Windows. See Kadu bug #2605.
+    palette.setBrush(QPalette::Inactive, QPalette::Highlight, palette.brush(QPalette::Active, QPalette::Highlight));
+    palette.setBrush(
+        QPalette::Inactive, QPalette::HighlightedText, palette.brush(QPalette::Active, QPalette::HighlightedText));
+
+    setPalette(palette);
 }
 
 void WebkitMessagesView::updatePageBackground()

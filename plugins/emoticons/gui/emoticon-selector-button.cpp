@@ -28,40 +28,95 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QtGui/QEnterEvent>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QMovie>
 
 #include "configuration/configuration.h"
 #include "configuration/deprecated-configuration-api.h"
-#include "gui/emoticon-selector-button-popup.h"
+#include "expander/emoticon-path-provider.h"
+#include "gui/emoticon-image.h"
 
 #include "emoticon-selector-button.h"
 #include "emoticon-selector-button.moc"
 
 EmoticonSelectorButton::EmoticonSelectorButton(
-    const Emoticon &emoticon, EmoticonPathProvider *pathProvider, QWidget *parent)
-        : QLabel(parent), DisplayEmoticon(emoticon), PathProvider(pathProvider)
+    const Emoticon &emoticon, const QPixmap &image, qreal scale, bool animate, EmoticonPathProvider *pathProvider,
+    QWidget *parent)
+        : QLabel(parent), DisplayEmoticon(emoticon), PathProvider(pathProvider), Scale(scale), Movie(nullptr),
+          MovingOnlyWhilePointed(false)
 {
-    // Eighteen units high, but that many device pixels rather than that many logical ones: on a
-    // magnified screen the shorter image was simply enlarged afterwards.
-    auto const ratio = devicePixelRatio();
-    QPixmap p(DisplayEmoticon.staticFilePath());
-    p = p.scaledToHeight(qRound(18 * ratio), Qt::SmoothTransformation);
-    p.setDevicePixelRatio(ratio);
-    setPixmap(p);
-    setMouseTracking(true);
+    // The still picture first, and the size from it, so that the list can be laid out without
+    // waiting on any film to start. Whatever moves afterwards is the same picture at the same size,
+    // so nothing shifts once it does.
+    StillPicture = emoticonForScreen(image, Scale, devicePixelRatio());
+    setPixmap(StillPicture);
+    setAlignment(Qt::AlignCenter);
     setContentsMargins(4, 4, 4, 4);
     setFixedSize(sizeHint());
+    setToolTip(DisplayEmoticon.triggerText());
+
+    if (animate)
+        startMoving(false);
 }
 
 EmoticonSelectorButton::~EmoticonSelectorButton()
 {
 }
 
-void EmoticonSelectorButton::mouseMoveEvent(QMouseEvent *e)
+void EmoticonSelectorButton::startMoving(bool onlyWhilePointed)
 {
-    QLabel::mouseMoveEvent(e);
+    if (Movie)
+        return;
 
-    EmoticonSelectorButtonPopup *popup = new EmoticonSelectorButtonPopup(DisplayEmoticon, PathProvider, this);
-    connect(popup, SIGNAL(clicked(Emoticon)), this, SIGNAL(clicked(Emoticon)));
-    popup->show();
+    MovingOnlyWhilePointed = onlyWhilePointed;
+
+    Movie = new QMovie(this);
+    Movie->setFileName(PathProvider->emoticonPath(DisplayEmoticon));
+    connect(Movie, &QMovie::frameChanged, this, &EmoticonSelectorButton::showFrame);
+    Movie->start();
+}
+
+void EmoticonSelectorButton::showFrame()
+{
+    setPixmap(emoticonForScreen(Movie->currentPixmap(), Scale, devicePixelRatio()));
+}
+
+void EmoticonSelectorButton::enterEvent(QEnterEvent *event)
+{
+    QLabel::enterEvent(event);
+
+    // The cell wears the highlight itself. This used to be a second window laid over it, which is
+    // where two complaints came from: it had a film of its own, so an emoticon already moving
+    // started again from the beginning the moment the pointer arrived, and it carried a style sheet
+    // where the cell carries margins -- two ways of asking for the same four pixels that do not
+    // always answer alike, which walked the picture a pixel sideways.
+    //
+    // Asked for by role rather than by colour, so it still follows whatever the desktop is wearing.
+    setBackgroundRole(QPalette::Highlight);
+    setAutoFillBackground(true);
+
+    // Already moving if the whole list is; then this does nothing and nothing restarts.
+    startMoving(true);
+}
+
+void EmoticonSelectorButton::leaveEvent(QEvent *event)
+{
+    QLabel::leaveEvent(event);
+
+    setAutoFillBackground(false);
+
+    if (!Movie || !MovingOnlyWhilePointed)
+        return;
+
+    delete Movie;
+    Movie = nullptr;
+    setPixmap(StillPicture);
+}
+
+void EmoticonSelectorButton::mouseReleaseEvent(QMouseEvent *event)
+{
+    QLabel::mouseReleaseEvent(event);
+
+    emit clicked(DisplayEmoticon);
 }

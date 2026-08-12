@@ -35,7 +35,6 @@
 #include <QtCore/QCoreApplication>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QSizePolicy>
 
@@ -74,21 +73,22 @@ void ChatStyleConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigu
     // editor
     auto editorLabel = new QLabel(QCoreApplication::translate("@default", "Style") + ':');
     editorLabel->setToolTip(QCoreApplication::translate("@default", "Choose style of chat window"));
-    auto editor = new QWidget(groupBox->widget());
-    editor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    editor->setToolTip(QCoreApplication::translate("@default", "Choose style of chat window"));
-    auto editorLayout = new QHBoxLayout(editor);
 
-    m_syntaxListCombo = new QComboBox(editor);
+    // Put in the row itself, as the list of variants below it is. It used to sit inside a widget of
+    // its own holding nothing else, and that widget's layout kept six pixels to either side -- so
+    // the two lists, both the width of their row, still began and ended six pixels apart. Measured
+    // under Breeze at nine hundred pixels of window: one hundred to eight hundred and eighty-four
+    // against ninety-four to eight hundred and ninety.
+    m_syntaxListCombo = new QComboBox(groupBox->widget());
+    m_syntaxListCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_syntaxListCombo->setToolTip(QCoreApplication::translate("@default", "Choose style of chat window"));
     auto styleNames = m_chatStyleManager->availableStyles().keys();
     std::sort(styleNames.begin(), styleNames.end(), [](const QString &s1, const QString &s2) {
         return s1.toLower() < s2.toLower();
     });
     m_syntaxListCombo->addItems(styleNames);
     m_syntaxListCombo->setCurrentIndex(m_syntaxListCombo->findText(m_chatStyleManager->currentChatStyle().name()));
-    connect(m_syntaxListCombo, SIGNAL(activated(const QString &)), this, SLOT(styleChangedSlot(const QString &)));
-
-    editorLayout->addWidget(m_syntaxListCombo, 100);
+    connect(m_syntaxListCombo, SIGNAL(textActivated(const QString &)), this, SLOT(styleChangedSlot(const QString &)));
 
     // preview
     m_enginePreview = m_injectedFactory->makeInjected<ChatStylePreview>();
@@ -108,9 +108,17 @@ void ChatStyleConfigurationUiHandler::mainConfigurationWindowCreated(MainConfigu
     variantChangedSlot(newVariant);
     m_variantListCombo->setCurrentIndex(m_variantListCombo->findText(newVariant));
     m_variantListCombo->setEnabled(m_chatStyleManager->currentEngine()->supportVariants());
-    connect(m_variantListCombo, SIGNAL(activated(const QString &)), this, SLOT(variantChangedSlot(const QString &)));
+
+    // The width of the row, as the list of styles above it has. A form layout asks the widget style
+    // which of its fields may grow, and Breeze answers only those that ask to: the list of styles
+    // does, through the widget it sits in, and this one did not -- so it stayed at whatever width
+    // its longest entry happened to want when it was first shown, and a variant named at any length
+    // was cut off. Measured at six hundred pixels of window: a hundred and seventy-one before,
+    // four hundred and fifty-six after, against the four hundred and forty-four above it.
+    m_variantListCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    connect(m_variantListCombo, SIGNAL(textActivated(const QString &)), this, SLOT(variantChangedSlot(const QString &)));
     //
-    groupBox->addWidgets(editorLabel, editor);
+    groupBox->addWidgets(editorLabel, m_syntaxListCombo);
     groupBox->addWidgets(
         new QLabel(QCoreApplication::translate("@default", "Style variant") + ':'), m_variantListCombo);
     groupBox->addWidgets(

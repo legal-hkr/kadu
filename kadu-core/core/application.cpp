@@ -67,7 +67,28 @@ bool Application::isSavingSession() const
     return qApp->isSavingSession();
 }
 
+bool Application::isQuitting() const
+{
+    return m_quitting;
+}
+
 void Application::quit()
 {
+    // Since Qt 6.5 quit() closes every window first and gives up if any of them refuses. The
+    // contact list refuses whenever it can hide into the tray instead, so with a conversation open
+    // as well the program went on running with its contact list merely hidden -- the user having
+    // asked it, twice over, to finish. Measured on a bare Qt program: one stubborn window and
+    // quit() still ends it; add a second window and it does not.
+    //
+    // Saying so first is what lets the windows agree to close.
+    m_quitting = true;
     qApp->quit();
+
+    // And taking it back afterwards is what keeps the word from standing for the rest of the
+    // session. A window is still free to refuse -- an open conversation asks about a message that
+    // has just come in, and Cancel means no -- and the program then goes on running. The next
+    // close of the contact list after that is an ordinary one, to be answered by hiding into the
+    // tray, which it would not be if this were left true. Nothing reads it once the windows have
+    // been round, so clearing it costs a successful quit nothing.
+    m_quitting = false;
 }

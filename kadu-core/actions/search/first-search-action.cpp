@@ -51,7 +51,7 @@ void FirstSearchAction::actionInstanceCreated(Action *action)
 
 void FirstSearchAction::actionTriggered(QAction *sender, bool)
 {
-    auto search = qobject_cast<SearchWindow *>(sender->parentWidget());
+    auto search = qobject_cast<SearchWindow *>(sender->parent());
     if (search)
         search->firstSearch();
 }

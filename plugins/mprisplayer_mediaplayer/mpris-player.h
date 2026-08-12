@@ -51,8 +51,14 @@ class MPRISPlayer : public MPRISMediaPlayer
     QPointer<PluginStateService> m_pluginStateService;
 
     void prepareUserPlayersFile();
+    void moveChosenPlayerToMpris2();
     void replacePlugin();
-    void choosePlayer(const QString &key, const QString &value);
+    /**
+     * @short Write down the player the old module stood for, if there is one to write down.
+     *
+     * @return whether a player was chosen; false leaves the configuration as it was.
+     */
+    bool choosePlayer(const QString &key, const QString &value);
 
 private slots:
     INJEQT_SET void setConfiguration(Configuration *configuration);

@@ -50,7 +50,6 @@ void ProtocolStateMachine::init()
     TryToGoOnlineTimer.setInterval(5000);
     TryToGoOnlineTimer.setSingleShot(true);
 
-    DelayTimer.setInterval(500);
     DelayTimer.setSingleShot(true);
 
     LoggingOutState = new QState(this);
@@ -78,7 +77,7 @@ void ProtocolStateMachine::init()
     connect(WantToLogInState, SIGNAL(entered()), &TryToGoOnlineTimer, SLOT(start()));
     connect(WantToLogInState, SIGNAL(exited()), &TryToGoOnlineTimer, SLOT(stop()));
 
-    connect(LoggingInDelayState, SIGNAL(entered()), &DelayTimer, SLOT(start()));
+    connect(LoggingInDelayState, &QState::entered, this, &ProtocolStateMachine::startDelayTimer);
     connect(LoggingInDelayState, SIGNAL(exited()), &DelayTimer, SLOT(stop()));
 
     LoggingOutState->addTransition(m_networkManager, SIGNAL(offline()), LoggedOutOfflineState);
@@ -145,6 +144,12 @@ void ProtocolStateMachine::init()
         setInitialState(LoggedOutOfflineState);
 
     start();
+}
+
+void ProtocolStateMachine::startDelayTimer()
+{
+    DelayTimer.setInterval(CurrentProtocol->reconnectDelay());
+    DelayTimer.start();
 }
 
 /**

@@ -199,6 +199,13 @@ void GaduProtocolSocketNotifiers::socketEvent()
             handleEventConnFailed(e);
         else
             m_protocol->socketConnFailed(GaduProtocol::ConnectionUnknow);
+
+        // Freed here as well. Every event libgadu hands over belongs to whoever asked for it, and
+        // the only place that gave one back was the end of the switch below -- which this way out
+        // never reaches. A connection that fails, and one that fails over and over, leaked one
+        // every time.
+        if (e)
+            gg_free_event(e);
         return;
     }
 
@@ -254,12 +261,12 @@ void GaduProtocolSocketNotifiers::socketEvent()
 
     case GG_EVENT_PUBDIR50_SEARCH_REPLY:
         m_protocol->CurrentSearchService->handleEventPubdir50SearchReply(e);
-    //			break;
+        [[fallthrough]];   // a search reply is read as a directory read as well
 
     case GG_EVENT_PUBDIR50_READ:
         m_protocol->CurrentPersonalInfoService->handleEventPubdir50Read(e);
         m_protocol->CurrentContactPersonalInfoService->handleEventPubdir50Read(e);
-    //			break;
+        [[fallthrough]];   // and so is a directory read
 
     case GG_EVENT_PUBDIR50_WRITE:
         m_protocol->CurrentPersonalInfoService->handleEventPubdir50Write(e);

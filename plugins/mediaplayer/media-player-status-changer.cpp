@@ -64,8 +64,11 @@ void MediaPlayerStatusChanger::changeStatus(StatusContainer *container, Status &
 
 void MediaPlayerStatusChanger::setTitle(const QString &newTitle)
 {
-    _disabled = false;
-
+    // Being told the title does not mean being switched on. It used to: this set _disabled to false
+    // whatever it had been, so a title arriving from the player turned the whole thing back on
+    // behind the switch's back. Switching it off then left the menu entry unticked and the song in
+    // the status all the same, until the next thing to turn it off came along. Whether it is on is
+    // the switch's business, and setDisable() is how the switch says so.
     if (newTitle != _title)
     {
         _title = newTitle;

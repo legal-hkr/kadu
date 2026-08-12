@@ -44,8 +44,9 @@ MPRISController::MPRISController(MediaPlayer *mediaPlayer, const QString &servic
         "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", QStringLiteral("NameOwnerChanged"),
         this, SLOT(nameOwnerChanged(QString, QString, QString)));
 
-    if (bus.interface()->registeredServiceNames().value().contains(Service))
-        activate();
+    auto const found = findOnBus();
+    if (!found.isEmpty())
+        activate(found);
 }
 
 MPRISController::~MPRISController()
@@ -57,21 +58,57 @@ MPRISController::~MPRISController()
         this, SLOT(nameOwnerChanged(QString, QString, QString)));
 }
 
-void MPRISController::call(const QString &methodName)
+bool MPRISController::namesThisPlayer(const QString &busName) const
 {
     if (Service.isEmpty())
+        return false;
+
+    if (busName == Service)
+        return true;
+
+    // org.mpris.MediaPlayer2.vlc also answers to org.mpris.MediaPlayer2.vlc.instance7710, and to
+    // nothing else -- the tail is a process id, so org.mpris.MediaPlayer2.vlcfoo is a different
+    // player and must not be taken for this one.
+    static auto const marker = QStringLiteral(".instance");
+
+    if (!busName.startsWith(Service + marker))
+        return false;
+
+    auto const tail = busName.mid(Service.length() + marker.length());
+    bool digits = false;
+    tail.toULongLong(&digits);
+
+    return digits;
+}
+
+QString MPRISController::findOnBus() const
+{
+    auto bus = QDBusConnection::sessionBus();
+    if (!bus.isConnected() || !bus.interface())
+        return QString();
+
+    for (auto const &busName : bus.interface()->registeredServiceNames().value())
+        if (namesThisPlayer(busName))
+            return busName;
+
+    return QString();
+}
+
+void MPRISController::call(const QString &methodName)
+{
+    if (ActiveService.isEmpty())
         return;
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player");
     mprisApp.call(methodName);
 }
 
 QString MPRISController::identity() const
 {
-    if (Service.isEmpty())
+    if (ActiveService.isEmpty())
         return QString();
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
     QDBusReply<QDBusVariant> reply = mprisApp.call("Get", "org.mpris.MediaPlayer2", "Identity");
 
     if (!reply.isValid())
@@ -95,15 +132,16 @@ bool MPRISController::active() const
     return Active;
 }
 
-void MPRISController::activate()
+void MPRISController::activate(const QString &busName)
 {
     if (Active)
         return;
 
     Active = true;
+    ActiveService = busName;
 
     QDBusConnection::sessionBus().connect(
-        Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged", this,
+        ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged", this,
         SLOT(propertiesChanged(QDBusMessage)));
 
     fetchStatus();
@@ -117,9 +155,12 @@ void MPRISController::deactivate()
 {
     Active = false;
 
+    // Undone against the name it was done against, which is not always the one written down.
     QDBusConnection::sessionBus().disconnect(
-        Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged", this,
+        ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged", this,
         SLOT(propertiesChanged(QDBusMessage)));
+
+    ActiveService.clear();
 
     updateStatus(StatusStopped);
 
@@ -175,13 +216,25 @@ void MPRISController::nameOwnerChanged(
 {
     Q_UNUSED(previousOwner)
 
-    if (service != Service)
+    if (!namesThisPlayer(service))
         return;
 
-    if (currentOwner.isEmpty())
-        deactivate();
-    else
-        activate();
+    if (!currentOwner.isEmpty())
+    {
+        activate(service);
+        return;
+    }
+
+    if (!ActiveService.isEmpty() && service != ActiveService)
+        return;
+
+    deactivate();
+
+    // A player that names itself by instance may have been restarted rather than closed, and the
+    // new instance is already on the bus by the time the old one is reported gone.
+    auto const found = findOnBus();
+    if (!found.isEmpty())
+        activate(found);
 }
 
 void MPRISController::propertiesChanged(const QDBusMessage &message)
@@ -203,10 +256,10 @@ void MPRISController::propertiesChanged(const QDBusMessage &message)
 
 void MPRISController::fetchStatus()
 {
-    if (Service.isEmpty())
+    if (ActiveService.isEmpty())
         return;
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
     QDBusReply<QDBusVariant> reply = mprisApp.call("Get", "org.mpris.MediaPlayer2.Player", "PlaybackStatus");
 
     if (!reply.isValid())
@@ -217,10 +270,10 @@ void MPRISController::fetchStatus()
 
 void MPRISController::fetchMetadata()
 {
-    if (Service.isEmpty())
+    if (ActiveService.isEmpty())
         return;
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
     QDBusReply<QDBusVariant> reply = mprisApp.call("Get", "org.mpris.MediaPlayer2.Player", "Metadata");
 
     if (!reply.isValid())
@@ -231,10 +284,10 @@ void MPRISController::fetchMetadata()
 
 int MPRISController::getCurrentPosition() const
 {
-    if (Service.isEmpty())
+    if (ActiveService.isEmpty())
         return 0;
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
     QDBusReply<QDBusVariant> reply = mprisApp.call("Get", "org.mpris.MediaPlayer2.Player", "Position");
 
     if (!reply.isValid())
@@ -245,10 +298,10 @@ int MPRISController::getCurrentPosition() const
 
 int MPRISController::getVolume() const
 {
-    if (Service.isEmpty())
+    if (ActiveService.isEmpty())
         return 0;
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
     QDBusReply<QDBusVariant> reply = mprisApp.call("Get", "org.mpris.MediaPlayer2.Player", "Volume");
 
     if (!reply.isValid())
@@ -259,13 +312,13 @@ int MPRISController::getVolume() const
 
 void MPRISController::setVolume(int volume) const
 {
-    if (Service.isEmpty())
+    if (ActiveService.isEmpty())
         return;
 
     QDBusVariant volumeArg;
     volumeArg.setVariant(QVariant::fromValue((double)volume / 100));
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties");
 
     // Set method has signature ssv, so we have to put QDBusVariant as last argument
     // as call only accepts QVariant arguments, we must wrap QDBusVariant in QVariant
@@ -279,10 +332,10 @@ QList<TrackInfo> MPRISController::getTrackList() const
 {
     QList<TrackInfo> result;
 
-    if (Service.isEmpty())
+    if (ActiveService.isEmpty())
         return result;
 
-    QDBusInterface mprisApp(Service, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.TrackList");
+    QDBusInterface mprisApp(ActiveService, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.TrackList");
     QDBusReply<QDBusVariant> reply = mprisApp.call("GetTracksMetadata");
 
     if (!reply.isValid())

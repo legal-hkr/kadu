@@ -23,7 +23,7 @@
 
 #include "emoticon-prefix-tree-builder.h"
 
-EmoticonPrefixTreeBuilder::EmoticonPrefixTreeBuilder() : Root(new EmoticonPrefixTree())
+EmoticonPrefixTreeBuilder::EmoticonPrefixTreeBuilder() : Root{std::make_unique<EmoticonPrefixTree>()}
 {
 }
 
@@ -34,7 +34,7 @@ void EmoticonPrefixTreeBuilder::addEmoticon(const Emoticon &emoticon)
     QString text = emoticon.triggerText().toLower();
     int length = text.length();
 
-    EmoticonPrefixTree *node = Root.data();
+    EmoticonPrefixTree *node = Root.get();
     for (int i = 0; i < length; i++)
     {
         QChar c = extractLetter(text.at(i));
@@ -51,5 +51,5 @@ void EmoticonPrefixTreeBuilder::addEmoticon(const Emoticon &emoticon)
 
 EmoticonPrefixTree *EmoticonPrefixTreeBuilder::tree()
 {
-    return Root.take();
+    return Root.release();
 }

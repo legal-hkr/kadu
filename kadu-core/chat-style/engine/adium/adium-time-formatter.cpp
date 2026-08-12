@@ -174,6 +174,7 @@ static void finishStr(
             appendInt(str, date.dayOfWeek(), length);
             break;
         }
+        [[fallthrough]];   // three letters or more, and 'c' and 'e' are spelled as 'E'
     case L'E':
         if (length < 4)
             str += QLocale::system().dayName(date.dayOfWeek(), QLocale::ShortFormat);

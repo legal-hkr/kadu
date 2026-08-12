@@ -487,8 +487,9 @@ void KaduWindow::closeEvent(QCloseEvent *e)
         return;
     }
 
-    // do not block window closing when session is about to close
-    if (m_application->isSavingSession())
+    // do not block window closing when session is about to close, or when the user has asked the
+    // program to finish -- hiding into the tray then would leave it running behind their back
+    if (m_application->isSavingSession() || m_application->isQuitting())
     {
         MainWindow::closeEvent(e);
         return;

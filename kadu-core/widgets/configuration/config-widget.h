@@ -26,6 +26,8 @@
 
 #include "configuration/configuration-window-data-manager.h"
 
+#include <QtCore/QStringList>
+
 class QDomElement;
 class ConfigGroupBox;
 
@@ -64,9 +66,16 @@ public:
 
     virtual bool fromDomElement(QDomElement domElement);
 
-    QString parentWidgetId()
+    /**
+     * @short The widgets this one depends on, in the order they were named.
+     *
+     * A field may answer to more than one switch -- the chat background colour belongs both to
+     * the section that follows the desktop's colours and to the box that turns a custom
+     * background on -- so the attribute is read as a comma separated list.
+     */
+    QStringList parentWidgetIds()
     {
-        return ParentWidgetId;
+        return ParentWidgetId.split(',', Qt::SkipEmptyParts);
     }
     QString currentWidgetId()
     {

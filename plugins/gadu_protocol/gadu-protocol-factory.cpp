@@ -58,11 +58,6 @@ void GaduProtocolFactory::setGaduListHelper(GaduListHelper *gaduListHelper)
     m_gaduListHelper = gaduListHelper;
 }
 
-void GaduProtocolFactory::setGaduServersManager(GaduServersManager *gaduServersManager)
-{
-    m_gaduServersManager = gaduServersManager;
-}
-
 void GaduProtocolFactory::setPluginInjectedFactory(PluginInjectedFactory *pluginInjectedFactory)
 {
     m_pluginInjectedFactory = pluginInjectedFactory;
@@ -70,7 +65,7 @@ void GaduProtocolFactory::setPluginInjectedFactory(PluginInjectedFactory *plugin
 
 Protocol *GaduProtocolFactory::createProtocolHandler(Account account)
 {
-    return m_pluginInjectedFactory->makeInjected<GaduProtocol>(m_gaduListHelper, m_gaduServersManager, account, this);
+    return m_pluginInjectedFactory->makeInjected<GaduProtocol>(m_gaduListHelper, account, this);
 }
 
 AccountAddWidget *GaduProtocolFactory::newAddAccountWidget(bool showButtons, QWidget *parent)
@@ -87,7 +82,7 @@ AccountCreateWidget *GaduProtocolFactory::newCreateAccountWidget(bool, QWidget *
 
 AccountEditWidget *GaduProtocolFactory::newEditAccountWidget(Account account, QWidget *parent)
 {
-    auto result = m_pluginInjectedFactory->makeInjected<GaduEditAccountWidget>(m_gaduServersManager, account, parent);
+    auto result = m_pluginInjectedFactory->makeInjected<GaduEditAccountWidget>(account, parent);
     connect(this, SIGNAL(destroyed()), result, SLOT(deleteLater()));
     return result;
 }

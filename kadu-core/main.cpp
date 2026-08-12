@@ -71,6 +71,8 @@
 #include "widgets/chat-widget/chat-widget-module.h"
 #include "windows/chat-window/chat-window-module.h"
 
+#include "configuration/system-colors-watcher.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
@@ -140,7 +142,13 @@ static void kaduQtMessageHandler(QtMsgType type, const QMessageLogContext &conte
     case QtWarningMsg:
         fprintf(stderr, "\033[34mWarning: %s\033[0m\n", msg);
         fflush(stderr);
-        if (strstr(msg, "no mimesource for") == 0)
+        // No trace of the stack. A warning is not a fault, and most of the ones seen on an
+        // installed Kadu are not even Kadu's: Chromium says at startup which way it has chosen to
+        // draw, and that came out looking like a crash report. The trace could not be read anyway
+        // -- an installed binary exports no names, so every line of it is an offset. It is still
+        // there for the asking, KADU_BACKTRACE_WARNINGS=1, and still automatic for anything worse
+        // than a warning.
+        if (!qEnvironmentVariableIsEmpty("KADU_BACKTRACE_WARNINGS"))
             printBacktrace("warning from Qt (above)");
         break;
     case QtCriticalMsg:
@@ -266,6 +274,11 @@ int main(int argc, char *argv[]) try
 #endif
 
         Core core{std::move(injector)};
+
+        // Watches for the desktop handing out a new palette, which is how a desktop that turns dark
+        // at dusk tells a running program about it. Lives as long as the application does.
+        SystemColorsWatcher systemColorsWatcher{&application};
+
         return core.executeSingle(executionArguments);
     }
     catch (ConfigurationUnusableException &)
